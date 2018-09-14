@@ -31,12 +31,6 @@ public class ThreadFactoryBuilder {
   private ThreadFactory backingThreadFactory = null;
 
   /**
-   * Creates a new {@link ThreadFactory} builder.
-   */
-  public ThreadFactoryBuilder() {
-  }
-
-  /**
    * Split out so that the anonymous ThreadFactory can't contain a reference back to the builder. At
    * least, I assume that's why. TODO(cpovirk): Check, and maybe add a test for this.
    *
@@ -51,24 +45,21 @@ public class ThreadFactoryBuilder {
         (builder.backingThreadFactory != null) ? builder.backingThreadFactory
             : Executors.defaultThreadFactory();
     final AtomicLong count = (nameFormat != null) ? new AtomicLong(0) : null;
-    return new ThreadFactory() {
-      @Override
-      public Thread newThread(Runnable runnable) {
-        Thread thread = backingThreadFactory.newThread(runnable);
-        if (nameFormat != null) {
-          thread.setName(format(nameFormat, count.getAndIncrement()));
-        }
-        if (daemon != null) {
-          thread.setDaemon(daemon);
-        }
-        if (priority != null) {
-          thread.setPriority(priority);
-        }
-        if (uncaughtExceptionHandler != null) {
-          thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
-        }
-        return thread;
+    return runnable -> {
+      Thread thread = backingThreadFactory.newThread(runnable);
+      if (nameFormat != null) {
+        thread.setName(format(nameFormat, count.getAndIncrement()));
       }
+      if (daemon != null) {
+        thread.setDaemon(daemon);
+      }
+      if (priority != null) {
+        thread.setPriority(priority);
+      }
+      if (uncaughtExceptionHandler != null) {
+        thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
+      }
+      return thread;
     };
   }
 
