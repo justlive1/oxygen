@@ -1,6 +1,7 @@
 package vip.justlive.oxygen.core.domain;
 
 import lombok.Data;
+import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * json返回实体
@@ -10,8 +11,6 @@ import lombok.Data;
 @Data
 public class Resp {
 
-  public static final String SUCC = "00000";
-  public static final String FAIL = "99999";
   /**
    * 返回结果编码
    */
@@ -45,7 +44,7 @@ public class Resp {
   public static Resp success(Object data) {
     Resp resp = new Resp();
     resp.setData(data);
-    resp.setCode(SUCC);
+    resp.setCode(Constants.SUCCESS_CODE);
     return resp;
   }
 
@@ -56,7 +55,7 @@ public class Resp {
    * @return 返回实体
    */
   public static Resp error(String message) {
-    return error(FAIL, message);
+    return error(Constants.DEFAULT_FAIL_CODE, message);
   }
 
   /**
@@ -79,6 +78,6 @@ public class Resp {
    * @return 是否成功
    */
   public boolean isSuccess() {
-    return SUCC.equals(code);
+    return Constants.SUCCESS_CODE.equals(code);
   }
 }
