@@ -59,6 +59,8 @@ public class SnowflakeIdWorker {
    */
   private static final long SEQUENCE_MASK = ~(-1L << SEQUENCE_BITS);
 
+  private static final int MAX_OFFSET = 5;
+
   private long workerId;
   private long dataCenterId;
   private long sequence = 0L;
@@ -119,7 +121,7 @@ public class SnowflakeIdWorker {
     // 闰秒：如果当前时间小于上一次ID生成的时间戳，说明系统时钟回退过这个时候应当抛出异常
     if (timestamp < lastTimestamp) {
       long offset = lastTimestamp - timestamp;
-      if (offset <= 5) {
+      if (offset <= MAX_OFFSET) {
         try {
           this.wait(offset << 1);
           timestamp = this.timeGen();

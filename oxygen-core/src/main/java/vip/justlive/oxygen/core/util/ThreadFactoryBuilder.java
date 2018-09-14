@@ -37,6 +37,46 @@ public class ThreadFactoryBuilder {
   }
 
   /**
+   * Split out so that the anonymous ThreadFactory can't contain a reference back to the builder. At
+   * least, I assume that's why. TODO(cpovirk): Check, and maybe add a test for this.
+   *
+   * @param builder threadFactoryBuilder
+   */
+  private static ThreadFactory doBuild(ThreadFactoryBuilder builder) {
+    final String nameFormat = builder.nameFormat;
+    final Boolean daemon = builder.daemon;
+    final Integer priority = builder.priority;
+    final UncaughtExceptionHandler uncaughtExceptionHandler = builder.uncaughtExceptionHandler;
+    final ThreadFactory backingThreadFactory =
+        (builder.backingThreadFactory != null) ? builder.backingThreadFactory
+            : Executors.defaultThreadFactory();
+    final AtomicLong count = (nameFormat != null) ? new AtomicLong(0) : null;
+    return new ThreadFactory() {
+      @Override
+      public Thread newThread(Runnable runnable) {
+        Thread thread = backingThreadFactory.newThread(runnable);
+        if (nameFormat != null) {
+          thread.setName(format(nameFormat, count.getAndIncrement()));
+        }
+        if (daemon != null) {
+          thread.setDaemon(daemon);
+        }
+        if (priority != null) {
+          thread.setPriority(priority);
+        }
+        if (uncaughtExceptionHandler != null) {
+          thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
+        }
+        return thread;
+      }
+    };
+  }
+
+  private static String format(String format, Object... args) {
+    return String.format(Locale.ROOT, format, args);
+  }
+
+  /**
    * Sets the naming format to use when naming threads ({@link Thread#setName}) which are created
    * with this ThreadFactory.
    *
@@ -118,43 +158,6 @@ public class ThreadFactoryBuilder {
    */
   public ThreadFactory build() {
     return doBuild(this);
-  }
-
-  // Split out so that the anonymous ThreadFactory can't contain a reference back to the builder.
-  // At least, I assume that's why. TODO(cpovirk): Check, and maybe add a test for this.
-  private static ThreadFactory doBuild(ThreadFactoryBuilder builder) {
-    final String nameFormat = builder.nameFormat;
-    final Boolean daemon = builder.daemon;
-    final Integer priority = builder.priority;
-    final UncaughtExceptionHandler uncaughtExceptionHandler = builder.uncaughtExceptionHandler;
-    final ThreadFactory backingThreadFactory =
-        (builder.backingThreadFactory != null)
-            ? builder.backingThreadFactory
-            : Executors.defaultThreadFactory();
-    final AtomicLong count = (nameFormat != null) ? new AtomicLong(0) : null;
-    return new ThreadFactory() {
-      @Override
-      public Thread newThread(Runnable runnable) {
-        Thread thread = backingThreadFactory.newThread(runnable);
-        if (nameFormat != null) {
-          thread.setName(format(nameFormat, count.getAndIncrement()));
-        }
-        if (daemon != null) {
-          thread.setDaemon(daemon);
-        }
-        if (priority != null) {
-          thread.setPriority(priority);
-        }
-        if (uncaughtExceptionHandler != null) {
-          thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
-        }
-        return thread;
-      }
-    };
-  }
-
-  private static String format(String format, Object... args) {
-    return String.format(Locale.ROOT, format, args);
   }
 
 }

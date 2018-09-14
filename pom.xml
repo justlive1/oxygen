@@ -22,10 +22,11 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
-    <org.reflections>0.9.11</org.reflections>
 
+    <guava.version>25.1-jre</guava.version>
     <junit.version>4.12</junit.version>
     <lombok.version>1.16.14</lombok.version>
+    <org.reflections>0.9.11</org.reflections>
     <slf4j.version>1.7.24</slf4j.version>
 
     <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
@@ -138,6 +139,12 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
       </dependency>
 
       <dependency>

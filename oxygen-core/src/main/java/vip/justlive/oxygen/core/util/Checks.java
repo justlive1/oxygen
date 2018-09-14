@@ -15,6 +15,7 @@ import static vip.justlive.oxygen.core.exception.Exceptions.errorMessage;
 import static vip.justlive.oxygen.core.exception.Exceptions.fail;
 
 import java.util.regex.Pattern;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.ErrorCode;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
@@ -218,7 +219,7 @@ public class Checks {
     } else {
       throw Exceptions.fail(errCode, params);
     }
-    if (".".equals(decimals) || !Pattern.matches(regex, decimals)) {
+    if (Constants.DOT.equals(decimals) || !Pattern.matches(regex, decimals)) {
       throw Exceptions.fail(errCode, params);
     }
   }
@@ -261,19 +262,6 @@ public class Checks {
     }
   }
 
-  /**
-   * 匹配中国邮政编码
-   *
-   * @param postcode 邮政编码
-   */
-  public void postcode(String postcode) {
-    postcode(postcode, "not postcode");
-  }
-
-  public void postcode(String postcode, String msg) {
-    postcode(postcode, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
-  }
-
   public static void postcode(String postcode, ErrorCode errCode, Object... params) {
     if (!Pattern.matches(REGEX_POSTCODE, postcode)) {
       throw Exceptions.fail(errCode, params);
@@ -297,5 +285,18 @@ public class Checks {
     if (!Pattern.matches(REGEX_IP, ip)) {
       throw Exceptions.fail(errCode, params);
     }
+  }
+
+  /**
+   * 匹配中国邮政编码
+   *
+   * @param postcode 邮政编码
+   */
+  public void postcode(String postcode) {
+    postcode(postcode, "not postcode");
+  }
+
+  public void postcode(String postcode, String msg) {
+    postcode(postcode, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
   }
 }

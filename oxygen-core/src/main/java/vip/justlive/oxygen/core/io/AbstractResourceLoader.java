@@ -1,5 +1,9 @@
 package vip.justlive.oxygen.core.io;
 
+import static vip.justlive.oxygen.core.constant.Constants.ALL_CLASSPATH_PREFIX;
+import static vip.justlive.oxygen.core.constant.Constants.CLASSPATH_PREFIX;
+import static vip.justlive.oxygen.core.constant.Constants.FILE_PREFIX;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,10 +38,6 @@ import vip.justlive.oxygen.core.util.ResourceUtils;
  */
 @Slf4j
 public abstract class AbstractResourceLoader {
-
-  public static final String ALL_CLASSPATH_PREFIX = "classpath*:";
-  public static final String CLASSPATH_PREFIX = "classpath:";
-  public static final String FILE_PREFIX = "file:";
 
   /**
    * 类加载器
@@ -79,28 +79,28 @@ public abstract class AbstractResourceLoader {
    */
   public abstract void init();
 
-  public void setIgnoreNotFound(boolean ignoreNotFound) {
-    this.ignoreNotFound = ignoreNotFound;
-  }
-
   public boolean isIgnoreNotFound() {
     return ignoreNotFound;
   }
 
-  public void setEncoding(String encoding) {
-    this.encoding = encoding;
+  public void setIgnoreNotFound(boolean ignoreNotFound) {
+    this.ignoreNotFound = ignoreNotFound;
   }
 
   public String getEncoding() {
     return encoding;
   }
 
-  public void setCharset(Charset charset) {
-    this.charset = charset;
+  public void setEncoding(String encoding) {
+    this.encoding = encoding;
   }
 
   public Charset getCharset() {
     return charset;
+  }
+
+  public void setCharset(Charset charset) {
+    this.charset = charset;
   }
 
   /**
@@ -383,8 +383,8 @@ public abstract class AbstractResourceLoader {
       }
       return files;
     }
-    String fullPattern =
-        rootDir.getAbsolutePath().replace(File.separator, Constants.PATH_SEPARATOR);
+    String fullPattern = rootDir.getAbsolutePath()
+        .replace(File.separator, Constants.PATH_SEPARATOR);
     if (!subPattern.startsWith(Constants.PATH_SEPARATOR)) {
       fullPattern += Constants.PATH_SEPARATOR;
     }
@@ -406,8 +406,8 @@ public abstract class AbstractResourceLoader {
     }
     File[] dirContents = dir.listFiles();
     for (File content : dirContents) {
-      String currentPath =
-          content.getAbsolutePath().replace(File.separator, Constants.PATH_SEPARATOR);
+      String currentPath = content.getAbsolutePath()
+          .replace(File.separator, Constants.PATH_SEPARATOR);
       if (content.isDirectory()) {
         if (!content.canRead() && log.isDebugEnabled()) {
           log.debug("dir [{}] has no read permission, skip");
@@ -427,7 +427,7 @@ public abstract class AbstractResourceLoader {
    * @return 根路径
    */
   protected String getRootDir(String location) {
-    int prefixEnd = location.indexOf(Constants.COLON_SEPARATOR) + 1;
+    int prefixEnd = location.indexOf(Constants.COLON) + 1;
     int rootDirEnd = location.length();
     while (rootDirEnd > prefixEnd && matcher.isPattern(location.substring(prefixEnd, rootDirEnd))) {
       rootDirEnd = location.lastIndexOf(Constants.PATH_SEPARATOR, rootDirEnd - 2) + 1;
