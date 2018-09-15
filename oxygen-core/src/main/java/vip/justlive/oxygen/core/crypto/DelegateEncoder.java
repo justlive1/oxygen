@@ -16,8 +16,8 @@ public class DelegateEncoder extends BaseEncoder {
   private static final Map<String, Encoder> ENCODERS = new ConcurrentHashMap<>();
 
   static {
-    ENCODERS.put("noop", new NoOpEncoder());
-    ENCODERS.put("md5", new Md5Encoder());
+    ENCODERS.put("NoOp", new NoOpEncoder());
+    ENCODERS.put("MD5", new Md5Encoder());
   }
 
   private final String id;

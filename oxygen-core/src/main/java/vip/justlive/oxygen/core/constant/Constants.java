@@ -10,11 +10,12 @@ public class Constants {
   /**
    * 配置文件默认地址
    */
-  public static final String CONFIG_PATH = "classpath:/config/*.properties";
+  public static final String[] CONFIG_PATHS = new String[]{"classpath:/config/*.properties",
+      "classpath:/*.properties"};
   /**
    * override配置文件地址属性key
    */
-  public static final String CONFIG_OVERRIDE_FILE_KEY = "config.override.file";
+  public static final String CONFIG_OVERRIDE_PATH_KEY = "config.override.path";
   /**
    * ioc扫码路径属性key
    */
