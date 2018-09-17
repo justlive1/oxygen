@@ -8,7 +8,11 @@ package vip.justlive.oxygen.core;
 public interface Plugin extends Comparable<Plugin> {
 
   /**
-   * 插件优先级 越小优先级越高
+   * 插件优先级
+   * <br>
+   * 越小优先级越高
+   * <br>
+   * 约定系统插件为负数，自定义插件为正数
    *
    * @return order
    */
