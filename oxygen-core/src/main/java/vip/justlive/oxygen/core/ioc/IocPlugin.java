@@ -38,6 +38,11 @@ public class IocPlugin implements Plugin {
     merge();
   }
 
+  @Override
+  public void stop() {
+    BeanStore.BEANS.clear();
+  }
+
   /**
    * 实例bean， 通过构造函数实例
    *
