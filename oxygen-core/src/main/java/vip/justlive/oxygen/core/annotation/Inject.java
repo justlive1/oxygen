@@ -7,23 +7,24 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 自动创建单例bean
+ * 自动注入
  * <br>
- * 可用在类上用于自动实例化
+ * 默认使用类型注入
  * <br>
- * 也可用于Configuration类的方法上创建实例
+ * 只支持在构造方法上使用，便于切换IOC框架
  *
  * @author wubo
  */
-@Documented
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Bean {
+@Documented
+public @interface Inject {
 
   /**
-   * bean的id，默认使用class::getName
+   * 声明bean是否必须存在
    *
-   * @return bean的id
+   * @return true为必须存在，否则抛出异常
    */
-  String value() default "";
+  boolean required() default true;
+
 }

@@ -17,9 +17,13 @@ public class Constants {
    */
   public static final String CONFIG_OVERRIDE_PATH_KEY = "config.override.path";
   /**
-   * ioc扫码路径属性key
+   * 类扫描路径属性key
    */
-  public static final String IOC_SCAN_KEY = "main.ioc.scan";
+  public static final String CLASS_SCAN_KEY = "main.class.scan";
+  /**
+   * 默认profile
+   */
+  public static final String DEFAULT_PROFILE = "default";
   /**
    * vertx verticle路径key
    */

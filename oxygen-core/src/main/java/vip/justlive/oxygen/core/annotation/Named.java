@@ -2,28 +2,27 @@ package vip.justlive.oxygen.core.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 自动创建单例bean
- * <br>
- * 可用在类上用于自动实例化
- * <br>
- * 也可用于Configuration类的方法上创建实例
+ * 用在构造函数参数上，用于指定注入bean的名称
  *
  * @author wubo
+ * @see Inject
  */
-@Documented
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Bean {
+@Inherited
+@Documented
+public @interface Named {
 
   /**
-   * bean的id，默认使用class::getName
+   * bean id
    *
    * @return bean的id
    */
-  String value() default "";
+  String value();
 }

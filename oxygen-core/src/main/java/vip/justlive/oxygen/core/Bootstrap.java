@@ -1,7 +1,10 @@
 package vip.justlive.oxygen.core;
 
+import java.util.Arrays;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.ioc.IocPlugin;
+import vip.justlive.oxygen.core.scan.ClassScanner;
 
 /**
  * 引导类
@@ -33,4 +36,16 @@ public final class Bootstrap {
       ConfigFactory.loadProperties(overridePath.split(Constants.COMMA));
     }
   }
+
+  /**
+   * 初始化系统插件类
+   */
+  public static void initSystemPlugin() {
+    Plugin[] plugins = new Plugin[]{new ClassScanner(), new IocPlugin()};
+    Arrays.sort(plugins);
+    for (Plugin plugin : plugins) {
+      plugin.start();
+    }
+  }
+
 }
