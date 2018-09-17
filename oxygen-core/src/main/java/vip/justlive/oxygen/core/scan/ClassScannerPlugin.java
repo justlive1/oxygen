@@ -14,7 +14,7 @@ import vip.justlive.oxygen.core.constant.Constants;
  *
  * @author wubo
  */
-public class ClassScanner implements Plugin {
+public class ClassScannerPlugin implements Plugin {
 
   private static final Map<String, Reflections> REFS = new HashMap<>(4);
 

@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.annotation.Bean;
 import vip.justlive.oxygen.core.annotation.Configuration;
-import vip.justlive.oxygen.core.scan.ClassScanner;
+import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 
 /**
  * IocPlugin
@@ -55,11 +55,11 @@ public class IocPlugin implements Plugin {
 
   void scan() {
     // Configuration
-    for (Class<?> clazz : ClassScanner.getTypesAnnotatedWith(Configuration.class)) {
+    for (Class<?> clazz : ClassScannerPlugin.getTypesAnnotatedWith(Configuration.class)) {
       configBeans(clazz);
     }
     // Bean
-    for (Class<?> clazz : ClassScanner.getTypesAnnotatedWith(Bean.class)) {
+    for (Class<?> clazz : ClassScannerPlugin.getTypesAnnotatedWith(Bean.class)) {
       Bean singleton = clazz.getAnnotation(Bean.class);
       String beanName = singleton.value();
       if (beanName == null || beanName.length() == 0) {
