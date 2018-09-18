@@ -1,11 +1,11 @@
 package vip.justlive.oxygen.core.ioc;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
 import java.util.concurrent.ConcurrentMap;
 import vip.justlive.oxygen.core.annotation.Inject;
 import vip.justlive.oxygen.core.annotation.Named;
+import vip.justlive.oxygen.core.aop.CglibProxy;
 
 /**
  * 构造方法策略
@@ -28,11 +28,7 @@ public class ConstructorStrategy implements Strategy {
   }
 
   Object nonDependencyInstance(Class<?> clazz) {
-    try {
-      return clazz.newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
-      throw new IllegalArgumentException(String.format("[%s]无参构造实例对象失败", clazz), e);
-    }
+      return CglibProxy.proxy(clazz);
   }
 
   Object dependencyInstance(Class<?> clazz, Constructor<?> constructor) {
@@ -41,12 +37,7 @@ public class ConstructorStrategy implements Strategy {
     Object[] args = new Object[params.length];
     boolean canInst = fillParams(params, args, inject.required());
     if (canInst) {
-      try {
-        return constructor.newInstance(args);
-      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-          | InvocationTargetException e) {
-        throw new IllegalArgumentException(String.format("[%s]有参构造实例对象失败", clazz), e);
-      }
+        return CglibProxy.proxy(clazz, args);
     }
     return null;
   }
@@ -71,8 +62,9 @@ public class ConstructorStrategy implements Strategy {
       if (map != null) {
         args[i] = getVal(params[i], map);
       }
-      boolean notInst = (args[i] == BeanStore.EMPTY) || (require && args[i] == null)
-          || (args[i] == null && required);
+      boolean notInst =
+          (args[i] == BeanStore.EMPTY) || (require && args[i] == null) || (args[i] == null
+              && required);
       if (notInst) {
         return false;
       }

@@ -12,6 +12,8 @@ public class IocPluginTest {
   @Test
   public void test() {
     Bootstrap.initSystemPlugin();
-    Assert.assertNotNull(BeanStore.getBean(Inter.class));
+    Inter inter = BeanStore.getBean("xxx", Inter.class);
+    Assert.assertNotNull(inter);
+    inter.print();
   }
 }

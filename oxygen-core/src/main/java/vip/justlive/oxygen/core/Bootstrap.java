@@ -1,6 +1,7 @@
 package vip.justlive.oxygen.core;
 
 import java.util.Arrays;
+import vip.justlive.oxygen.core.aop.AopPlugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.ioc.IocPlugin;
@@ -41,7 +42,7 @@ public final class Bootstrap {
    * 初始化系统插件类
    */
   public static void initSystemPlugin() {
-    Plugin[] plugins = new Plugin[]{new ClassScannerPlugin(), new IocPlugin()};
+    Plugin[] plugins = new Plugin[]{new ClassScannerPlugin(), new IocPlugin(), new AopPlugin()};
     Arrays.sort(plugins);
     for (Plugin plugin : plugins) {
       plugin.start();
