@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.annotation;
+package vip.justlive.oxygen.core.ioc;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -20,24 +20,23 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 自动注入
+ * 自动创建单例bean
  * <br>
- * 默认使用类型注入
+ * 可用在类上用于自动实例化
  * <br>
- * 只支持在构造方法上使用，便于切换IOC框架
+ * 也可用于Configuration类的方法上创建实例
  *
  * @author wubo
  */
-@Target({ElementType.CONSTRUCTOR})
-@Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Inject {
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Bean {
 
   /**
-   * 声明bean是否必须存在
+   * bean的id，默认使用class::getName
    *
-   * @return true为必须存在，否则抛出异常
+   * @return bean的id
    */
-  boolean required() default true;
-
+  String value() default "";
 }

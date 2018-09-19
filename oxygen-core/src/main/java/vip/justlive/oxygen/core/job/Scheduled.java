@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.annotation;
+package vip.justlive.oxygen.core.job;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -20,23 +20,63 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 自动创建单例bean
- * <br>
- * 可用在类上用于自动实例化
- * <br>
- * 也可用于Configuration类的方法上创建实例
+ * 定时任务注解
  *
  * @author wubo
  */
 @Documented
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Bean {
+public @interface Scheduled {
 
   /**
-   * bean的id，默认使用class::getName
+   * cron
    *
-   * @return bean的id
+   * @return cron
    */
-  String value() default "";
+  String cron() default "";
+
+  /**
+   * 固定延迟 结束时间-开始时间
+   * <br>
+   * 单位毫秒
+   *
+   * @return 延迟
+   */
+  String fixedDelay() default "";
+
+  /**
+   * 固定周期 开始时间-开始时间
+   * <br>
+   * 单位毫秒
+   *
+   * @return 周期
+   */
+  String fixedRate() default "";
+
+  /**
+   * 第一次启动延迟
+   * <br>
+   * 单位毫秒
+   *
+   * @return 延迟
+   */
+  String initialDelay() default "";
+
+  /**
+   * 项目启动执行
+   *
+   * @return true为执行
+   */
+  boolean onApplicationStart() default false;
+
+  /**
+   * 是否异步
+   * <br>
+   * 只对 onApplicationStart 方式有效
+   *
+   * @return true为异步
+   */
+  boolean async() default false;
+
 }

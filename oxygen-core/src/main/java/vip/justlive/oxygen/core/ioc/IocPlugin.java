@@ -19,8 +19,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
-import vip.justlive.oxygen.core.annotation.Bean;
-import vip.justlive.oxygen.core.annotation.Configuration;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 
 /**
@@ -41,7 +39,7 @@ public class IocPlugin implements Plugin {
 
   @Override
   public int order() {
-    return 0;
+    return Integer.MIN_VALUE + 10;
   }
 
   @Override

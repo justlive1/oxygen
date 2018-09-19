@@ -3,8 +3,6 @@ package vip.justlive.oxygen.core.ioc;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.concurrent.ConcurrentMap;
-import vip.justlive.oxygen.core.annotation.Inject;
-import vip.justlive.oxygen.core.annotation.Named;
 import vip.justlive.oxygen.core.aop.CglibProxy;
 
 /**

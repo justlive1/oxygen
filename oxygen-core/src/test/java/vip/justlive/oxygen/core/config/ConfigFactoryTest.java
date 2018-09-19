@@ -3,7 +3,6 @@ package vip.justlive.oxygen.core.config;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.annotation.Value;
 
 /**
  * @author wubo

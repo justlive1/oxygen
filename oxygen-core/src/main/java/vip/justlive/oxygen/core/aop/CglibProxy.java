@@ -22,9 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import vip.justlive.oxygen.core.annotation.After;
-import vip.justlive.oxygen.core.annotation.Before;
-import vip.justlive.oxygen.core.annotation.Catching;
 
 /**
  * cglib代理

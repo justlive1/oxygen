@@ -11,28 +11,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.annotation;
+package vip.justlive.oxygen.core.job;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * 标记路由文件
+ * job类
  *
  * @author wubo
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Route {
+@Slf4j
+public class Job implements Runnable {
 
-  /**
-   * route的访问路径
-   *
-   * @return path
-   */
-  String value() default "";
+  private final Object target;
+  private final Method method;
+
+  public Job(Object target, Method method) {
+    this.target = target;
+    this.method = method;
+  }
+
+  @Override
+  public void run() {
+    try {
+      method.invoke(target);
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      log.error("execute job error", e);
+    }
+  }
 }

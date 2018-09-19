@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.annotation;
+package vip.justlive.oxygen.core.aop;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;

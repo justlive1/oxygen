@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.annotation;
+package vip.justlive.oxygen.core.aop;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -21,14 +21,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 前置切面
+ * 后置切面
  *
  * @author wubo
  */
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Before {
+public @interface After {
 
   /**
    * 增强的注解
@@ -36,6 +36,4 @@ public @interface Before {
    * @return annotation
    */
   Class<? extends Annotation> annotation() default Annotation.class;
-
 }
-

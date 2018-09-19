@@ -1,9 +1,6 @@
 package vip.justlive.oxygen.core.ioc;
 
 
-import vip.justlive.oxygen.core.annotation.Bean;
-import vip.justlive.oxygen.core.annotation.Inject;
-
 @Bean("xxx")
 public class DepBean implements Inter {
 

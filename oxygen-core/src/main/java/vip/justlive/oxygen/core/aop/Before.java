@@ -11,31 +11,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.annotation;
+package vip.justlive.oxygen.core.aop;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 用在构造函数参数上，用于指定注入bean的名称
+ * 前置切面
  *
  * @author wubo
- * @see Inject
  */
-@Target({ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
 @Documented
-public @interface Named {
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Before {
 
   /**
-   * bean id
+   * 增强的注解
    *
-   * @return bean的id
+   * @return annotation
    */
-  String value();
+  Class<? extends Annotation> annotation() default Annotation.class;
+
 }
+

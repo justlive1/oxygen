@@ -18,6 +18,7 @@ import vip.justlive.oxygen.core.aop.AopPlugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.ioc.IocPlugin;
+import vip.justlive.oxygen.core.job.JobPlugin;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 
 /**
@@ -58,7 +59,8 @@ public final class Bootstrap {
    * 初始化系统插件类
    */
   public static void initSystemPlugin() {
-    Plugin[] plugins = new Plugin[]{new ClassScannerPlugin(), new IocPlugin(), new AopPlugin()};
+    Plugin[] plugins = new Plugin[]{new ClassScannerPlugin(), new IocPlugin(), new AopPlugin(),
+        new JobPlugin()};
     Arrays.sort(plugins);
     for (Plugin plugin : plugins) {
       plugin.start();

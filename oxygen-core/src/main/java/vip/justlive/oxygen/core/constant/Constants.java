@@ -38,9 +38,21 @@ public class Constants {
    */
   public static final String DEFAULT_PROFILE = "default";
   /**
-   * vertx verticle路径key
+   * job核心线程池大小key
    */
-  public static final String VERTICLE_PATH_KEY = "main.verticle.path";
+  public static final String JOB_CORE_POOL_SIZE_KEY = "job.core.pool.size";
+  /**
+   * job核心线程池默认大小
+   */
+  public static final int DEFAULT_JOB_CORE_POOL_SIZE = 10;
+  /**
+   * job线程名称格式
+   */
+  public static final String JOB_THREAD_NAME_FORMAT_KEY = "job.thread.name.format";
+  /**
+   * job线程名称默认格式
+   */
+  public static final String DEFAULT_JOB_THREAD_NAME_FORMAT = "jobs-%d";
   /**
    * 成功code
    */

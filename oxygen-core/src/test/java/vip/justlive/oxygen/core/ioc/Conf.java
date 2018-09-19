@@ -1,11 +1,9 @@
 package vip.justlive.oxygen.core.ioc;
 
 
-import vip.justlive.oxygen.core.annotation.After;
-import vip.justlive.oxygen.core.annotation.Bean;
-import vip.justlive.oxygen.core.annotation.Before;
-import vip.justlive.oxygen.core.annotation.Catching;
-import vip.justlive.oxygen.core.annotation.Configuration;
+import vip.justlive.oxygen.core.aop.After;
+import vip.justlive.oxygen.core.aop.Before;
+import vip.justlive.oxygen.core.aop.Catching;
 import vip.justlive.oxygen.core.aop.Invocation;
 
 @Configuration

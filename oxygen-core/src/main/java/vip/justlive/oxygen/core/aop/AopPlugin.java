@@ -23,9 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import vip.justlive.oxygen.core.Plugin;
-import vip.justlive.oxygen.core.annotation.After;
-import vip.justlive.oxygen.core.annotation.Before;
-import vip.justlive.oxygen.core.annotation.Catching;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 
@@ -40,9 +37,25 @@ public class AopPlugin implements Plugin {
       8, 0.75F);
   private static final Map<Class<?>, Object> AOP_CACHE = new ConcurrentHashMap<>(8, 1F);
 
+  /**
+   * 获取aop增强方法
+   *
+   * @param annotation 注解
+   * @param targetAnnotation 目标注解
+   * @return 增强方法
+   */
+  public static List<AopWrapper> getAopMethod(Class<? extends Annotation> annotation,
+      Class<? extends Annotation> targetAnnotation) {
+    ListMultimap<Class<? extends Annotation>, AopWrapper> listMultimap = CACHE.get(annotation);
+    if (listMultimap != null) {
+      return listMultimap.get(targetAnnotation);
+    }
+    return Collections.emptyList();
+  }
+
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 10;
+    return Integer.MIN_VALUE + 20;
   }
 
   @Override
@@ -92,22 +105,6 @@ public class AopPlugin implements Plugin {
         listMultimap.put(annotation, new AopWrapper(instance(method.getDeclaringClass()), method));
       }
     }
-  }
-
-  /**
-   * 获取aop增强方法
-   *
-   * @param annotation 注解
-   * @param targetAnnotation 目标注解
-   * @return 增强方法
-   */
-  public static List<AopWrapper> getAopMethod(Class<? extends Annotation> annotation,
-      Class<? extends Annotation> targetAnnotation) {
-    ListMultimap<Class<? extends Annotation>, AopWrapper> listMultimap = CACHE.get(annotation);
-    if (listMultimap != null) {
-      return listMultimap.get(targetAnnotation);
-    }
-    return Collections.emptyList();
   }
 
   private Object instance(Class<?> clazz) {
