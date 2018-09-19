@@ -28,7 +28,7 @@ public class ConstructorStrategy implements Strategy {
   }
 
   Object nonDependencyInstance(Class<?> clazz) {
-      return CglibProxy.proxy(clazz);
+    return CglibProxy.proxy(clazz);
   }
 
   Object dependencyInstance(Class<?> clazz, Constructor<?> constructor) {
@@ -37,7 +37,7 @@ public class ConstructorStrategy implements Strategy {
     Object[] args = new Object[params.length];
     boolean canInst = fillParams(params, args, inject.required());
     if (canInst) {
-        return CglibProxy.proxy(clazz, args);
+      return CglibProxy.proxy(clazz, args);
     }
     return null;
   }
