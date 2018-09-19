@@ -17,6 +17,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -106,7 +107,7 @@ public class AopPlugin implements Plugin {
     if (listMultimap != null) {
       return listMultimap.get(targetAnnotation);
     }
-    return null;
+    return Collections.emptyList();
   }
 
   private Object instance(Class<?> clazz) {
