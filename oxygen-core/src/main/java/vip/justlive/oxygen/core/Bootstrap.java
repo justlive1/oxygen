@@ -16,6 +16,9 @@ import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
  */
 public final class Bootstrap {
 
+  Bootstrap() {
+  }
+
   /**
    * 初始化配置
    * <br>

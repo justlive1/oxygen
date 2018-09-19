@@ -14,10 +14,12 @@ public class DepBean implements Inter {
     this.noDepBean = noDepBean;
   }
 
+  @Log
   @Override
   public void print() {
     System.out.println("this bean has dependency of NoDepBean");
     noDepBean.print();
+    throw new IllegalArgumentException();
   }
 
 }

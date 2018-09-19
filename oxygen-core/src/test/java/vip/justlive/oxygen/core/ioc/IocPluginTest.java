@@ -9,7 +9,7 @@ import vip.justlive.oxygen.core.Bootstrap;
  */
 public class IocPluginTest {
 
-  @Test
+  @Test(expected = IllegalArgumentException.class)
   public void test() {
     Bootstrap.initSystemPlugin();
     Inter inter = BeanStore.getBean("xxx", Inter.class);

@@ -32,7 +32,7 @@ public class ThreadFactoryBuilder {
 
   /**
    * Split out so that the anonymous ThreadFactory can't contain a reference back to the builder. At
-   * least, I assume that's why. TODO(cpovirk): Check, and maybe add a test for this.
+   * least, I assume that's why.
    *
    * @param builder threadFactoryBuilder
    */
