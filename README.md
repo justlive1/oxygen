@@ -119,6 +119,35 @@ public void print() {
 }  
 ```
 
+
+### Scheduled Job
+
+`@Scheduled` that marks a method to be scheduled.
+
+Exactly one of the onApplicationStart(), cron(), fixedDelay(), or fixedRate() attributes must be specified.
+
+```
+// Creates and executes a periodic action that becomes enabled first after the given initial delay, 
+// and subsequently with the given delay between the termination of one execution and the commencement of the next.
+@Scheduled(fixedDelay = "500")
+public void run1() {
+  ...
+}
+
+// Creates and executes a periodic action that becomes enabled first after the given initial delay, 
+// and subsequently with the given period
+@Scheduled(fixedRate = "600")
+public void run2() {
+  ...
+}
+
+// Schedule the specified cron task and run in async mode when application started 
+@Scheduled(cron = "0/5 * * * * ?", onApplicationStart = true, async = true)
+public void run3() {
+  ...
+}
+```
+
 ## Contact information
 
 E-mail: qq11419041@163.com

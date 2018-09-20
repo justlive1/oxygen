@@ -119,6 +119,32 @@ public void print() {
 }  
 ```
 
+### 定时任务
+
+使用注解 `@Scheduled` 标记一个方法需要作为定时任务
+
+onApplicationStart(), cron(), fixedDelay(), or fixedRate() 必须配置其中一个
+
+```
+// 固定延迟任务 任务结束时间-下一个开始时间间隔固定
+@Scheduled(fixedDelay = "500")
+public void run1() {
+  ...
+}
+
+// 固定周期任务 任务开始时间-下一个开始时间固定
+@Scheduled(fixedRate = "600")
+public void run2() {
+  ...
+}
+
+// cron任务，并且程序启动后异步执行一次
+@Scheduled(cron = "0/5 * * * * ?", onApplicationStart = true, async = true)
+public void run3() {
+  ...
+}
+```
+
 ## 联系信息
 
 E-mail: qq11419041@163.com

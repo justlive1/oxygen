@@ -38,7 +38,7 @@ public class JobPlugin implements Plugin {
 
   private static final Map<Class<?>, Object> JOB_CACHE = new ConcurrentHashMap<>(8, 1F);
   private static final List<Job> SCHEDULED_JOBS = new ArrayList<>();
-  private static ScheduledExecutorService executorService;
+  static ScheduledExecutorService executorService;
 
   private static void init() {
     int poolSize = Constants.DEFAULT_JOB_CORE_POOL_SIZE;
@@ -59,6 +59,14 @@ public class JobPlugin implements Plugin {
   @Override
   public void start() {
     init();
+    parseJobs();
+  }
+
+  @Override
+  public void stop() {
+    executorService.shutdownNow();
+    SCHEDULED_JOBS.clear();
+    JOB_CACHE.clear();
   }
 
   private void parseJobs() {
@@ -66,6 +74,7 @@ public class JobPlugin implements Plugin {
     for (Method method : methods) {
       Job job = createJob(method);
       Scheduled scheduled = method.getAnnotation(Scheduled.class);
+      check(scheduled);
       if (scheduled.fixedDelay().length() > 0) {
         addFixedDelayJob(job, scheduled.fixedDelay(), scheduled.initialDelay());
       }
@@ -81,12 +90,31 @@ public class JobPlugin implements Plugin {
     }
   }
 
+  private void check(Scheduled scheduled) {
+    int count = 0;
+    if (scheduled.fixedDelay().length() > 0) {
+      count++;
+    }
+    if (scheduled.fixedRate().length() > 0) {
+      count++;
+    }
+    if (scheduled.cron().length() > 0) {
+      count++;
+    }
+    boolean invalid = count > 1 || (count == 0 && !scheduled.onApplicationStart());
+    if (invalid) {
+      throw new IllegalArgumentException(
+          "Specify 'fixedDelay', 'fixedRate', 'onApplicationStart' or 'cron'");
+    }
+  }
+
   private void addFixedDelayJob(Job job, String fixedDelay, String initialDelay) {
     long fixedDelayVal = Long.parseLong(fixedDelay);
-    long initialDelayVal = fixedDelayVal;
+    long initialDelayVal = 0;
     if (initialDelay.length() > 0) {
       initialDelayVal = Long.parseLong(initialDelay);
     }
+    job.configFixedDelay(fixedDelayVal, initialDelayVal);
     executorService
         .scheduleWithFixedDelay(job, initialDelayVal, fixedDelayVal, TimeUnit.MILLISECONDS);
     SCHEDULED_JOBS.add(job);
@@ -94,19 +122,23 @@ public class JobPlugin implements Plugin {
 
   private void addFixedRateJob(Job job, String fixedRate, String initialDelay) {
     long fixedRateVal = Long.parseLong(fixedRate);
-    long initialDelayVal = fixedRateVal;
+    long initialDelayVal = 0;
     if (initialDelay.length() > 0) {
       initialDelayVal = Long.parseLong(initialDelay);
     }
+    job.configFixedRate(fixedRateVal, initialDelayVal);
     executorService.scheduleAtFixedRate(job, initialDelayVal, fixedRateVal, TimeUnit.MILLISECONDS);
     SCHEDULED_JOBS.add(job);
   }
 
   private void addCronJob(Job job, String cron) {
-
+    job.configCron(cron);
+    job.scheduleCron();
+    SCHEDULED_JOBS.add(job);
   }
 
   private void addOnApplicationStartJob(Job job, boolean async) {
+    job.configOnApplicationStart(true, async);
     if (async) {
       executorService.submit(job);
     } else {
