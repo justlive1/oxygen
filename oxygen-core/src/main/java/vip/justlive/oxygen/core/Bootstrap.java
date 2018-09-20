@@ -15,6 +15,7 @@ package vip.justlive.oxygen.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import vip.justlive.oxygen.core.aop.AopPlugin;
@@ -108,6 +109,7 @@ public final class Bootstrap {
    * 初始化插件
    */
   private static void initPlugins() {
+    Collections.sort(PLUGINS);
     for (Plugin plugin : PLUGINS) {
       plugin.start();
     }
