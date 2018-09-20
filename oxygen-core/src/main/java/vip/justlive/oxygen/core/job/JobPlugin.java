@@ -138,7 +138,7 @@ public class JobPlugin implements Plugin {
   }
 
   private void addOnApplicationStartJob(Job job, boolean async) {
-    job.configOnApplicationStart(true, async);
+    job.configOnApplicationStart(async);
     if (async) {
       executorService.submit(job);
     } else {

@@ -60,7 +60,6 @@ public class Job implements Runnable {
   private Long fixedRate;
   private Long initialDelay;
   private String cron;
-  private Boolean onApplicationStart;
   private Boolean async;
   private CronExpression cronExpression;
   private final AtomicLong runCount = new AtomicLong();
@@ -98,9 +97,8 @@ public class Job implements Runnable {
     return this;
   }
 
-  public Job configOnApplicationStart(boolean onApplicationStart, boolean async) {
+  public Job configOnApplicationStart(boolean async) {
     this.type = TYPE.ON_APPLICATION_START;
-    this.onApplicationStart = onApplicationStart;
     this.async = async;
     return this;
   }
@@ -124,13 +122,13 @@ public class Job implements Runnable {
 
   private void after() {
     if (log.isDebugEnabled()) {
-      log.debug("job [{}] [{}] execute time [{}]", method.getDeclaringClass(), method.getName(),
+      log.debug("job [{}] execute time [{}]", this,
           Duration.between(startAt, Instant.now()).toMillis());
     }
   }
 
   private void onException(Exception e) {
-    log.error("execute job error", e);
+    log.error("execute job [{}] error", this, e);
   }
 
   private void onFinally() {
@@ -144,8 +142,8 @@ public class Job implements Runnable {
       Date nextDate = cronExpression.getNextValidTimeAfter(now);
       if (nextDate == null) {
         log.warn(
-            "The cron expression for job %s doesn't have any match in the future, will never be executed [{}] [{}]",
-            method.getDeclaringClass(), method.getName());
+            "The cron expression for job %s doesn't have any match in the future, will never be executed [{}]",
+            this);
         return;
       }
       if (nextPlannedExecution.get() == nextDate.getTime()) {
@@ -157,5 +155,24 @@ public class Job implements Runnable {
       JobPlugin.executorService
           .schedule(this, nextDate.getTime() - now.getTime(), TimeUnit.MILLISECONDS);
     }
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("Job: type=").append(type);
+    sb.append(", class=").append(target.getClass()).append(", method=").append(method.getName());
+    if (type == TYPE.CRON) {
+      sb.append(",cron=").append(cron);
+    } else if (type == TYPE.ON_APPLICATION_START) {
+      sb.append(",async=").append(async);
+    } else {
+      if (type == TYPE.FIXED_DELAY) {
+        sb.append(",fixedDelay=").append(fixedDelay);
+      } else if (type == TYPE.FIXED_RATE) {
+        sb.append(",fixedRate=").append(fixedRate);
+      }
+      sb.append(",initialDelay=").append(initialDelay);
+    }
+    return sb.toString();
   }
 }
