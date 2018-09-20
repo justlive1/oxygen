@@ -13,7 +13,7 @@
  */
 package vip.justlive.oxygen.core.job;
 
-import java.util.concurrent.TimeUnit;
+
 import org.junit.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 
@@ -23,8 +23,7 @@ import vip.justlive.oxygen.core.Bootstrap;
 public class JobPluginTest {
 
   @Test
-  public void test() throws InterruptedException {
-    Bootstrap.initSystemPlugin();
-    TimeUnit.SECONDS.sleep(1);
+  public void test() {
+    Bootstrap.start();
   }
 }

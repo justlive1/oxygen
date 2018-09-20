@@ -12,6 +12,7 @@ a light framework include ioc, aop, config manager, crypto encoder, exceptions a
 * ioc, bean manager
 * aop, aspect
 * config, properties manager
+* scheduled job
 
 ## Install
 

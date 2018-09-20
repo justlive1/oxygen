@@ -13,7 +13,10 @@
  */
 package vip.justlive.oxygen.core;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import vip.justlive.oxygen.core.aop.AopPlugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
@@ -30,16 +33,11 @@ import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
  */
 public final class Bootstrap {
 
-  Bootstrap() {
-  }
+  private static final List<Plugin> PLUGINS = new ArrayList<>(5);
+  private static final AtomicBoolean STATE = new AtomicBoolean(false);
+  private static final Thread SHUTDOWN_HOOK = new Thread(Bootstrap::doClose);
 
-  /**
-   * 初始化配置
-   * <br>
-   * 使用默认地址进行加载，然后使用覆盖路径再次加载
-   */
-  public static void initConfig() {
-    initConfig(Constants.CONFIG_PATHS);
+  Bootstrap() {
   }
 
   /**
@@ -56,15 +54,78 @@ public final class Bootstrap {
   }
 
   /**
-   * 初始化系统插件类
+   * 添加自定义插件
+   *
+   * @param plugins 插件
    */
-  public static void initSystemPlugin() {
-    Plugin[] plugins = new Plugin[]{new ClassScannerPlugin(), new IocPlugin(), new AopPlugin(),
-        new JobPlugin()};
-    Arrays.sort(plugins);
-    for (Plugin plugin : plugins) {
+  public static void addCustomPlugin(Plugin... plugins) {
+    if (STATE.get()) {
+      throw new IllegalStateException("Bootstrap已启动");
+    }
+    PLUGINS.addAll(Arrays.asList(plugins));
+  }
+
+  /**
+   * 启动Bootstrap
+   */
+  public static void start() {
+    if (STATE.compareAndSet(false, true)) {
+      initConfig();
+      addSystemPlugin();
+      initPlugins();
+      registerShutdownHook();
+    }
+  }
+
+  /**
+   * 关闭Bootstrap
+   */
+  public synchronized static void close() {
+    doClose();
+    Runtime.getRuntime().removeShutdownHook(SHUTDOWN_HOOK);
+  }
+
+  /**
+   * 初始化配置
+   * <br>
+   * 使用默认地址进行加载，然后使用覆盖路径再次加载
+   */
+  private static void initConfig() {
+    initConfig(Constants.CONFIG_PATHS);
+  }
+
+  /**
+   * 添加系统插件类
+   */
+  private static void addSystemPlugin() {
+    PLUGINS.add(new ClassScannerPlugin());
+    PLUGINS.add(new IocPlugin());
+    PLUGINS.add(new AopPlugin());
+    PLUGINS.add(new JobPlugin());
+  }
+
+  /**
+   * 初始化插件
+   */
+  private static void initPlugins() {
+    for (Plugin plugin : PLUGINS) {
       plugin.start();
     }
   }
 
+  /**
+   * 注册shutdown钩子
+   */
+  private synchronized static void registerShutdownHook() {
+    Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
+  }
+
+  /**
+   * 关闭Bootstrap
+   */
+  private static void doClose() {
+    for (Plugin plugin : PLUGINS) {
+      plugin.stop();
+    }
+  }
 }

@@ -11,7 +11,7 @@ public class IocPluginTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void test() {
-    Bootstrap.initSystemPlugin();
+    Bootstrap.start();
     Inter inter = BeanStore.getBean("xxx", Inter.class);
     Assert.assertNotNull(inter);
     inter.print();
