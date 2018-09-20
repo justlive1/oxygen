@@ -26,7 +26,7 @@ public class Conf {
     TimeUnit.MILLISECONDS.sleep(340);
   }
 
-  @Scheduled(fixedRate = "600")
+  @Scheduled(fixedRate = "${job.run2:500}")
   public void run2() {
     System.out.println(Thread.currentThread() + "|fixedRate|" + System.currentTimeMillis());
   }

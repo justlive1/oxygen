@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.aop.AopPlugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
@@ -32,6 +33,7 @@ import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
  *
  * @author wubo
  */
+@Slf4j
 public final class Bootstrap {
 
   private static final List<Plugin> PLUGINS = new ArrayList<>(5);
@@ -71,17 +73,19 @@ public final class Bootstrap {
    */
   public static void start() {
     if (STATE.compareAndSet(false, true)) {
+      log.info("starting bootstrap ...");
       initConfig();
       addSystemPlugin();
       initPlugins();
       registerShutdownHook();
+      log.info("bootstrap has started ! have fun");
     }
   }
 
   /**
    * 关闭Bootstrap
    */
-  public synchronized static void close() {
+  public static synchronized void close() {
     doClose();
     Runtime.getRuntime().removeShutdownHook(SHUTDOWN_HOOK);
   }
@@ -118,7 +122,7 @@ public final class Bootstrap {
   /**
    * 注册shutdown钩子
    */
-  private synchronized static void registerShutdownHook() {
+  private static synchronized void registerShutdownHook() {
     Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
   }
 
@@ -126,8 +130,10 @@ public final class Bootstrap {
    * 关闭Bootstrap
    */
   private static void doClose() {
+    log.info("closing bootstrap ...");
     for (Plugin plugin : PLUGINS) {
       plugin.stop();
     }
+    log.info("bootstrap closed ! bye bye");
   }
 }
