@@ -15,7 +15,7 @@ package vip.justlive.oxygen.core.cache;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * cache 调用入口
@@ -27,7 +27,7 @@ public final class JCache {
   JCache() {
   }
 
-  static Cache cacheImpl;
+  static Map<String, Cache> cacheImpls = new ConcurrentHashMap<>(4, 1);
 
   /**
    * 初始化
@@ -35,134 +35,44 @@ public final class JCache {
    * @param cacheImpl 缓存实现
    */
   static void init(Cache cacheImpl) {
-    JCache.cacheImpl = cacheImpl;
+    cacheImpls.put(JCache.class.getSimpleName(), cacheImpl);
   }
 
   /**
-   * 获取缓存对象
+   * 初始化
    *
-   * @param key cache key
-   * @return the cached object or null
+   * @param name 缓存名称
+   * @param cacheImpl 缓存实现
    */
-  public static Object get(String key) {
-    return cacheImpl.get(key);
+  public static void init(String name, Cache cacheImpl) {
+    cacheImpls.put(name, cacheImpl);
   }
 
   /**
-   * 批量获取缓存对象
+   * 获取默认cache
    *
-   * @param keys cache keys
-   * @return return key-value objects
+   * @return cache
    */
-  public static Map<String, Object> get(String... keys) {
-    return cacheImpl.get(keys);
+  public static Cache cache() {
+    return cache(JCache.class.getSimpleName());
   }
 
   /**
-   * 判断缓存是否存在
+   * 根据缓存名称获取cache
    *
-   * @param key cache key
-   * @return true if key exists
+   * @param name cache name
+   * @return cache
    */
-  public static boolean exists(String key) {
-    return cacheImpl.exists(key);
+  public static Cache cache(String name) {
+    return cacheImpls.get(name);
   }
 
   /**
-   * 向缓存中存放对象，当前缓存中不存在key值时执行
+   * 获取缓存名称集合
    *
-   * @param key cache key
-   * @param value cache value
-   * @return exist cache value
+   * @return 缓存名称集合
    */
-  public static Object putIfAbsent(String key, Object value) {
-    return cacheImpl.putIfAbsent(key, value);
+  public static Collection<String> cacheNames() {
+    return cacheImpls.keySet();
   }
-
-  /**
-   * 向缓存中存放对象，当前缓存中不存在key值时执行
-   *
-   * @param key cache key
-   * @param value cache value
-   * @param duration duration
-   * @param unit timeunit
-   * @return exist cache value
-   */
-  public static Object putIfAbsent(String key, Object value, long duration, TimeUnit unit) {
-    return cacheImpl.putIfAbsent(key, value, duration, unit);
-  }
-
-  /**
-   * 向缓存中存放对象
-   *
-   * @param key cache key
-   * @param value cache value
-   * @return exist cache value
-   */
-  public static Object set(String key, Object value) {
-    return cacheImpl.set(key, value);
-  }
-
-  /**
-   * 向缓存中存放对象
-   *
-   * @param key cache key
-   * @param value cache value
-   * @param duration duration
-   * @param unit timeunit
-   * @return exist cache value
-   */
-  public static Object set(String key, Object value, long duration, TimeUnit unit) {
-    return cacheImpl.set(key, value, duration, unit);
-  }
-
-  /**
-   * 替换缓存中key对应的value
-   *
-   * @param key cache key
-   * @param value cache value
-   * @return exist cache value
-   */
-  public static Object replace(String key, Object value) {
-    return cacheImpl.replace(key, value);
-  }
-
-  /**
-   * 替换缓存中key对应的value
-   *
-   * @param key cache key
-   * @param value cache value
-   * @param duration duration
-   * @param unit timeunit
-   * @return exist cache value
-   */
-  public static Object replace(String key, Object value, long duration, TimeUnit unit) {
-    return cacheImpl.replace(key, value, duration, unit);
-  }
-
-  /**
-   * Return all keys
-   *
-   * @return 返回键的集合
-   */
-  public static Collection<String> keys() {
-    return cacheImpl.keys();
-  }
-
-  /**
-   * Remove items from the cache
-   *
-   * @param keys Cache key
-   */
-  public static void remove(String... keys) {
-    cacheImpl.remove(keys);
-  }
-
-  /**
-   * Clear the cache
-   */
-  public static void clear() {
-    cacheImpl.clear();
-  }
-
 }
