@@ -5,7 +5,7 @@ light framework
 
 ## Documentation
 
-a light framework include ioc, aop, config manager, crypto encoder, exceptions and so on.
+a light framework include ioc, aop, config manager, crypto encoder, exceptions, schduled job and so on.
 
 ## Features
 
