@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.concurrent.ConcurrentMap;
 import vip.justlive.oxygen.core.aop.CglibProxy;
+import vip.justlive.oxygen.core.config.ConfigFactory;
 
 /**
  * 构造方法策略
@@ -26,7 +27,9 @@ public class ConstructorStrategy implements Strategy {
   }
 
   Object nonDependencyInstance(Class<?> clazz) {
-    return CglibProxy.proxy(clazz);
+    Object bean = CglibProxy.proxy(clazz);
+    ConfigFactory.load(bean);
+    return bean;
   }
 
   Object dependencyInstance(Class<?> clazz, Constructor<?> constructor) {
@@ -35,7 +38,9 @@ public class ConstructorStrategy implements Strategy {
     Object[] args = new Object[params.length];
     boolean canInst = fillParams(params, args, inject.required());
     if (canInst) {
-      return CglibProxy.proxy(clazz, args);
+      Object bean = CglibProxy.proxy(clazz, args);
+      ConfigFactory.load(bean);
+      return bean;
     }
     return null;
   }

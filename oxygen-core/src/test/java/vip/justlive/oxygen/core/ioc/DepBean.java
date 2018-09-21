@@ -1,6 +1,8 @@
 package vip.justlive.oxygen.core.ioc;
 
 
+import vip.justlive.oxygen.core.config.Value;
+
 @Bean("xxx")
 public class DepBean implements Inter {
 
@@ -11,10 +13,13 @@ public class DepBean implements Inter {
     this.noDepBean = noDepBean;
   }
 
+  @Value("${val.a:xxx}")
+  private String val;
+
   @Log
   @Override
   public void print() {
-    System.out.println("this bean has dependency of NoDepBean");
+    System.out.println("this bean has dependency of NoDepBean and val is " + val);
     noDepBean.print();
     throw new IllegalArgumentException();
   }

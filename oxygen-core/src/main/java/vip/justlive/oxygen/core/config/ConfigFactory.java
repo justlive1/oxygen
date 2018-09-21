@@ -134,6 +134,17 @@ public class ConfigFactory {
   }
 
   /**
+   * 加载配置类，需要有{@link Value}注解
+   *
+   * @param bean 对象
+   */
+  public static void load(Object bean) {
+    if (bean != null) {
+      parse(bean);
+    }
+  }
+
+  /**
    * 解析
    *
    * @param clazz 类
@@ -141,13 +152,18 @@ public class ConfigFactory {
    * @return 配置类
    */
   protected static <T> T parse(Class<T> clazz) {
-    Field[] fields = ReflectUtils.getAllDeclaredFields(clazz);
     T obj;
     try {
       obj = clazz.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
       throw Exceptions.wrap(e);
     }
+    return clazz.cast(parse(obj));
+  }
+
+  protected static Object parse(Object obj) {
+    Class<?> clazz = obj.getClass();
+    Field[] fields = ReflectUtils.getAllDeclaredFields(clazz);
     for (Field field : fields) {
       if (field.isAnnotationPresent(Value.class)) {
         Value val = field.getAnnotation(Value.class);
