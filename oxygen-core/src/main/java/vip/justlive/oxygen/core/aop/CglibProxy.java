@@ -76,20 +76,27 @@ public class CglibProxy implements MethodInterceptor {
     Invocation invocation = new Invocation(obj, method, args);
     int index = 0;
     for (Interceptor interceptor : interceptors) {
-      interceptor.before(invocation);
-      index++;
+      if (interceptor.before(invocation)) {
+        index++;
+      } else {
+        break;
+      }
     }
     try {
       invocation.setReturnValue(methodProxy.invokeSuper(obj, args));
     } catch (Exception e) {
       for (Interceptor interceptor : interceptors) {
-        interceptor.catching(invocation);
+        if (!interceptor.catching(invocation)) {
+          break;
+        }
       }
       throw e;
     }
     index--;
     for (; index >= 0; index--) {
-      interceptors.get(index).after(invocation);
+      if (!interceptors.get(index).after(invocation)) {
+        break;
+      }
     }
     return invocation.getReturnValue();
   }

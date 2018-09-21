@@ -63,8 +63,9 @@ class BeforeInterceptor extends AopInterceptor {
   }
 
   @Override
-  public void before(Invocation invocation) {
+  public boolean before(Invocation invocation) {
     doIntercept(invocation);
+    return true;
   }
 }
 
@@ -80,8 +81,9 @@ class AfterInterceptor extends AopInterceptor {
   }
 
   @Override
-  public void after(Invocation invocation) {
+  public boolean after(Invocation invocation) {
     doIntercept(invocation);
+    return true;
   }
 }
 
@@ -97,7 +99,8 @@ class CatchingInterceptor extends AopInterceptor {
   }
 
   @Override
-  public void catching(Invocation invocation) {
+  public boolean catching(Invocation invocation) {
     doIntercept(invocation);
+    return true;
   }
 }

@@ -54,6 +54,10 @@ public class Constants {
    */
   public static final String DEFAULT_JOB_THREAD_NAME_FORMAT = "jobs-%d";
   /**
+   * 缓存实现类
+   */
+  public static final String CACHE_IMPL_CLASS = "cache.impl.class";
+  /**
    * 成功code
    */
   public static final String SUCCESS_CODE = "00000";

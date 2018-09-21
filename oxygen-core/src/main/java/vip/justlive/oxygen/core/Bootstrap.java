@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.aop.AopPlugin;
+import vip.justlive.oxygen.core.cache.CachePlugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.ioc.IocPlugin;
@@ -107,6 +108,7 @@ public final class Bootstrap {
     PLUGINS.add(new IocPlugin());
     PLUGINS.add(new AopPlugin());
     PLUGINS.add(new JobPlugin());
+    PLUGINS.add(new CachePlugin());
   }
 
   /**

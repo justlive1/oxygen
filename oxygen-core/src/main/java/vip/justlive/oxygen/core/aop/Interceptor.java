@@ -24,23 +24,29 @@ public interface Interceptor {
    * 前置增强
    *
    * @param invocation 调用封装
+   * @return true为继续执行下一个拦截
    */
-  default void before(Invocation invocation) {
+  default boolean before(Invocation invocation) {
+    return true;
   }
 
   /**
    * 后置增强
    *
    * @param invocation 调用封装
+   * @return true为继续执行下一个拦截
    */
-  default void after(Invocation invocation) {
+  default boolean after(Invocation invocation) {
+    return true;
   }
 
   /**
    * 异常增强
    *
    * @param invocation 调用封装
+   * @return true为继续执行下一个拦截
    */
-  default void catching(Invocation invocation) {
+  default boolean catching(Invocation invocation) {
+    return true;
   }
 }

@@ -22,6 +22,8 @@
 
 
     <cglib.version>3.2.8</cglib.version>
+    <ehcache3.version>3.6.0</ehcache3.version>
+    <ehcache.version>2.10.5</ehcache.version>
     <guava.version>25.1-jre</guava.version>
     <junit.version>4.12</junit.version>
     <logback.version>1.2.3</logback.version>
@@ -128,7 +130,6 @@
         <version>${project.version}</version>
       </dependency>
 
-
       <dependency>
         <groupId>org.reflections</groupId>
         <artifactId>reflections</artifactId>
@@ -162,12 +163,18 @@
         <version>${logback.version}</version>
       </dependency>
 
-
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
       </dependency>
+
+      <dependency>
+        <groupId>net.sf.ehcache</groupId>
+        <artifactId>ehcache</artifactId>
+        <version>${ehcache.version}</version>
+      </dependency>
+
 
       <dependency>
         <groupId>junit</groupId>
