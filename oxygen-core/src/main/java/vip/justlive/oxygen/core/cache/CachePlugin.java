@@ -32,13 +32,21 @@ public class CachePlugin implements Plugin {
 
   @Override
   public void start() {
-    String cacheImplClass = ConfigFactory
-        .getProperty(Constants.CACHE_IMPL_CLASS, LocalCacheImpl.class.getName());
-    try {
-      Cache cache = (Cache) Class.forName(cacheImplClass).newInstance();
-      JCache.init(cache);
-    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      throw Exceptions.wrap(e);
+    String cacheImplClass = ConfigFactory.getProperty(Constants.CACHE_IMPL_CLASS);
+    if (cacheImplClass != null) {
+      try {
+        Cache cache = (Cache) Class.forName(cacheImplClass).newInstance();
+        JCache.init(cache);
+      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        throw Exceptions.wrap(e);
+      }
+    } else {
+      try {
+        JCache.init(new EhCacheImpl());
+      } catch (Exception e) {
+        //  net.sf.ehcache not dependence
+        JCache.init(new LocalCacheImpl());
+      }
     }
   }
 
