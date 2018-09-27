@@ -21,7 +21,6 @@ public class DepBean implements Inter {
   public void print() {
     System.out.println("this bean has dependency of NoDepBean and val is " + val);
     noDepBean.print();
-    throw new IllegalArgumentException();
   }
 
 }

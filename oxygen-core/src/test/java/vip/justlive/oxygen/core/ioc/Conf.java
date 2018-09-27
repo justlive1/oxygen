@@ -20,8 +20,9 @@ public class Conf {
   }
 
   @Before(annotation = Log.class)
-  public void log1(Invocation invocation) {
+  public boolean log1(Invocation invocation) {
     System.out.println("aop before log1 " + invocation.getMethod());
+    return false;
   }
 
   @After(annotation = Log.class)

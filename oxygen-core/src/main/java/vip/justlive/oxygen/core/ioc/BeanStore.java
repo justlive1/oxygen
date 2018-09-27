@@ -76,17 +76,18 @@ public class BeanStore {
   static <T> void putBean(String name, T bean) {
     Class<?> clazz = bean.getClass();
     seize(clazz);
-    BEANS.get(clazz).put(name, bean);
-    merge(clazz, bean);
     mergeSuperClass(name, clazz, bean);
   }
 
   static void mergeInterface(String name, Class<?> clazz, Object bean) {
+    merge(clazz, bean);
+    merge(clazz, bean, name);
     Class<?>[] interfaces = clazz.getInterfaces();
     for (Class<?> inter : interfaces) {
       if (!inter.getName().startsWith("java")) {
         seize(inter);
-        if (BEANS.get(inter).putIfAbsent(name, bean) != null) {
+        Object local = BEANS.get(inter).putIfAbsent(name, bean);
+        if (local != null && local != EMPTY) {
           throw new IllegalArgumentException(String.format("[%s] 名称已被定义", name));
         }
         merge(inter, bean);
@@ -104,8 +105,17 @@ public class BeanStore {
 
   static void merge(Class<?> clazz, Object bean) {
     ConcurrentMap<String, Object> map = BEANS.get(clazz);
-    if (!map.containsKey(clazz.getName())) {
+    Object local = map.get(clazz.getName());
+    if (local == null || local == EMPTY) {
       map.put(clazz.getName(), bean);
+    }
+  }
+
+  static void merge(Class<?> clazz, Object bean, String name) {
+    ConcurrentMap<String, Object> map = BEANS.get(clazz);
+    Object local = map.get(name);
+    if (local == null || local == EMPTY) {
+      map.put(name, bean);
     }
   }
 

@@ -30,23 +30,41 @@ public abstract class AopInterceptor implements Interceptor {
     this.aopWrapperList = aopWrapperList;
   }
 
-  protected void doIntercept(Invocation invocation) {
+  protected boolean doIntercept(Invocation invocation) {
     try {
       for (AopWrapper aopWrapper : aopWrapperList) {
         int count = aopWrapper.getMethod().getParameterCount();
+        check(aopWrapper);
         if (count == 0) {
           aopWrapper.getMethod().invoke(aopWrapper.getTarget());
         } else if (count == 1) {
-          if (aopWrapper.getMethod().getParameterTypes()[0] != Invocation.class) {
-            throw new IllegalArgumentException("aop方法入参只能为[Invocation]类型");
+          Class<?> returnType = aopWrapper.getMethod().getReturnType();
+          if (returnType == Void.TYPE) {
+            aopWrapper.getMethod().invoke(aopWrapper.getTarget(), invocation);
+          } else if (returnType == boolean.class) {
+            boolean b = (boolean) aopWrapper.getMethod().invoke(aopWrapper.getTarget(), invocation);
+            if (!b) {
+              return false;
+            }
           }
-          aopWrapper.getMethod().invoke(aopWrapper.getTarget(), invocation);
-        } else {
-          throw new IllegalArgumentException("aop方法入参个数不能大于1");
         }
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw Exceptions.wrap(e);
+    }
+    return true;
+  }
+
+  private void check(AopWrapper aopWrapper) {
+    int count = aopWrapper.getMethod().getParameterCount();
+    boolean b = (count == 1 && aopWrapper.getMethod().getParameterTypes()[0] != Invocation.class)
+        || count > 1;
+    if (b) {
+      throw new IllegalArgumentException("aop方法入参只能为[Invocation]类型");
+    }
+    Class<?> returnType = aopWrapper.getMethod().getReturnType();
+    if (returnType != Void.TYPE && returnType != boolean.class) {
+      throw new IllegalArgumentException("aop方法返回值只能为void或boolean");
     }
   }
 }
@@ -64,8 +82,7 @@ class BeforeInterceptor extends AopInterceptor {
 
   @Override
   public boolean before(Invocation invocation) {
-    doIntercept(invocation);
-    return true;
+    return doIntercept(invocation);
   }
 }
 
@@ -82,8 +99,7 @@ class AfterInterceptor extends AopInterceptor {
 
   @Override
   public boolean after(Invocation invocation) {
-    doIntercept(invocation);
-    return true;
+    return doIntercept(invocation);
   }
 }
 
@@ -100,7 +116,6 @@ class CatchingInterceptor extends AopInterceptor {
 
   @Override
   public boolean catching(Invocation invocation) {
-    doIntercept(invocation);
-    return true;
+    return doIntercept(invocation);
   }
 }

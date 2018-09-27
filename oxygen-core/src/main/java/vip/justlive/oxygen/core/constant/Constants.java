@@ -23,7 +23,7 @@ public class Constants {
   /**
    * 配置文件默认地址
    */
-  public static final String[] CONFIG_PATHS = new String[]{"classpath:/config/*.properties",
+  public static final String[] CONFIG_PATHS = {"classpath:/config/*.properties",
       "classpath:/*.properties"};
   /**
    * override配置文件地址属性key

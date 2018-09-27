@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.ioc.BeanStore;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 
 /**
@@ -108,7 +109,11 @@ public class AopPlugin implements Plugin {
   }
 
   private Object instance(Class<?> clazz) {
-    Object obj = AOP_CACHE.get(clazz);
+    Object obj = BeanStore.getBean(clazz);
+    if (obj != null) {
+      return obj;
+    }
+    obj = AOP_CACHE.get(clazz);
     if (obj != null) {
       return obj;
     }

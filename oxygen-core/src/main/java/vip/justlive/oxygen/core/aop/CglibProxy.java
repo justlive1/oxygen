@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -28,6 +29,7 @@ import net.sf.cglib.proxy.MethodProxy;
  *
  * @author wubo
  */
+@Slf4j
 public class CglibProxy implements MethodInterceptor {
 
   private static final CglibProxy CGLIB_PROXY = new CglibProxy();
@@ -58,9 +60,17 @@ public class CglibProxy implements MethodInterceptor {
     enhancer.setCallback(CGLIB_PROXY);
     Class<?>[] classes = new Class[args.length];
     for (int i = 0; i < args.length; i++) {
-      classes[i] = args[i].getClass();
+      classes[i] = getActualClass(args[i].getClass());
     }
     return targetClass.cast(enhancer.create(classes, args));
+  }
+
+  private static Class<?> getActualClass(Class<?> clazz) {
+    Class<?> acturalClass = clazz;
+    while (acturalClass.getName().contains("$$EnhancerBy")) {
+      acturalClass = acturalClass.getSuperclass();
+    }
+    return acturalClass;
   }
 
   @Override
@@ -74,31 +84,61 @@ public class CglibProxy implements MethodInterceptor {
     }
     interceptors = CACHE.get(method);
     Invocation invocation = new Invocation(obj, method, args);
-    int index = 0;
-    for (Interceptor interceptor : interceptors) {
-      if (interceptor.before(invocation)) {
-        index++;
-      } else {
-        break;
-      }
-    }
+    boolean interrupted = doBefore(interceptors, invocation);
     try {
-      invocation.setReturnValue(methodProxy.invokeSuper(obj, args));
-    } catch (Exception e) {
-      for (Interceptor interceptor : interceptors) {
-        if (!interceptor.catching(invocation)) {
-          break;
+      if (interrupted && invocation.getReturnValue() != null) {
+        if (log.isDebugEnabled()) {
+          log.debug("aop intercepted and return an updated value before invoke super method {}",
+              invocation);
         }
+      } else {
+        invocation.setReturnValue(methodProxy.invokeSuper(obj, args));
       }
+    } catch (Exception e) {
+      doCathing(interceptors, invocation);
       throw e;
     }
-    index--;
-    for (; index >= 0; index--) {
-      if (!interceptors.get(index).after(invocation)) {
-        break;
+    doAfter(interceptors, invocation);
+    return invocation.getReturnValue();
+  }
+
+  private boolean doBefore(List<Interceptor> interceptors, Invocation invocation) {
+    for (int index = 0, len = interceptors.size(); index < len; index++) {
+      if (!interceptors.get(index).before(invocation)) {
+        if (log.isDebugEnabled()) {
+          log.debug("before aop intercepted, total size:{}, current index: {}", interceptors.size(),
+              index);
+        }
+        return true;
       }
     }
-    return invocation.getReturnValue();
+    return false;
+  }
+
+  private boolean doCathing(List<Interceptor> interceptors, Invocation invocation) {
+    for (int index = interceptors.size() - 1; index >= 0; index--) {
+      if (!interceptors.get(index).catching(invocation)) {
+        if (log.isDebugEnabled()) {
+          log.debug("catching aop intercepted, total size:{}, current index: {}",
+              interceptors.size(), index);
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean doAfter(List<Interceptor> interceptors, Invocation invocation) {
+    for (int index = interceptors.size() - 1; index >= 0; index--) {
+      if (!interceptors.get(index).after(invocation)) {
+        if (log.isDebugEnabled()) {
+          log.debug("after aop intercepted, total size:{}, current index: {}",
+              interceptors.size(), index);
+        }
+        return true;
+      }
+    }
+    return false;
   }
 
   private void parseInterceptor(Method method, List<Interceptor> list) {
