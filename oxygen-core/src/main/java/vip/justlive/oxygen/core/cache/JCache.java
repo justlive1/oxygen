@@ -16,6 +16,9 @@ package vip.justlive.oxygen.core.cache;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * cache 调用入口
@@ -28,15 +31,6 @@ public final class JCache {
   }
 
   static Map<String, Cache> cacheImpls = new ConcurrentHashMap<>(4, 1);
-
-  /**
-   * 初始化
-   *
-   * @param cacheImpl 缓存实现
-   */
-  static void init(Cache cacheImpl) {
-    cacheImpls.put(JCache.class.getSimpleName(), cacheImpl);
-  }
 
   /**
    * 初始化
@@ -64,6 +58,9 @@ public final class JCache {
    * @return cache
    */
   public static Cache cache(String name) {
+    if (!cacheImpls.containsKey(name)) {
+      cacheImpls.putIfAbsent(name, createCache());
+    }
     return cacheImpls.get(name);
   }
 
@@ -74,5 +71,24 @@ public final class JCache {
    */
   public static Collection<String> cacheNames() {
     return cacheImpls.keySet();
+  }
+
+  static Cache createCache() {
+    String cacheImplClass = ConfigFactory.getProperty(Constants.CACHE_IMPL_CLASS);
+    if (cacheImplClass != null) {
+      try {
+        Class<?> clazz = Class.forName(cacheImplClass);
+        return (Cache) clazz.newInstance();
+      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        throw Exceptions.wrap(e);
+      }
+    } else {
+      try {
+        return new EhCacheImpl();
+      } catch (Exception e) {
+        //  net.sf.ehcache not dependence
+        return new LocalCacheImpl();
+      }
+    }
   }
 }

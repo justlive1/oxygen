@@ -33,7 +33,7 @@ public class CacheAspect {
 
   private final DefaultKeyGenerator defaultKeyGenerator;
   private final ArgsKeyGenerator argsKeyGenerator;
-  private static final Cache CACHE = new LocalCacheImpl();
+  static final Cache CACHE = new LocalCacheImpl();
 
   @Inject
   public CacheAspect(DefaultKeyGenerator defaultKeyGenerator,
@@ -72,7 +72,7 @@ public class CacheAspect {
   Ctx parse(Invocation invocation) {
     String cacheKey = String.join(Constants.COLON, invocation.getMethod().getName(),
         Arrays.deepToString(invocation.getArgs()));
-    Ctx ctx = (Ctx) CACHE.get(cacheKey);
+    Ctx ctx = CACHE.get(cacheKey, Ctx.class);
     if (ctx != null) {
       return ctx;
     }

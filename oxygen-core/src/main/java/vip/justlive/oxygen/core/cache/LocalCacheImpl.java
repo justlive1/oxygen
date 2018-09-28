@@ -34,6 +34,11 @@ public class LocalCacheImpl implements Cache {
   }
 
   @Override
+  public <T> T get(String key, Class<T> clazz) {
+    return clazz.cast(get(key));
+  }
+
+  @Override
   public Map<String, Object> get(String... keys) {
     Map<String, Object> map = new HashMap<>(8);
     for (String key : keys) {

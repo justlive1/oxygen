@@ -19,23 +19,32 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 缓存接口
- * 
- * @author wubo
  *
+ * @author wubo
  */
 public interface Cache {
 
   /**
    * 获取缓存对象
-   * 
+   *
    * @param key cache key
    * @return the cached object or null
    */
   Object get(String key);
 
   /**
+   * 获取缓存对象
+   *
+   * @param key cache key
+   * @param clazz the type of cache
+   * @param <T> type
+   * @return the cached object or null
+   */
+  <T> T get(String key, Class<T> clazz);
+
+  /**
    * 批量获取缓存对象
-   * 
+   *
    * @param keys cache keys
    * @return return key-value objects
    */
@@ -43,7 +52,7 @@ public interface Cache {
 
   /**
    * 判断缓存是否存在
-   * 
+   *
    * @param key cache key
    * @return true if key exists
    */

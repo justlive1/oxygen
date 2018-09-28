@@ -13,6 +13,7 @@
 * aop切面
 * config配置
 * 定时任务
+* 缓存
 
 ## 安装
 
@@ -145,6 +146,33 @@ public void run3() {
   ...
 }
 ```
+
+### 缓存
+
+使用缓存有两种方式：
+- `JCache.cache()` 获取缓存然后调用api
+- 使用 `@Cacheable` 注解给方法添加缓存
+
+```
+// 使用缓存api 
+Cache cache = JCache.cache(cacheName);
+T value = cache.get(key, clazz);
+cache.set(key, value, duration, timeUnit);
+...
+
+// 使用注解
+@Cacheable
+public Object method() {
+  ...
+}
+
+@Cacheable(key = "args[0]", duration = 10, timeUnit = TimeUnit.MINUTES)
+public Object method(Object arg0, Object arg1) {
+  ...
+}
+
+```
+
 
 ## 联系信息
 

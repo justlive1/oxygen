@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 
@@ -28,18 +29,30 @@ import net.sf.ehcache.Element;
  */
 public class EhCacheImpl implements Cache {
 
+  private static final AtomicLong ATOMIC = new AtomicLong();
+  private static final String NAME_TEMPLATE = "EhCache-%s";
+
   private net.sf.ehcache.Cache cache;
 
   public EhCacheImpl() {
+    this(String.format(NAME_TEMPLATE, ATOMIC.getAndIncrement()));
+  }
+
+  public EhCacheImpl(String name) {
     CacheManager cacheManager = CacheManager.create();
-    cacheManager.addCache(EhCacheImpl.class.getSimpleName());
-    this.cache = cacheManager.getCache(EhCacheImpl.class.getSimpleName());
+    cacheManager.addCache(name);
+    this.cache = cacheManager.getCache(name);
   }
 
   @Override
   public Object get(String key) {
     Element e = cache.get(key);
     return (e == null) ? null : e.getObjectValue();
+  }
+
+  @Override
+  public <T> T get(String key, Class<T> clazz) {
+    return clazz.cast(get(key));
   }
 
   @Override

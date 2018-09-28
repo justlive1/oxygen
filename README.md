@@ -149,6 +149,34 @@ public void run3() {
 }
 ```
 
+
+### Cache
+
+There are two ways to use the cache
+- `JCache.cache()` Get the cache and then call the api
+- `@Cacheable` Use annotation to add cache on method
+
+```
+// use cache api 
+Cache cache = JCache.cache(cacheName);
+T value = cache.get(key, clazz);
+cache.set(key, value, duration, timeUnit);
+...
+
+// use annotation
+@Cacheable
+public Object method() {
+  ...
+}
+
+@Cacheable(key = "args[0]", duration = 10, timeUnit = TimeUnit.MINUTES)
+public Object method(Object arg0, Object arg1) {
+  ...
+}
+
+```
+
+
 ## Contact information
 
 E-mail: qq11419041@163.com
