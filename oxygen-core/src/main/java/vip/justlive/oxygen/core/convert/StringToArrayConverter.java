@@ -38,7 +38,9 @@ public class StringToArrayConverter implements ArrayConverter {
   public Object convert(Object source, Class<?> sourceType, Class<?> targetType) {
 
     if (support(sourceType, targetType)) {
-
+      if (source == null || source.toString().length() == 0) {
+        return null;
+      }
       String[] sourceArray = source.toString().split(Constants.COMMA);
       Class<?> componentType = targetType.getComponentType();
       Object targetArray = Array.newInstance(componentType, sourceArray.length);

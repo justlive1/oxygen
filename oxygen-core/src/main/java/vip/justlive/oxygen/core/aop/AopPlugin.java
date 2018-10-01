@@ -13,11 +13,11 @@
  */
 package vip.justlive.oxygen.core.aop;
 
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.ListMultimap;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +34,7 @@ import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
  */
 public class AopPlugin implements Plugin {
 
-  private static final Map<Class<? extends Annotation>, ListMultimap<Class<? extends Annotation>, AopWrapper>> CACHE = new ConcurrentHashMap<>(
+  private static final Map<Class<? extends Annotation>, Map<Class<? extends Annotation>, List<AopWrapper>>> CACHE = new ConcurrentHashMap<>(
       8, 0.75F);
   private static final Map<Class<?>, Object> AOP_CACHE = new ConcurrentHashMap<>(8, 1F);
 
@@ -47,7 +47,7 @@ public class AopPlugin implements Plugin {
    */
   public static List<AopWrapper> getAopMethod(Class<? extends Annotation> annotation,
       Class<? extends Annotation> targetAnnotation) {
-    ListMultimap<Class<? extends Annotation>, AopWrapper> listMultimap = CACHE.get(annotation);
+    Map<Class<? extends Annotation>, List<AopWrapper>> listMultimap = CACHE.get(annotation);
     if (listMultimap != null) {
       return listMultimap.get(targetAnnotation);
     }
@@ -67,43 +67,52 @@ public class AopPlugin implements Plugin {
   }
 
   void handleBefore() {
-    ListMultimap<Class<? extends Annotation>, AopWrapper> listMultimap = LinkedListMultimap
-        .create();
+    Map<Class<? extends Annotation>, List<AopWrapper>> listMultimap = new HashMap<>(8, 1f);
     CACHE.put(Before.class, listMultimap);
     Set<Method> methods = ClassScannerPlugin.getMethodsAnnotatedWith(Before.class);
     for (Method method : methods) {
       Before before = method.getAnnotation(Before.class);
       Class<? extends Annotation> annotation = before.annotation();
       if (annotation != Annotation.class) {
-        listMultimap.put(annotation, new AopWrapper(instance(method.getDeclaringClass()), method));
+        if (!listMultimap.containsKey(annotation)) {
+          listMultimap.put(annotation, new LinkedList<>());
+        }
+        listMultimap.get(annotation)
+            .add(new AopWrapper(instance(method.getDeclaringClass()), method));
       }
     }
   }
 
   void handleAfter() {
-    ListMultimap<Class<? extends Annotation>, AopWrapper> listMultimap = LinkedListMultimap
-        .create();
+    Map<Class<? extends Annotation>, List<AopWrapper>> listMultimap = new HashMap<>(8, 1f);
     CACHE.put(After.class, listMultimap);
     Set<Method> methods = ClassScannerPlugin.getMethodsAnnotatedWith(After.class);
     for (Method method : methods) {
       After after = method.getAnnotation(After.class);
       Class<? extends Annotation> annotation = after.annotation();
       if (annotation != Annotation.class) {
-        listMultimap.put(annotation, new AopWrapper(instance(method.getDeclaringClass()), method));
+        if (!listMultimap.containsKey(annotation)) {
+          listMultimap.put(annotation, new LinkedList<>());
+        }
+        listMultimap.get(annotation)
+            .add(new AopWrapper(instance(method.getDeclaringClass()), method));
       }
     }
   }
 
   void handleCatching() {
-    ListMultimap<Class<? extends Annotation>, AopWrapper> listMultimap = LinkedListMultimap
-        .create();
+    Map<Class<? extends Annotation>, List<AopWrapper>> listMultimap = new HashMap<>(8, 1f);
     CACHE.put(Catching.class, listMultimap);
     Set<Method> methods = ClassScannerPlugin.getMethodsAnnotatedWith(Catching.class);
     for (Method method : methods) {
       Catching catching = method.getAnnotation(Catching.class);
       Class<? extends Annotation> annotation = catching.annotation();
       if (annotation != Annotation.class) {
-        listMultimap.put(annotation, new AopWrapper(instance(method.getDeclaringClass()), method));
+        if (!listMultimap.containsKey(annotation)) {
+          listMultimap.put(annotation, new LinkedList<>());
+        }
+        listMultimap.get(annotation)
+            .add(new AopWrapper(instance(method.getDeclaringClass()), method));
       }
     }
   }

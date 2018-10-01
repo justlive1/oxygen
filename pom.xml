@@ -9,6 +9,7 @@
   <version>0.0.1</version>
   <modules>
     <module>oxygen-core</module>
+    <module>oxygen-jdbc</module>
   </modules>
   <packaging>pom</packaging>
 
@@ -20,13 +21,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>1.8</java.version>
 
-
     <cglib.version>3.2.8</cglib.version>
-    <ehcache3.version>3.6.0</ehcache3.version>
     <ehcache.version>2.10.5</ehcache.version>
-    <guava.version>25.1-jre</guava.version>
     <junit.version>4.12</junit.version>
-    <logback.version>1.2.3</logback.version>
     <lombok.version>1.16.14</lombok.version>
     <org.reflections>0.9.11</org.reflections>
     <slf4j.version>1.7.24</slf4j.version>
@@ -147,7 +144,7 @@
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
         <version>${lombok.version}</version>
-        <optional>true</optional>
+        <scope>provided</scope>
       </dependency>
 
       <!-- log -->
@@ -158,23 +155,11 @@
       </dependency>
 
       <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>${logback.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${guava.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>net.sf.ehcache</groupId>
         <artifactId>ehcache</artifactId>
         <version>${ehcache.version}</version>
+        <optional>true</optional>
       </dependency>
-
 
       <dependency>
         <groupId>junit</groupId>

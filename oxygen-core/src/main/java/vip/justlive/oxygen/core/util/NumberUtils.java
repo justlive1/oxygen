@@ -13,12 +13,12 @@
  */
 package vip.justlive.oxygen.core.util;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -33,29 +33,31 @@ public class NumberUtils {
    * <br>
    * Byte, Short, Integer, Long, BigInteger, Float, Double, BigDecimal
    */
-  public static final Set<Class<? extends Number>> STANDARD_NUMBER_TYPES;
+  public static final List<Class<? extends Number>> STANDARD_NUMBER_TYPES;
 
   private static final Map<Class<?>, Function<String, ?>> FUNCTIONS;
 
   static {
 
-    STANDARD_NUMBER_TYPES = ImmutableSet.<Class<? extends Number>>builder().add(Byte.class)
-        .add(Short.class).add(Integer.class).add(Long.class).add(BigInteger.class).add(Float.class)
-        .add(Double.class).add(BigDecimal.class).build();
+    STANDARD_NUMBER_TYPES = Arrays
+        .asList(Byte.class, Short.class, Integer.class, Long.class, BigInteger.class, Float.class,
+            Double.class, BigDecimal.class);
 
-    FUNCTIONS = ImmutableMap.<Class<?>, Function<String, ?>>builder().put(Byte.class,
-        trimmed -> (isHexNumber(trimmed) ? Byte.decode(trimmed) : Byte.valueOf(trimmed)))
-        .put(Short.class,
-            trimmed -> (isHexNumber(trimmed) ? Short.decode(trimmed) : Short.valueOf(trimmed)))
-        .put(Integer.class,
-            trimmed -> (isHexNumber(trimmed) ? Integer.decode(trimmed) : Integer.valueOf(trimmed)))
-        .put(Long.class,
-            trimmed -> (isHexNumber(trimmed) ? Long.decode(trimmed) : Long.valueOf(trimmed)))
-        .put(BigInteger.class,
-            trimmed -> (isHexNumber(trimmed) ? decodeBigInteger(trimmed) : new BigInteger(trimmed)))
-        .put(Float.class, Float::valueOf).put(Double.class, Double::valueOf)
-        .put(BigDecimal.class, NumberUtils::stringToBigDecimal)
-        .put(Number.class, NumberUtils::stringToBigDecimal).build();
+    FUNCTIONS = new HashMap<>(16, 1f);
+    FUNCTIONS.put(Byte.class,
+        trimmed -> (isHexNumber(trimmed) ? Byte.decode(trimmed) : Byte.valueOf(trimmed)));
+    FUNCTIONS.put(Short.class,
+        trimmed -> (isHexNumber(trimmed) ? Short.decode(trimmed) : Short.valueOf(trimmed)));
+    FUNCTIONS.put(Integer.class,
+        trimmed -> (isHexNumber(trimmed) ? Integer.decode(trimmed) : Integer.valueOf(trimmed)));
+    FUNCTIONS.put(Long.class,
+        trimmed -> (isHexNumber(trimmed) ? Long.decode(trimmed) : Long.valueOf(trimmed)));
+    FUNCTIONS.put(BigInteger.class,
+        trimmed -> (isHexNumber(trimmed) ? decodeBigInteger(trimmed) : new BigInteger(trimmed)));
+    FUNCTIONS.put(Float.class, Float::valueOf);
+    FUNCTIONS.put(Double.class, Double::valueOf);
+    FUNCTIONS.put(BigDecimal.class, NumberUtils::stringToBigDecimal);
+    FUNCTIONS.put(Number.class, NumberUtils::stringToBigDecimal);
   }
 
   private NumberUtils() {

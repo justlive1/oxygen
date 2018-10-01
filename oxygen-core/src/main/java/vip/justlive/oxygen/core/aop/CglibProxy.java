@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
+import vip.justlive.oxygen.core.util.ClassUtils;
 
 /**
  * cglib代理
@@ -60,17 +61,9 @@ public class CglibProxy implements MethodInterceptor {
     enhancer.setCallback(CGLIB_PROXY);
     Class<?>[] classes = new Class[args.length];
     for (int i = 0; i < args.length; i++) {
-      classes[i] = getActualClass(args[i].getClass());
+      classes[i] = ClassUtils.getCglibActualClass(args[i].getClass());
     }
     return targetClass.cast(enhancer.create(classes, args));
-  }
-
-  private static Class<?> getActualClass(Class<?> clazz) {
-    Class<?> acturalClass = clazz;
-    while (acturalClass.getName().contains("$$EnhancerBy")) {
-      acturalClass = acturalClass.getSuperclass();
-    }
-    return acturalClass;
   }
 
   @Override

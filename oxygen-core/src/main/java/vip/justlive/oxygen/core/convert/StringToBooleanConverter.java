@@ -14,7 +14,9 @@
 package vip.justlive.oxygen.core.convert;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * String - Boolean 转换器
@@ -56,7 +58,10 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
   }
 
   @Override
-  public ConverterTypePair pair() {
-    return ConverterTypePair.create(String.class, Boolean.class);
+  public Set<ConverterTypePair> pairs() {
+    Set<ConverterTypePair> pairs = new HashSet<>(2, 1f);
+    pairs.add(ConverterTypePair.create(String.class, boolean.class));
+    pairs.add(ConverterTypePair.create(String.class, Boolean.class));
+    return pairs;
   }
 }

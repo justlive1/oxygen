@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.config.ValueConfig;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 
 /**
@@ -101,7 +102,11 @@ public class IocPlugin implements Plugin {
         } catch (Exception e) {
           throw new IllegalStateException("@Configuration下实例方法出错", e);
         }
-        ConfigFactory.load(bean);
+        if (method.isAnnotationPresent(ValueConfig.class)) {
+          ConfigFactory.load(bean, method.getAnnotation(ValueConfig.class).value());
+        } else {
+          ConfigFactory.load(bean);
+        }
         Bean singleton = method.getAnnotation(Bean.class);
         String name = singleton.value();
         if (name.length() == 0) {

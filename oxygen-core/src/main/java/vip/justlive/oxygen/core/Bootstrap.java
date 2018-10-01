@@ -16,16 +16,13 @@ package vip.justlive.oxygen.core;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.aop.AopPlugin;
-import vip.justlive.oxygen.core.cache.CachePlugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.core.ioc.IocPlugin;
-import vip.justlive.oxygen.core.job.JobPlugin;
-import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 
 /**
  * 引导类
@@ -104,11 +101,11 @@ public final class Bootstrap {
    * 添加系统插件类
    */
   private static void addSystemPlugin() {
-    PLUGINS.add(new ClassScannerPlugin());
-    PLUGINS.add(new IocPlugin());
-    PLUGINS.add(new AopPlugin());
-    PLUGINS.add(new JobPlugin());
-    PLUGINS.add(new CachePlugin());
+    ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class);
+    Iterator<Plugin> it = loader.iterator();
+    while (it.hasNext()) {
+      PLUGINS.add(it.next());
+    }
   }
 
   /**

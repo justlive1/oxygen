@@ -155,6 +155,22 @@ public class ReflectUtils {
   }
 
   /**
+   * 根据field设置值
+   *
+   * @param object 目标对象
+   * @param field 属性
+   * @param value 值
+   */
+  public static void setValue(Object object, Field field, Object value) {
+    field.setAccessible(true);
+    try {
+      field.set(object, value);
+    } catch (IllegalArgumentException | IllegalAccessException e) {
+      log.error("set value {} to class {} error", value, object.getClass(), e);
+    }
+  }
+
+  /**
    * 把传入对象的非空对象的值赋给持久化对象
    *
    * @param persistentObject 持久化对象

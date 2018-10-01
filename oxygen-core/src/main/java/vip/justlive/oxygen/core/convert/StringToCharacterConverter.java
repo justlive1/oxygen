@@ -14,6 +14,9 @@
 package vip.justlive.oxygen.core.convert;
 
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * String - Character转换器
  *
@@ -34,8 +37,10 @@ public class StringToCharacterConverter implements Converter<String, Character> 
   }
 
   @Override
-  public ConverterTypePair pair() {
-    return ConverterTypePair.create(String.class, Character.class);
+  public Set<ConverterTypePair> pairs() {
+    Set<ConverterTypePair> pairs = new HashSet<>(2, 1f);
+    pairs.add(ConverterTypePair.create(String.class, Character.class));
+    pairs.add(ConverterTypePair.create(String.class, char.class));
+    return pairs;
   }
-
 }

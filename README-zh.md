@@ -5,7 +5,7 @@
 
 ## 介绍
 
-一个轻量级框架，包含ioc、aop、配置管理、密码加密、异常处理等
+一个轻量级框架，包含ioc、aop、配置管理、定时任务、缓存、密码加密、异常处理等
 
 ## 特性
 
@@ -74,6 +74,9 @@ throw Exceptions.fault(Throwable e, String code, String message, Object... param
 通过注解使用IOC容器
 
 ```
+// 在配置文件中添加扫包路径
+main.class.scan=com.xxx.xxx,com.aaa.bbb
+
 // 使用 @Configuration 和 @Bean
 @Configuration
 public class Conf {

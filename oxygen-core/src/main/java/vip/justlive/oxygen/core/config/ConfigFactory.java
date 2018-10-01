@@ -18,13 +18,16 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.PropertiesLoader;
 import vip.justlive.oxygen.core.io.PropertySource;
+import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.ReflectUtils;
 
 /**
@@ -38,7 +41,7 @@ public class ConfigFactory {
   /**
    * 存储解析过的配置类
    */
-  private static final Map<Class<?>, Object> FACTORY = new ConcurrentHashMap<>();
+  private static final Map<Class<?>, Map<String, Object>> FACTORY = new ConcurrentHashMap<>();
   /**
    * 配置属性集合
    */
@@ -113,20 +116,37 @@ public class ConfigFactory {
   }
 
   /**
-   * 加载配置类，需要有{@link Value}注解
+   * 加载配置类，需要有{@link Value}或 {@link ValueConfig}注解
    *
    * @param clazz 类
    * @param <T> 泛型类
    * @return 配置类
    */
   public static <T> T load(Class<T> clazz) {
-    Object obj = FACTORY.get(clazz);
-    if (obj != null) {
-      return clazz.cast(obj);
+    return load(clazz, Constants.DOT);
+  }
+
+  /**
+   * 加载配置类
+   *
+   * @param clazz 类
+   * @param prefix 前缀
+   * @param <T> 泛型
+   * @return 配置类
+   */
+  public static <T> T load(Class<T> clazz, String prefix) {
+    Map<String, Object> map = FACTORY.get(clazz);
+    if (map == null) {
+      map = new ConcurrentHashMap<>(4, 1f);
+      FACTORY.putIfAbsent(clazz, map);
+    }
+    map = FACTORY.get(clazz);
+    if (map.containsKey(prefix)) {
+      return clazz.cast(map.get(prefix));
     }
 
-    T val = parse(clazz);
-    Object other = FACTORY.putIfAbsent(clazz, val);
+    T val = parse(clazz, prefix);
+    Object other = map.putIfAbsent(prefix, val);
     if (other != null) {
       val = clazz.cast(other);
     }
@@ -139,9 +159,36 @@ public class ConfigFactory {
    * @param bean 对象
    */
   public static void load(Object bean) {
+    load(bean, null);
+  }
+
+  /**
+   * 加载配置类，需要有{@link Value}注解
+   *
+   * @param bean 对象
+   * @param prefix 前缀
+   */
+  public static void load(Object bean, String prefix) {
     if (bean != null) {
-      parse(bean);
+      parse(bean, prefix);
     }
+  }
+
+  /**
+   * 清除配置
+   */
+  public static void clear() {
+    FACTORY.clear();
+    PROPS.clear();
+  }
+
+  /**
+   * 获取所有属性名称
+   *
+   * @return keys
+   */
+  public static Set<String> keys() {
+    return PROPS.stringPropertyNames();
   }
 
   /**
@@ -151,17 +198,21 @@ public class ConfigFactory {
    * @param <T> 泛型类
    * @return 配置类
    */
-  protected static <T> T parse(Class<T> clazz) {
+  protected static <T> T parse(Class<T> clazz, String prefix) {
     T obj;
     try {
       obj = clazz.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
       throw Exceptions.wrap(e);
     }
-    return clazz.cast(parse(obj));
+    Class<?> actualClass = ClassUtils.getCglibActualClass(clazz);
+    if (Constants.DOT.equals(prefix) && actualClass.isAnnotationPresent(ValueConfig.class)) {
+      prefix = actualClass.getAnnotation(ValueConfig.class).value();
+    }
+    return clazz.cast(parse(obj, prefix));
   }
 
-  protected static Object parse(Object obj) {
+  protected static Object parse(Object obj, String prefix) {
     Class<?> clazz = obj.getClass();
     Field[] fields = ReflectUtils.getAllDeclaredFields(clazz);
     for (Field field : fields) {
@@ -169,12 +220,17 @@ public class ConfigFactory {
         Value val = field.getAnnotation(Value.class);
         Object value = getProperty(val.value(), field.getType());
         if (value != null) {
-          field.setAccessible(true);
-          try {
-            field.set(obj, value);
-          } catch (IllegalArgumentException | IllegalAccessException e) {
-            log.error("set value {} to class {} error", value, clazz, e);
-          }
+          ReflectUtils.setValue(obj, field, value);
+        }
+      } else if (prefix != null) {
+        StringBuilder name = new StringBuilder(prefix);
+        if (name.length() > 0) {
+          name.append(Constants.DOT);
+        }
+        name.append(field.getName());
+        Object value = getProperty(name.toString(), field.getType(), false);
+        if (value != null) {
+          ReflectUtils.setValue(obj, field, value);
         }
       }
     }
@@ -182,11 +238,20 @@ public class ConfigFactory {
   }
 
   private static Object getProperty(String key, Class<?> type) {
-    String tmpKey = String.format(TMP_PREFIX, ATOMIC.getAndIncrement());
-    PROPS.setProperty(tmpKey, key);
-    String value = getProperty(tmpKey);
-    PROPS.remove(tmpKey);
-    if (value.getClass() == type) {
+    return getProperty(key, type, true);
+  }
+
+  private static Object getProperty(String key, Class<?> type, boolean wrap) {
+    String value;
+    if (wrap) {
+      String tmpKey = String.format(TMP_PREFIX, ATOMIC.getAndIncrement());
+      PROPS.setProperty(tmpKey, key);
+      value = getProperty(tmpKey);
+      PROPS.remove(tmpKey);
+    } else {
+      value = getProperty(key);
+    }
+    if (value == null || value.getClass() == type) {
       return value;
     }
     return DefaultConverterService.sharedConverterService().convert(value, type);

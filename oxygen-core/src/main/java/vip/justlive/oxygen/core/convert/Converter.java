@@ -14,6 +14,9 @@
 package vip.justlive.oxygen.core.convert;
 
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * 类型转换器
  *
@@ -39,5 +42,18 @@ public interface Converter<S, T> {
    */
   default ConverterTypePair pair() {
     return null;
+  }
+
+  /**
+   * 获取类型对
+   *
+   * @return 类型对集合
+   */
+  default Set<ConverterTypePair> pairs() {
+    Set<ConverterTypePair> pairs = new HashSet<>(1, 1f);
+    if (pair() != null) {
+      pairs.add(pair());
+    }
+    return pairs;
   }
 }

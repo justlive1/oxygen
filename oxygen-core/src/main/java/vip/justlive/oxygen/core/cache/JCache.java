@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.ClassUtils;
 
 /**
  * cache 调用入口
@@ -26,6 +27,8 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  * @author wubo
  */
 public final class JCache {
+
+  private static final boolean EHCACHE_ENABLED = ClassUtils.isPresent("net.sf.ehcache.Cache");
 
   JCache() {
   }
@@ -77,18 +80,16 @@ public final class JCache {
     String cacheImplClass = ConfigFactory.getProperty(Constants.CACHE_IMPL_CLASS);
     if (cacheImplClass != null) {
       try {
-        Class<?> clazz = Class.forName(cacheImplClass);
+        Class<?> clazz = ClassUtils.forName(cacheImplClass);
         return (Cache) clazz.newInstance();
-      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      } catch (InstantiationException | IllegalAccessException e) {
         throw Exceptions.wrap(e);
       }
     } else {
-      try {
+      if (EHCACHE_ENABLED) {
         return new EhCacheImpl();
-      } catch (Exception e) {
-        //  net.sf.ehcache not dependence
-        return new LocalCacheImpl();
       }
+      return new LocalCacheImpl();
     }
   }
 }

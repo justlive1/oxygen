@@ -40,7 +40,7 @@ public interface PropertySource {
   default String getProperty(String key) {
     String value = props().getProperty(key);
     if (value == null) {
-      return value;
+      return null;
     }
     return PlaceHolderHelper.DEFAULT_HELPER.replacePlaceholders(value, props());
   }
@@ -55,7 +55,7 @@ public interface PropertySource {
   default String getProperty(String key, String defaultValue) {
     String value = props().getProperty(key, defaultValue);
     if (value == null) {
-      return value;
+      return null;
     }
     return PlaceHolderHelper.DEFAULT_HELPER.replacePlaceholders(value, props());
   }

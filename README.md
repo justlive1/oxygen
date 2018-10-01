@@ -5,7 +5,7 @@ light framework
 
 ## Documentation
 
-a light framework include ioc, aop, config manager, crypto encoder, exceptions, scheduled job and so on.
+a light framework include ioc, aop, config manager, scheduled job, cache, crypto encoder, exceptions, scheduled job and so on.
 
 ## Features
 
@@ -13,6 +13,7 @@ a light framework include ioc, aop, config manager, crypto encoder, exceptions, 
 * aop, aspect
 * config, properties manager
 * scheduled job
+* cache
 
 ## Install
 
@@ -73,6 +74,9 @@ throw Exceptions.fault(Throwable e, String code, String message, Object... param
 you can use IOC container with annotation
 
 ```
+// add scan packages property in config file
+main.class.scan=com.xxx.xxx,com.aaa.bbb
+
 // use @Configuration and @Bean
 @Configuration
 public class Conf {
@@ -175,7 +179,6 @@ public Object method(Object arg0, Object arg1) {
 }
 
 ```
-
 
 ## Contact information
 

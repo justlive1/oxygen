@@ -68,7 +68,9 @@ public class DefaultConverterService implements ConverterService, ConverterRegis
   @Override
   public ConverterRegistry addConverter(Converter<?, ?> converter) {
     Checks.notNull(converter);
-    converters.put(converter.pair(), (Converter<Object, Object>) converter);
+    for (ConverterTypePair pair : converter.pairs()) {
+      converters.put(pair, (Converter<Object, Object>) converter);
+    }
     return this;
   }
 

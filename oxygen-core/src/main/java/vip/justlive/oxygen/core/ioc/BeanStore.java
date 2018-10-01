@@ -13,6 +13,8 @@
  */
 package vip.justlive.oxygen.core.ioc;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -40,6 +42,26 @@ public class BeanStore {
   public static <T> T getBean(Class<T> clazz) {
     return getBean(clazz.getName(), clazz);
   }
+
+  /**
+   * 根据类型获取beanMap
+   *
+   * @param clazz 类
+   * @param <T> 泛型
+   * @return beanMap
+   */
+  public static <T> Map<String, T> getBeanMap(Class<T> clazz) {
+    ConcurrentMap<String, Object> map = BEANS.get(clazz);
+    if (map != null) {
+      Map<String, T> result = new HashMap<>(map.size(), 1f);
+      for (Map.Entry<String, Object> entry : map.entrySet()) {
+        result.put(entry.getKey(), clazz.cast(entry.getValue()));
+      }
+      return result;
+    }
+    return null;
+  }
+
 
   /**
    * 根据类型和名称获取bean
