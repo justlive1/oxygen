@@ -18,25 +18,25 @@ oxygen-core
 
 ```
 ├─ src/main
-  │─ java/.../core  //oxygen-core代码目录
-  │  │- aop //aop实现目录
-  │  │- cache //缓存实现目录
-  │  │- config  //配置实现目录
-  │  │- constant  //常量目录
-  │  │- convert  //类型转换实现目录
-  │  │- crypto  //密码加密目录
-  │  │- domain  //基础实体目录
-  │  │- exception  //异常管理目录
-  │  │- io  //io读写目录
-  │  │- ioc  //ioc实现目录
-  │  │- job  //定时任务实现目录
-  │  │- scan  //类扫描实现目录
-  │  │- util  //工具类目录
-  │  │- Bootstrap.java  //框架启动引导类
-  │  └─ Plugin.java   //插件接口
+  │─ java/.../core  //oxygen-core
+  │  │- aop //aop module
+  │  │- cache //cache module
+  │  │- config  //config module
+  │  │- constant  //constant
+  │  │- convert  //type convert module
+  │  │- crypto  //crypto module
+  │  │- domain  //domain module
+  │  │- exception  //exception module
+  │  │- io  //io module
+  │  │- ioc  //ioc module
+  │  │- job  //scheduled job module
+  │  │- scan  //class scan module
+  │  │- util  //util module
+  │  │- Bootstrap.java  //the class to start framework
+  │  └─ Plugin.java   //the interface of plugin
   └─ resources/META-INF/services
-     └─ ...core.Plugin  //Plugin服务实现配置文件
-  
+     └─ ...core.Plugin  //Plugin service configuration file
+
 ```
 
 oxygen-jdbc
@@ -46,17 +46,17 @@ oxygen-jdbc
 
 ```
 ├─ src/main
-  │─ java/.../jdbc  //oxygen-jdbc代码目录
-  │  │- config  //配置数据源目录
-  │  │- handler  //处理器目录，包括结果集处理 行处理 列处理
-  │  │- interceptor  //拦截器目录，拦截sql执行前后及异常
-  │  │- Jdbc.java  //Jdbc核心操作类，提供crud操作
-  │  │- JdbcException.java  //jdbc异常封装
-  │  └─ JdbcPlugin.java   //jdbc插件，与oxygen-core配套使用
+  │─ java/.../jdbc  //oxygen-jdbc
+  │  │- config  //datasource config
+  │  │- handler  //data handler
+  │  │- interceptor  //jdbc execute interceptor
+  │  │- Jdbc.java  //the class used to operate database
+  │  │- JdbcException.java  //jdbc excption
+  │  └─ JdbcPlugin.java   //jdbc plugin
   └─ resources/META-INF/services
-     │- ...handler.ColumnHandler //列处理服务配置文件
-     └─ ...core.Plugin  //增加jdbcPlugin服务实现，与oxygen-core配套使用
-  
+     │- ...handler.ColumnHandler //columnHandler service configuration file
+     └─ ...core.Plugin  //add jdbcPlugin
+
 ```
 
 
@@ -127,7 +127,7 @@ throw Exceptions.fault(Throwable e, String code, String message, Object... param
 
 ```
 
-### IOC 
+### IOC
 
 you can use IOC container with annotation
 
@@ -138,7 +138,7 @@ main.class.scan=com.xxx.xxx,com.aaa.bbb
 // use @Configuration and @Bean
 @Configuration
 public class Conf {
- 
+
   @Bean
   Inter noDepBean() {
     return new NoDepBean();
@@ -155,7 +155,7 @@ public class DepBean implements Inter {
   public DepBean(NoDepBean noDepBean) {
     this.noDepBean = noDepBean;
   }
-  
+
   ...
 }
 
@@ -190,21 +190,21 @@ public void print() {
 Exactly one of the onApplicationStart(), cron(), fixedDelay(), or fixedRate() attributes must be specified.
 
 ```
-// Creates and executes a periodic action that becomes enabled first after the given initial delay, 
+// Creates and executes a periodic action that becomes enabled first after the given initial delay,
 // and subsequently with the given delay between the termination of one execution and the commencement of the next.
 @Scheduled(fixedDelay = "500")
 public void run1() {
   ...
 }
 
-// Creates and executes a periodic action that becomes enabled first after the given initial delay, 
+// Creates and executes a periodic action that becomes enabled first after the given initial delay,
 // and subsequently with the given period
 @Scheduled(fixedRate = "600")
 public void run2() {
   ...
 }
 
-// Schedule the specified cron task and run in async mode when application started 
+// Schedule the specified cron task and run in async mode when application started
 @Scheduled(cron = "0/5 * * * * ?", onApplicationStart = true, async = true)
 public void run3() {
   ...
@@ -219,7 +219,7 @@ There are two ways to use the cache
 - `@Cacheable` Use annotation to add cache on method
 
 ```
-// use cache api 
+// use cache api
 Cache cache = JCache.cache(cacheName);
 T value = cache.get(key, clazz);
 cache.set(key, value, duration, timeUnit);
