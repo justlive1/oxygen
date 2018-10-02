@@ -11,26 +11,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.cache;
+package vip.justlive.oxygen.jdbc.handler;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-import vip.justlive.oxygen.core.Bootstrap;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
+ * boolean列处理器
+ *
  * @author wubo
  */
-public class JCacheTest {
+public class BooleanColumnHandler implements ColumnHandler {
 
-  @Test
-  public void test() {
+  @Override
+  public boolean supported(Class<?> type) {
+    return type == boolean.class || type == Boolean.class;
+  }
 
-    Bootstrap.start();
-
-    JCache.cache("z").putIfAbsent("k", 1);
-    assertEquals(JCache.cache("z").get("k"), 1);
-
+  @Override
+  public Object fetch(ResultSet rs, int index) throws SQLException {
+    return rs.getBoolean(index);
   }
 
 }

@@ -13,6 +13,8 @@
  */
 package vip.justlive.oxygen.jdbc;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import lombok.Data;
 
 /**
@@ -23,7 +25,18 @@ public class Option {
 
   private long id;
 
-  private String key;
+  private String st;
 
-  private String value;
+  private Integer it;
+
+  private Long lo;
+
+  private float fl;
+
+  private boolean bl;
+
+  private BigDecimal bd;
+
+  private Date dt;
+
 }

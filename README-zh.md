@@ -1,29 +1,88 @@
 # oxygen
 
-轻量级框架
+轻量级Java框架
 
 
 ## 介绍
 
-一个轻量级框架，包含ioc、aop、配置管理、定时任务、缓存、密码加密、异常处理等
+一个轻量级Java框架
+
+oxygen-core 核心部分
+- 基于cglib的aop实现
+- 提供缓存管理和基于注解的缓存，内置LocalCache和Ehcache实现，可扩展
+- 配置管理，支持${attrs.key:defaultValue}表达式获取配置
+- 加解密管理，提供加解密服务内置基础加密实现，例如SHA-1、SHA-256、MD5
+- 异常管理，提供异常包装，统一异常编码，便于国际化
+- 提供基于构造器注入的ioc(原因：依赖链清晰，并可任意切换ioc实现)
+- 定时任务服务，内置提供了基于注解的定时任务服务
+
+```
+├─ src/main
+  │─ java/.../core  //oxygen-core代码目录
+  │  │- aop //aop实现目录
+  │  │- cache //缓存实现目录
+  │  │- config  //配置实现目录
+  │  │- constant  //常量目录
+  │  │- convert  //类型转换实现目录
+  │  │- crypto  //密码加密目录
+  │  │- domain  //基础实体目录
+  │  │- exception  //异常管理目录
+  │  │- io  //io读写目录
+  │  │- ioc  //ioc实现目录
+  │  │- job  //定时任务实现目录
+  │  │- scan  //类扫描实现目录
+  │  │- util  //工具类目录
+  │  │- Bootstrap.java  //框架启动引导类
+  │  └─ Plugin.java   //插件接口
+  └─ resources/META-INF/services
+     └─ ...core.Plugin  //Plugin服务实现配置文件
+  
+```
+
+oxygen-jdbc jdbc实现
+- 小巧简单的jdbc实现，纯jdk实现，无第三方jar
+- 支持多数据源
+- 基于sql进行crud，不提供类似Hibernate的链式方法（原因：sql作为数据库领域的DSL，已经很自然优雅，Less is more）
+
+```
+├─ src/main
+  │─ java/.../jdbc  //oxygen-jdbc代码目录
+  │  │- config  //配置数据源目录
+  │  │- handler  //处理器目录，包括结果集处理 行处理 列处理
+  │  │- interceptor  //拦截器目录，拦截sql执行前后及异常
+  │  │- Jdbc.java  //Jdbc核心操作类，提供crud操作
+  │  │- JdbcException.java  //jdbc异常封装
+  │  └─ JdbcPlugin.java   //jdbc插件，与oxygen-core配套使用
+  └─ resources/META-INF/services
+     │- ...handler.ColumnHandler //列处理服务配置文件
+     └─ ...core.Plugin  //增加jdbcPlugin服务实现，与oxygen-core配套使用
+  
+```
 
 ## 特性
 
-* ioc容器
-* aop切面
-* config配置
-* 定时任务
-* 缓存
+* 轻量级，注释完善，使用简单
+* 使用ServiceLoader加载插件，易于扩展
+
 
 ## 安装
 
 添加依赖到你的 pom.xml:
 ```
+<!-- 核心包 包含aop ioc 异常处理 缓存 定时任务等 -->
 <dependency>
     <groupId>vip.justlive</groupId>
     <artifactId>oxygen-core</artifactId>
     <version>${oxygen.version}</version>
 </dependency>
+
+<!-- jdbc实现 可单独使用 -->
+<dependency>
+    <groupId>vip.justlive</groupId>
+    <artifactId>oxygen-jdbc</artifactId>
+    <version>${oxygen.version}</version>
+</dependency>
+
 ```
 
 ## 快速开始
@@ -173,6 +232,46 @@ public Object method() {
 public Object method(Object arg0, Object arg1) {
   ...
 }
+
+```
+
+### Jdbc
+
+- 可单独使用，也可配合oxygen-core进行自动配置
+
+```
+// 单独使用 需要自己创建并添加数据源
+...
+// 添加主数据源
+Jdbc.addPrimaryDataSource(DataSource dataSource)
+// 添加多数据源
+Jdbc.addDataSource(String name, DataSource dataSource)
+
+// crud
+T Jdbc.query(String sql, Class<T> clazz, Object... params)
+List<T> Jdbc.queryForList(String sql, Class<T> clazz, Object... params)
+Map<String, Object> Jdbc.queryForMap(String sql, Object... params)
+List<Map<String, Object>> Jdbc.queryForMapList(String sql, Object... params)
+// 可自定义返回处理
+T Jdbc.query(String sql, ResultSetHandler<T> handler, Object... params)
+
+int Jdbc.update(String sql, Object... params)
+
+// 配合oxygen-core使用, 只需在配置文件中配置数据源即可自动装载
+// 多数据源名称
+datasource.multi=a
+// 主数据源
+datasource.logSql=true
+datasource.driverClassName=org.h2.Driver
+datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
+datasource.username=sa
+datasource.password=sa
+
+// 数据源a
+datasource.a.driverClassName=org.h2.Driver
+datasource.a.url=jdbc:h2:mem:a;DB_CLOSE_DELAY=-1
+datasource.a.username=sa
+datasource.a.password=sa
 
 ```
 

@@ -11,26 +11,27 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.cache;
+package vip.justlive.oxygen.jdbc.handler;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-import vip.justlive.oxygen.core.Bootstrap;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
+ * Date列转换器
+ *
  * @author wubo
  */
-public class JCacheTest {
+public class DateColumnHandler implements ColumnHandler {
 
-  @Test
-  public void test() {
-
-    Bootstrap.start();
-
-    JCache.cache("z").putIfAbsent("k", 1);
-    assertEquals(JCache.cache("z").get("k"), 1);
-
+  @Override
+  public boolean supported(Class<?> type) {
+    return type == Date.class || type == Timestamp.class;
   }
 
+  @Override
+  public Object fetch(ResultSet rs, int index) throws SQLException {
+    return rs.getTimestamp(index);
+  }
 }

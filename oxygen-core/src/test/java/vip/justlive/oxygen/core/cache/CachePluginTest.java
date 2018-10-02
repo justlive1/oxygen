@@ -42,5 +42,6 @@ public class CachePluginTest {
 
     cacheService.time1(1);
     Assert.assertEquals(2, JCache.cache().keys().size());
+
   }
 }

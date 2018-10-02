@@ -29,25 +29,25 @@ public class JdbcTest {
   @Before
   public void before() {
     Bootstrap.start();
-    Jdbc.update("create table option (id int primary key, key varchar, value varchar);");
-    Jdbc.update("insert into option (id, key, value) values (?, ?, ?), (2, 'a', 'c')", 1, "b", "b");
+    Jdbc.update("create table option (id int primary key, st varchar, it varchar, lo varchar, fl decimal, bl boolean, bd decimal, dt timestamp);");
+    Jdbc.update("insert into option values (1, 'st', '1', '1222', 3.5, true, 5.891, CURRENT_TIME)");
   }
 
   @Test
   public void test() {
-    String sql = "select * from option where key = ?";
-    Assert.assertEquals(3, Jdbc.queryForMap(sql, Arrays.asList("a")).size());
-    Assert.assertEquals(1, Jdbc.queryForMapList(sql, Arrays.asList("a")).size());
-    Assert.assertEquals(3, Jdbc.query(sql, ResultSetHandler.arrayHandler(), "a").length);
-    Assert.assertEquals(1, Jdbc.query(sql, ResultSetHandler.arrayListHandler(), "a").size());
+    String sql = "select * from option where id = ?";
+    Assert.assertEquals(8, Jdbc.queryForMap(sql, 1).size());
+    Assert.assertEquals(1, Jdbc.queryForMapList(sql, 1).size());
+    Assert.assertEquals(8, Jdbc.query(sql, ResultSetHandler.arrayHandler(), 1).length);
+    Assert.assertEquals(1, Jdbc.query(sql, ResultSetHandler.arrayListHandler(), 1).size());
 
-    Option option = Jdbc.query(sql, Option.class, "a");
-    Assert.assertEquals("c", option.getValue());
+    Option option = Jdbc.query(sql, Option.class, 1);
+    Assert.assertEquals(new Integer(1), option.getIt());
     List<Option> list = Jdbc.queryForList("select * from option", Option.class);
     Assert.assertNotNull(list);
-    Assert.assertEquals(2, list.size());
+    Assert.assertEquals(1, list.size());
 
-    Assert.assertNull(Jdbc.query(sql, Option.class, "c"));
-    Assert.assertEquals(0, Jdbc.queryForList(sql, Option.class, "c").size());
+    Assert.assertNull(Jdbc.query(sql, Option.class, 2));
+    Assert.assertEquals(0, Jdbc.queryForList(sql, Option.class, 2).size());
   }
 }

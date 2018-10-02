@@ -11,26 +11,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.cache;
+package vip.justlive.oxygen.jdbc.handler;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-import vip.justlive.oxygen.core.Bootstrap;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
+ * 列处理器
+ *
  * @author wubo
  */
-public class JCacheTest {
+public interface ColumnHandler {
 
-  @Test
-  public void test() {
+  /**
+   * 是否支持该类型处理
+   *
+   * @param type
+   * @return
+   */
+  boolean supported(Class<?> type);
 
-    Bootstrap.start();
-
-    JCache.cache("z").putIfAbsent("k", 1);
-    assertEquals(JCache.cache("z").get("k"), 1);
-
-  }
-
+  /**
+   * 获取转换数据
+   *
+   * @param rs 结果集
+   * @param index 下标
+   * @return 数据
+   * @throws SQLException sql异常
+   */
+  Object fetch(ResultSet rs, int index) throws SQLException;
 }

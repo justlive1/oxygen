@@ -22,7 +22,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import vip.justlive.oxygen.jdbc.JdbcException;
 
 /**
@@ -34,6 +38,15 @@ public class BasicRowHandler implements RowHandler {
 
   private static final BasicRowHandler INSTANCE = new BasicRowHandler();
   private static final int PROPERTY_NOT_FOUND = -1;
+  private static final List<ColumnHandler> COLUMN_HANDLERS = new LinkedList<>();
+
+  static {
+    ServiceLoader<ColumnHandler> loader = ServiceLoader.load(ColumnHandler.class);
+    Iterator<ColumnHandler> it = loader.iterator();
+    while (it.hasNext()) {
+      COLUMN_HANDLERS.add(it.next());
+    }
+  }
 
   /**
    * 获取单例
@@ -121,6 +134,16 @@ public class BasicRowHandler implements RowHandler {
 
   private Object processColumn(ResultSet rs, int index, Class<?> propType) throws SQLException {
     Object value = rs.getObject(index);
+    if (value == null || value.getClass() == propType) {
+      return value;
+    }
+
+    for (ColumnHandler columnHandler : COLUMN_HANDLERS) {
+      if (columnHandler.supported(propType)) {
+        return columnHandler.fetch(rs, index);
+      }
+    }
+
     return value;
   }
 
