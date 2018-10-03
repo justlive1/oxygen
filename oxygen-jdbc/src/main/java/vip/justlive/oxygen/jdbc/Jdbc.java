@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
@@ -37,7 +38,8 @@ public class Jdbc {
   static final String PRIMARY_KEY = Jdbc.class.getSimpleName();
   static final List<JdbcInterceptor> JDBC_INTERCEPTORS = new ArrayList<>(4);
   static final Map<String, DataSource> DATA_SOURCE_MAP = new ConcurrentHashMap<>(2, 1f);
-
+  static final ThreadLocal<Map<String, Connection>> CONNECTION_CONTAINER = ThreadLocal
+      .withInitial(ConcurrentHashMap::new);
 
   /**
    * 添加主数据源
@@ -77,14 +79,69 @@ public class Jdbc {
    * @return connection
    */
   public static Connection getConnection(String dataSourceName) {
+    Connection connection = CONNECTION_CONTAINER.get().get(dataSourceName);
+    if (connection != null) {
+      return connection;
+    }
     try {
       DataSource dataSource = DATA_SOURCE_MAP.get(dataSourceName);
       if (dataSource == null) {
         throw new NullPointerException();
       }
-      return dataSource.getConnection();
+      connection = dataSource.getConnection();
+      CONNECTION_CONTAINER.get().putIfAbsent(dataSourceName, connection);
+      return connection;
     } catch (SQLException e) {
       throw JdbcException.wrap(e);
+    }
+  }
+
+  /**
+   * 开启事务 默认primary数据源
+   */
+  public static void startTx() {
+    startTx(PRIMARY_KEY);
+  }
+
+  /**
+   * 开启指定数据源的事务
+   *
+   * @param dataSourceName 数据源名称
+   */
+  public static void startTx(String dataSourceName) {
+    Connection connection = getConnection(dataSourceName);
+    if (connection != null) {
+      try {
+        connection.setAutoCommit(false);
+      } catch (SQLException e) {
+        throw JdbcException.wrap(e);
+      }
+    }
+  }
+
+  /**
+   * 关闭事务 默认primary数据源
+   */
+  public static void closeTx() {
+    closeTx(PRIMARY_KEY);
+  }
+
+  /**
+   * 关闭指定数据源的事务
+   *
+   * @param dataSourceName 数据源名称
+   */
+  public static void closeTx(String dataSourceName) {
+    Connection connection = getConnection(dataSourceName);
+    if (connection != null) {
+      try {
+        connection.commit();
+        connection.close();
+      } catch (SQLException e) {
+        throw JdbcException.wrap(e);
+      } finally {
+        removeThreadLocal(connection);
+      }
     }
   }
 
@@ -280,11 +337,29 @@ public class Jdbc {
       close(stmt);
       if (closeCon) {
         close(connection);
+        removeThreadLocal(connection);
       }
       onFinally(sql, params, result);
     }
     return result;
   }
+
+  private static void removeThreadLocal(Connection connection) {
+    Map<String, Connection> map = CONNECTION_CONTAINER.get();
+    if (map.isEmpty()) {
+      CONNECTION_CONTAINER.remove();
+    }
+    for (Map.Entry<String, Connection> entry : map.entrySet()) {
+      if (Objects.equals(connection, entry.getValue())) {
+        map.remove(entry.getKey());
+        break;
+      }
+    }
+    if (map.isEmpty()) {
+      CONNECTION_CONTAINER.remove();
+    }
+  }
+
 
   /**
    * 执行 select 操作 并转换为对象集合
