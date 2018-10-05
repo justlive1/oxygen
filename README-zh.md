@@ -237,7 +237,12 @@ public Object method(Object arg0, Object arg1) {
 
 ### Jdbc
 
-- 可单独使用，也可配合oxygen-core进行自动配置
+#### 基础使用
+
+- 可配置多数据源
+- 使用Jdbc进行crud
+- 使用ResultSetHandler<T> 进行自定义类型转换处理
+- 开启关闭事务
 
 ```
 // 单独使用 需要自己创建并添加数据源
@@ -257,6 +262,17 @@ T Jdbc.query(String sql, ResultSetHandler<T> handler, Object... params)
 
 int Jdbc.update(String sql, Object... params)
 
+// 开启主数据源的事务
+Jdbc.startTx()
+// 开启指定数据源的事务
+Jdbc.startTx(String dataSourceName)
+
+// 关闭主数据源的事务
+Jdbc.closeTx()
+// 关闭指定数据源的事务
+Jdbc.closeTx(String dataSourceName)
+
+
 // 配合oxygen-core使用, 只需在配置文件中配置数据源即可自动装载
 // 多数据源名称
 datasource.multi=a
@@ -272,6 +288,53 @@ datasource.a.driverClassName=org.h2.Driver
 datasource.a.url=jdbc:h2:mem:a;DB_CLOSE_DELAY=-1
 datasource.a.username=sa
 datasource.a.password=sa
+
+```
+
+#### 自定义列类型转换
+
+- 实现 `ColumnHandler` 接口进行自定义处理
+- 增加 `META-INF/services/vip.justlive.oxygen.jdbc.handler.ColumnHandler` 文件，添加实现类的类名
+
+```
+public class MyColumnHandler implements ColumnHandler {
+
+  @Override
+  public boolean supported(Class<?> type) {
+    ...
+  }
+
+  @Override
+  public Object fetch(ResultSet rs, int index) throws SQLException {
+    ...
+  }
+}
+
+// 新增或修改 META-INF/services/vip.justlive.oxygen.jdbc.handler.ColumnHandler 添加自定义类名
+xxx.xxx.MyColumnHandler
+
+```
+
+#### 增加jdbc拦截
+
+- 实现 `JdbcInterceptor` 接口
+- 调用 `Jdbc.addJdbcInterceptor` 添加拦截
+
+```
+// 内置的sql打印拦截
+@Slf4j
+public class LogSqlJdbcInterceptor implements JdbcInterceptor {
+
+  @Override
+  public void before(String sql, List<Object> params) {
+    if (log.isDebugEnabled()) {
+      log.debug("execute sql: {} -> params: {}", sql, params);
+    }
+  }
+}
+
+// 添加拦截器
+Jdbc.addJdbcInterceptor(JdbcInterceptor interceptor)
 
 ```
 

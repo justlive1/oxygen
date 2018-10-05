@@ -346,9 +346,6 @@ public class Jdbc {
 
   private static void removeThreadLocal(Connection connection) {
     Map<String, Connection> map = CONNECTION_CONTAINER.get();
-    if (map.isEmpty()) {
-      CONNECTION_CONTAINER.remove();
-    }
     for (Map.Entry<String, Connection> entry : map.entrySet()) {
       if (Objects.equals(connection, entry.getValue())) {
         map.remove(entry.getKey());
