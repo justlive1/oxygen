@@ -16,7 +16,6 @@ package vip.justlive.oxygen.core;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -102,9 +101,8 @@ public final class Bootstrap {
    */
   private static void addSystemPlugin() {
     ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class);
-    Iterator<Plugin> it = loader.iterator();
-    while (it.hasNext()) {
-      PLUGINS.add(it.next());
+    for (Plugin plugin : loader) {
+      PLUGINS.add(plugin);
     }
   }
 

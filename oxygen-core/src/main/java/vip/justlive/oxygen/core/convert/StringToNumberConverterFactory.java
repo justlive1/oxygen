@@ -13,11 +13,11 @@
  */
 package vip.justlive.oxygen.core.convert;
 
-import com.google.common.primitives.Primitives;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.NumberUtils;
 
 /**
@@ -71,7 +71,10 @@ public class StringToNumberConverterFactory implements ConverterFactory<String, 
     public Set<ConverterTypePair> pairs() {
       Set<ConverterTypePair> pairs = new HashSet<>(2, 1f);
       pairs.add(ConverterTypePair.create(String.class, targetType));
-      pairs.add(ConverterTypePair.create(String.class, Primitives.unwrap(targetType)));
+      Class<?> unwrapClass = ClassUtils.unwrap(targetType);
+      if (unwrapClass != targetType) {
+        pairs.add(ConverterTypePair.create(String.class, unwrapClass));
+      }
       return pairs;
     }
   }

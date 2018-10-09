@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.ClassUtils;
 
 /**
  * properties配置文件加载器
@@ -43,7 +44,7 @@ public class PropertiesLoader extends AbstractResourceLoader implements Property
    * @param locations 路径
    */
   public PropertiesLoader(String... locations) {
-    this(ClassLoader.getSystemClassLoader(), locations);
+    this(ClassUtils.getDefaultClassLoader(), locations);
   }
 
   /**

@@ -33,6 +33,9 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException wrap(Throwable e) {
+    if (e instanceof CodedException) {
+      return (CodedException) e;
+    }
     return new CodedException(e, null);
   }
 

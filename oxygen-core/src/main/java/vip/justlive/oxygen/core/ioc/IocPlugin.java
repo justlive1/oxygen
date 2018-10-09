@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core.ioc;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
@@ -35,9 +36,18 @@ import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 @Slf4j
 public class IocPlugin implements Plugin {
 
+  private static final Strategy STRATEGY = new ConstructorStrategy();
   private static final AtomicInteger TODO_INJECT = new AtomicInteger();
 
-  private static Strategy strategy = new ConstructorStrategy();
+  /**
+   * 实例bean， 通过构造函数实例
+   *
+   * @param clazz 类
+   * @return 实例
+   */
+  public static Object instanceBean(Class<?> clazz) {
+    return STRATEGY.instance(clazz);
+  }
 
   @Override
   public int order() {
@@ -54,16 +64,6 @@ public class IocPlugin implements Plugin {
   @Override
   public void stop() {
     BeanStore.BEANS.clear();
-  }
-
-  /**
-   * 实例bean， 通过构造函数实例
-   *
-   * @param clazz 类
-   * @return 实例
-   */
-  Object instanceBean(Class<?> clazz) {
-    return strategy.instance(clazz);
   }
 
   void scan() {
@@ -87,33 +87,32 @@ public class IocPlugin implements Plugin {
     Object obj;
     try {
       obj = clazz.newInstance();
-    } catch (Exception e) {
+    } catch (InstantiationException | IllegalAccessException e) {
       throw new IllegalStateException(String.format("@Configuration注解的类[%s]无法实例化", clazz), e);
     }
-    for (Method method : clazz.getDeclaredMethods()) {
-      if (method.isAnnotationPresent(Bean.class)) {
-        if (method.getParameterCount() > 0) {
-          throw new IllegalStateException("@Configuration下实例Bean不支持有参方式");
+    try {
+      for (Method method : clazz.getDeclaredMethods()) {
+        if (method.isAnnotationPresent(Bean.class)) {
+          if (method.getParameterCount() > 0) {
+            throw new IllegalStateException("@Configuration下实例Bean不支持有参方式");
+          }
+          method.setAccessible(true);
+          Object bean = method.invoke(obj);
+          if (method.isAnnotationPresent(ValueConfig.class)) {
+            ConfigFactory.load(bean, method.getAnnotation(ValueConfig.class).value());
+          } else {
+            ConfigFactory.load(bean);
+          }
+          Bean singleton = method.getAnnotation(Bean.class);
+          String name = singleton.value();
+          if (name.length() == 0) {
+            name = method.getName();
+          }
+          BeanStore.putBean(name, bean);
         }
-        method.setAccessible(true);
-        Object bean;
-        try {
-          bean = method.invoke(obj);
-        } catch (Exception e) {
-          throw new IllegalStateException("@Configuration下实例方法出错", e);
-        }
-        if (method.isAnnotationPresent(ValueConfig.class)) {
-          ConfigFactory.load(bean, method.getAnnotation(ValueConfig.class).value());
-        } else {
-          ConfigFactory.load(bean);
-        }
-        Bean singleton = method.getAnnotation(Bean.class);
-        String name = singleton.value();
-        if (name.length() == 0) {
-          name = method.getName();
-        }
-        BeanStore.putBean(name, bean);
       }
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      throw new IllegalStateException("@Configuration下实例方法出错", e);
     }
   }
 
@@ -123,13 +122,13 @@ public class IocPlugin implements Plugin {
       instance();
       int now = TODO_INJECT.get();
       if (now > 0 && now == pre) {
-        if (!strategy.isRequired()) {
+        if (!STRATEGY.isRequired()) {
           if (log.isDebugEnabled()) {
             log.debug("ioc失败 出现循环依赖或缺失Bean TODO_INJECT={}, beans={}", now, BeanStore.BEANS);
           }
           throw new IllegalStateException("发生循环依赖或者缺失Bean ");
         } else {
-          strategy.nonRequired();
+          STRATEGY.nonRequired();
         }
       }
       pre = now;

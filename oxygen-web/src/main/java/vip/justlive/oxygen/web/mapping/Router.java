@@ -11,25 +11,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.jdbc.handler;
+package vip.justlive.oxygen.web.mapping;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * float列处理器
+ * 路由
  *
  * @author wubo
  */
-public class FloatColumnHandler implements ColumnHandler {
+@Documented
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Router {
 
-  @Override
-  public boolean supported(Class<?> type) {
-    return type == float.class || type == Float.class;
-  }
-
-  @Override
-  public Object fetch(ResultSet rs, int index) throws SQLException {
-    return rs.getFloat(index);
-  }
+  /**
+   * 路由根路径
+   *
+   * @return root path of router
+   */
+  String value() default "";
 }

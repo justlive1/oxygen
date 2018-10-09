@@ -12,4 +12,4 @@
 # the License.
 #
 
-vip.justlive.oxygen.jdbc.JdbcPlugin
+vip.justlive.oxygen.web.WebContainerInitializer

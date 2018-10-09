@@ -12,4 +12,6 @@
 # the License.
 #
 
-vip.justlive.oxygen.jdbc.JdbcPlugin
+vip.justlive.oxygen.web.handler.BasicParamHandler
+vip.justlive.oxygen.web.handler.CookieParamHandler
+vip.justlive.oxygen.web.handler.HeaderParamHandler

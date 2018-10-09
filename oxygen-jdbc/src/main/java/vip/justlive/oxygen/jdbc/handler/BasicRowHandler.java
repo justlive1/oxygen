@@ -111,7 +111,8 @@ public class BasicRowHandler implements RowHandler {
   }
 
   private <T> T fillBeanProperty(ResultSet rs, Class<T> type, PropertyDescriptor[] props,
-      int[] propertyArray) throws Exception {
+      int[] propertyArray)
+      throws IllegalAccessException, InstantiationException, SQLException, InvocationTargetException {
     T bean = type.newInstance();
     for (int i = 1; i < propertyArray.length; i++) {
       if (propertyArray[i] == PROPERTY_NOT_FOUND) {
@@ -153,7 +154,7 @@ public class BasicRowHandler implements RowHandler {
     if (setter == null || setter.getParameterTypes().length != 1) {
       return;
     }
-    setter.invoke(target, new Object[]{value});
+    setter.invoke(target, value);
   }
 
   private String getColumnName(ResultSetMetaData rsmd, int index) throws SQLException {

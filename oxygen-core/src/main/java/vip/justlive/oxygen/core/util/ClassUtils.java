@@ -15,6 +15,10 @@ package vip.justlive.oxygen.core.util;
 
 
 import java.lang.reflect.Array;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
@@ -28,11 +32,99 @@ public class ClassUtils {
   ClassUtils() {
   }
 
+  private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER_TYPE;
+  private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE_TYPE;
+
+  static {
+    Map<Class<?>, Class<?>> primToWrap = new HashMap<>(16);
+    Map<Class<?>, Class<?>> wrapToPrim = new HashMap<>(16);
+
+    add(primToWrap, wrapToPrim, boolean.class, Boolean.class);
+    add(primToWrap, wrapToPrim, byte.class, Byte.class);
+    add(primToWrap, wrapToPrim, char.class, Character.class);
+    add(primToWrap, wrapToPrim, double.class, Double.class);
+    add(primToWrap, wrapToPrim, float.class, Float.class);
+    add(primToWrap, wrapToPrim, int.class, Integer.class);
+    add(primToWrap, wrapToPrim, long.class, Long.class);
+    add(primToWrap, wrapToPrim, short.class, Short.class);
+    add(primToWrap, wrapToPrim, void.class, Void.class);
+
+    PRIMITIVE_TO_WRAPPER_TYPE = Collections.unmodifiableMap(primToWrap);
+    WRAPPER_TO_PRIMITIVE_TYPE = Collections.unmodifiableMap(wrapToPrim);
+  }
+
+  private static void add(
+      Map<Class<?>, Class<?>> forward,
+      Map<Class<?>, Class<?>> backward,
+      Class<?> key,
+      Class<?> value) {
+    forward.put(key, value);
+    backward.put(value, key);
+  }
+
+  /**
+   * 所有基本类型
+   *
+   * @return 基本类型集合
+   */
+  public static Set<Class<?>> allPrimitiveTypes() {
+    return PRIMITIVE_TO_WRAPPER_TYPE.keySet();
+  }
+
+  /**
+   * 基本类型包装类
+   *
+   * @return 基本类型包装类集合
+   */
+  public static Set<Class<?>> allWrapperTypes() {
+    return WRAPPER_TO_PRIMITIVE_TYPE.keySet();
+  }
+
+  /**
+   * 获取包装类型
+   *
+   * @param type 类型
+   * @param <T> 泛型
+   * @return 包装类
+   */
+  public static <T> Class<T> wrap(Class<T> type) {
+    Checks.notNull(type);
+    // cast is safe: long.class and Long.class are both of type Class<Long>
+    @SuppressWarnings("unchecked")
+    Class<T> wrapped = (Class<T>) PRIMITIVE_TO_WRAPPER_TYPE.get(type);
+    return (wrapped == null) ? type : wrapped;
+  }
+
+  /**
+   * 获取包装类的基本类型
+   *
+   * @param type 类型
+   * @param <T> 泛型
+   * @return 基本类型
+   */
+  public static <T> Class<T> unwrap(Class<T> type) {
+    Checks.notNull(type);
+    // cast is safe: long.class and Long.class are both of type Class<Long>
+    @SuppressWarnings("unchecked")
+    Class<T> unwrapped = (Class<T>) WRAPPER_TO_PRIMITIVE_TYPE.get(type);
+    return (unwrapped == null) ? type : unwrapped;
+  }
+
+  /**
+   * 是否为基本类型或包装类
+   *
+   * @param type 类型
+   * @return true则为基本类型或包装类
+   */
+  public static boolean isPrimitive(Class<?> type) {
+    return PRIMITIVE_TO_WRAPPER_TYPE.containsKey(type) || WRAPPER_TO_PRIMITIVE_TYPE
+        .containsKey(type);
+  }
 
   /**
    * 获取默认类加载器
    *
-   * @return ClassLoader
+   * @return classloader
    */
   public static ClassLoader getDefaultClassLoader() {
     ClassLoader cl = null;
@@ -179,8 +271,8 @@ public class ClassUtils {
   /**
    * 获取cglib代理的真实类
    *
-   * @param clazz
-   * @return
+   * @param clazz 代理类
+   * @return 类
    */
   public static Class<?> getCglibActualClass(Class<?> clazz) {
     Class<?> actualClass = clazz;
@@ -189,4 +281,5 @@ public class ClassUtils {
     }
     return actualClass;
   }
+
 }

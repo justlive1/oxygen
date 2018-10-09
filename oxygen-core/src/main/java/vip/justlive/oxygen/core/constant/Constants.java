@@ -20,6 +20,8 @@ package vip.justlive.oxygen.core.constant;
  */
 public class Constants {
 
+  // settings
+
   /**
    * 配置文件默认地址
    */
@@ -58,6 +60,13 @@ public class Constants {
    */
   public static final String CACHE_IMPL_CLASS = "cache.impl.class";
   /**
+   * web jsp路径前缀
+   */
+  public static final String WEB_JSP_PREFIX = "web.view.jsp.prefix";
+
+
+
+  /**
    * 成功code
    */
   public static final String SUCCESS_CODE = "00000";
@@ -78,6 +87,10 @@ public class Constants {
    */
   public static final String RESP_IS_SUCCESS = "success";
   /**
+   * unknown
+   */
+  public static final String UNKNOWN = "unknown";
+  /**
    * 空字符串
    */
   public static final String EMPTY = "";
@@ -97,6 +110,18 @@ public class Constants {
    * 分号
    */
   public static final String SEMICOLON = ";";
+  /**
+   * 等于
+   */
+  public static final String EQUAL = "=";
+  /**
+   * 问号
+   */
+  public static final String QUESTION_MARK = "?";
+  /**
+   * 与
+   */
+  public static final String AND = "&";
   /**
    * 数组类名前缀: "[]"
    */
@@ -179,12 +204,40 @@ public class Constants {
    */
   public static final String FILE_PREFIX = "file:";
 
+  // http
+
+  public static final String BODY_STORE_KEY = "_body";
+  public static final String HTTP_PREFIX = "http://";
+  public static final String HTTPS_PREFIX = "https://";
+
+  public static final String ACCEPT = "Accept";
+  public static final String ACCEPT_CHARSET = "Accept-Charset";
+  public static final String ACCEPT_ENCODING = "Accept-Encoding";
+  public static final String CHARSET = "charset";
+  public static final String CONTENT_TYPE = "Content-Type";
+  public static final String COOKIE = "Cookie";
+  public static final String HOST_NAME = "Host";
+  public static final String PROXY_CLIENT_IP = "Proxy-Client-IP";
+  public static final String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
+  public static final String X_FORWARDED_FOR = "X-Forwarded-For";
+  public static final String X_REAL_IP = "X-Real-IP";
+
+  public static final String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
+  public static final String APPLICATION_JSON = "application/json";
+  public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
+  public static final String APPLICATION_PDF = "application/pdf";
+  public static final String APPLICATION_XML = "application/xml";
+  public static final String MULTIPART_FORM_DATA = "multipart/form-data";
+  public static final String TEXT_PLAIN = "text/plain";
+  public static final String TEXT_XML = "text/xml";
+  public static final String TEXT_HTML = "text/html";
+
+  // 正则
+
   /**
    * Email校验正则
    */
   public static final String REGEX_EMAIL = "\\w+@\\w+\\.[a-z]+(\\.[a-z]+)?";
-
-  // 正则
   /**
    * 身份证校验正则
    */

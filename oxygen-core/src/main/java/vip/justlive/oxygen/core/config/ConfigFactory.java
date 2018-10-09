@@ -21,7 +21,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.exception.Exceptions;
@@ -35,7 +34,6 @@ import vip.justlive.oxygen.core.util.ReflectUtils;
  *
  * @author wubo
  */
-@Slf4j
 public class ConfigFactory {
 
   /**

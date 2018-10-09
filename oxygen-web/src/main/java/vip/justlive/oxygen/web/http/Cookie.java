@@ -11,25 +11,38 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.jdbc.handler;
+package vip.justlive.oxygen.web.http;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.Serializable;
+import lombok.Data;
 
 /**
- * float列处理器
+ * cookie
  *
  * @author wubo
  */
-public class FloatColumnHandler implements ColumnHandler {
+@Data
+public class Cookie implements Serializable {
 
-  @Override
-  public boolean supported(Class<?> type) {
-    return type == float.class || type == Float.class;
-  }
-
-  @Override
-  public Object fetch(ResultSet rs, int index) throws SQLException {
-    return rs.getFloat(index);
-  }
+  private static final long serialVersionUID = 1L;
+  /**
+   * Cookie name
+   */
+  private String name;
+  /**
+   * Cookie domain
+   */
+  private String domain;
+  /**
+   * Cookie path
+   */
+  private String path;
+  /**
+   * Cookie value
+   */
+  private String value;
+  /**
+   * Cookie max-age in second
+   */
+  private Integer maxAge;
 }

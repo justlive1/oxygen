@@ -34,6 +34,9 @@ import vip.justlive.oxygen.jdbc.interceptor.JdbcInterceptor;
  */
 public class Jdbc {
 
+  Jdbc() {
+  }
+
   static final String TEMPLATE = "datasource.%s";
   static final String PRIMARY_KEY = Jdbc.class.getSimpleName();
   static final List<JdbcInterceptor> JDBC_INTERCEPTORS = new ArrayList<>(4);

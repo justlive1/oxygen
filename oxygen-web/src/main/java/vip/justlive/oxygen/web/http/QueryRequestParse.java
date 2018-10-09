@@ -11,25 +11,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.jdbc.handler;
+package vip.justlive.oxygen.web.http;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 
 /**
- * float列处理器
+ * queryString解析器
+ * <br>
+ * 解析路径后携带的参数与application/x-www-form-urlencoded类型的请求
  *
  * @author wubo
  */
-public class FloatColumnHandler implements ColumnHandler {
+public class QueryRequestParse extends AbstractRequestParse {
 
   @Override
-  public boolean supported(Class<?> type) {
-    return type == float.class || type == Float.class;
+  public boolean supported(HttpServletRequest req) {
+    Map<String, String[]> map = req.getParameterMap();
+    return map != null && !map.isEmpty();
   }
 
   @Override
-  public Object fetch(ResultSet rs, int index) throws SQLException {
-    return rs.getFloat(index);
+  public void handle(HttpServletRequest req) {
+    Request request = Request.current();
+    margeParam(request.getParams(), request.getOriginalRequest().getParameterMap());
   }
+
 }

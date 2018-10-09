@@ -25,8 +25,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class BeanStore {
 
-  static final ConcurrentMap<Class<?>, ConcurrentMap<String, Object>> BEANS =
-      new ConcurrentHashMap<>();
+  static final ConcurrentMap<Class<?>, ConcurrentMap<String, Object>> BEANS = new ConcurrentHashMap<>();
 
   static final Object EMPTY = new Object();
 
@@ -81,6 +80,18 @@ public class BeanStore {
     return null;
   }
 
+  /**
+   * 增加单例
+   *
+   * @param name name of bean
+   * @param bean instance of bean
+   */
+  public static void putBean(String name, Object bean) {
+    Class<?> clazz = bean.getClass();
+    seize(clazz);
+    mergeSuperClass(name, clazz, bean);
+  }
+
   static void seize(Class<?> clazz) {
     ConcurrentMap<String, Object> map = BEANS.get(clazz);
     if (map == null) {
@@ -95,11 +106,6 @@ public class BeanStore {
     }
   }
 
-  static <T> void putBean(String name, T bean) {
-    Class<?> clazz = bean.getClass();
-    seize(clazz);
-    mergeSuperClass(name, clazz, bean);
-  }
 
   static void mergeInterface(String name, Class<?> clazz, Object bean) {
     merge(clazz, bean);
@@ -120,6 +126,7 @@ public class BeanStore {
   static void mergeSuperClass(String name, Class<?> clazz, Object bean) {
     Class<?> supperClass = clazz;
     do {
+      seize(supperClass);
       mergeInterface(name, supperClass, bean);
       supperClass = supperClass.getSuperclass();
     } while (supperClass != null && supperClass != Object.class);

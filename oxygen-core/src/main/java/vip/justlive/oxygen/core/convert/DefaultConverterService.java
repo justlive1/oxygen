@@ -100,6 +100,9 @@ public class DefaultConverterService implements ConverterService, ConverterRegis
   @SuppressWarnings("unchecked")
   @Override
   public <T> T convert(Object source, Class<T> targetType) {
+    if (source == null) {
+      return null;
+    }
     if (source.getClass().equals(targetType)) {
       return (T) source;
     }

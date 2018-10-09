@@ -11,25 +11,41 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.jdbc.handler;
+package vip.justlive.oxygen.web;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import javax.servlet.ServletContext;
 
 /**
- * float列处理器
+ * web application 启动初始接口
  *
  * @author wubo
  */
-public class FloatColumnHandler implements ColumnHandler {
+public interface WebAppInitializer extends Comparable<WebAppInitializer> {
 
-  @Override
-  public boolean supported(Class<?> type) {
-    return type == float.class || type == Float.class;
+  /**
+   * 启动执行
+   *
+   * @param context servlet上下文
+   */
+  void onStartup(ServletContext context);
+
+  /**
+   * 加载顺序，默认0，越小越先加载
+   *
+   * @return order
+   */
+  default int order() {
+    return 0;
   }
 
+  /**
+   * sort compare
+   *
+   * @param o compare object
+   * @return result
+   */
   @Override
-  public Object fetch(ResultSet rs, int index) throws SQLException {
-    return rs.getFloat(index);
+  default int compareTo(WebAppInitializer o) {
+    return Integer.compare(order(), o.order());
   }
 }

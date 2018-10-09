@@ -11,25 +11,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.jdbc.handler;
+package vip.justlive.oxygen.web.view;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Map;
+import lombok.Data;
 
 /**
- * float列处理器
+ * 视图
  *
  * @author wubo
  */
-public class FloatColumnHandler implements ColumnHandler {
+@Data
+public class View {
 
-  @Override
-  public boolean supported(Class<?> type) {
-    return type == float.class || type == Float.class;
-  }
+  /**
+   * 视图路径
+   */
+  private String path;
 
-  @Override
-  public Object fetch(ResultSet rs, int index) throws SQLException {
-    return rs.getFloat(index);
-  }
+  /**
+   * 是否是重定向
+   */
+  private boolean redirect;
+
+  /**
+   * 数据
+   */
+  private Map<String, Object> data;
 }

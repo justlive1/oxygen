@@ -11,25 +11,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.jdbc.handler;
+package vip.justlive.oxygen.web.handler;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import vip.justlive.oxygen.web.mapping.DataBinder;
 
 /**
- * float列处理器
+ * 参数处理
  *
  * @author wubo
  */
-public class FloatColumnHandler implements ColumnHandler {
+public interface ParamHandler {
 
-  @Override
-  public boolean supported(Class<?> type) {
-    return type == float.class || type == Float.class;
-  }
+  /**
+   * 是否支持
+   *
+   * @param dataBinder 数据绑定
+   * @return true表示支持
+   */
+  boolean supported(DataBinder dataBinder);
 
-  @Override
-  public Object fetch(ResultSet rs, int index) throws SQLException {
-    return rs.getFloat(index);
-  }
+  /**
+   * 处理参数
+   *
+   * @param dataBinder 数据绑定
+   * @return result
+   */
+  Object handle(DataBinder dataBinder);
 }
