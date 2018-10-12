@@ -33,7 +33,8 @@ public class GeneralRequestParse extends AbstractRequestParse {
     Request request = Request.current();
     request.setQueryString(req.getQueryString());
     request.setMethod(req.getMethod().intern());
-    request.setPath(req.getRequestURI());
+    request.setPath(req.getServletPath());
+    request.setContentPath(req.getContextPath());
     request.setUrl(req.getRequestURL().toString());
     if (request.getQueryString() != null) {
       request.setUrl(request.getUrl() + Constants.QUESTION_MARK + request.getQueryString());

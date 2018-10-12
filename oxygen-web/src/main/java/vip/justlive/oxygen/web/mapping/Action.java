@@ -16,9 +16,9 @@ package vip.justlive.oxygen.web.mapping;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 import vip.justlive.oxygen.web.WebPlugin;
 import vip.justlive.oxygen.web.handler.ParamHandler;
@@ -30,7 +30,6 @@ import vip.justlive.oxygen.web.mapping.DataBinder.SCOPE;
  * @author wubo
  */
 @Getter
-@Setter
 @ToString
 @EqualsAndHashCode
 public class Action {
@@ -39,12 +38,15 @@ public class Action {
   private final Object router;
   private final Method method;
   private final DataBinder[] dataBinders;
+  private final List<String> pathVariables;
 
-  public Action(String path, Object router, Method method, Method actualMethod) {
+  public Action(String path, Object router, Method method, Method actualMethod,
+      List<String> pathVariables) {
     this.path = path;
     this.router = router;
     this.method = method;
     this.dataBinders = new DataBinder[actualMethod.getParameterCount()];
+    this.pathVariables = pathVariables;
     this.init(actualMethod);
   }
 
@@ -94,6 +96,12 @@ public class Action {
     Param param = parameter.getAnnotation(Param.class);
     if (param != null) {
       fillDataBinder(dataBinder, param.value(), param.defaultValue());
+      return;
+    }
+    PathParam pathParam = parameter.getAnnotation(PathParam.class);
+    if (pathParam != null) {
+      fillDataBinder(dataBinder, pathParam.value(), pathParam.defaultValue());
+      dataBinder.setScope(SCOPE.PATH);
       return;
     }
     HeaderParam headerParam = parameter.getAnnotation(HeaderParam.class);

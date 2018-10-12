@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Data;
+import vip.justlive.oxygen.web.mapping.Action;
 
 /**
  * Request
@@ -34,6 +35,7 @@ public class Request implements Serializable {
   private static final String[] EMPTY = new String[0];
 
   private final transient HttpServletRequest originalRequest;
+  private final transient Action action;
 
   /**
    * 主机名
@@ -43,6 +45,10 @@ public class Request implements Serializable {
    * 请求路径 去除host:port
    */
   private String path;
+  /**
+   * 容器路径
+   */
+  private String contentPath;
   /**
    * 请求全路径 http://host:port/path?queryString
    */
@@ -78,6 +84,11 @@ public class Request implements Serializable {
   private Map<String, String[]> params;
 
   /**
+   * 请求路径参数
+   */
+  private Map<String, String> pathVariables;
+
+  /**
    * headers
    */
   private Map<String, String[]> headers;
@@ -86,6 +97,20 @@ public class Request implements Serializable {
    * cookies
    */
   private Map<String, Cookie> cookies;
+
+  /**
+   * multipart
+   */
+  private Multipart multipart;
+
+  /**
+   * 是否为multipart请求
+   *
+   * @return true表示是multipart请求
+   */
+  public boolean isMultipart() {
+    return multipart != null;
+  }
 
   /**
    * 根据key获取查询参数 最多返回第一个值
@@ -124,7 +149,7 @@ public class Request implements Serializable {
    * @return value
    */
   public String getHeader(String key) {
-    String[] values = getHeaders(key.toLowerCase());
+    String[] values = getHeaders(key);
     if (values.length > 0) {
       return values[0];
     }
@@ -139,7 +164,7 @@ public class Request implements Serializable {
    */
   public String[] getHeaders(String key) {
     if (headers != null) {
-      String[] values = headers.get(key);
+      String[] values = headers.get(key.toLowerCase());
       if (values != null) {
         return values;
       }
@@ -178,10 +203,12 @@ public class Request implements Serializable {
    * 设置线程值Request
    *
    * @param originalRequest 原始request
+   * @param action 执行逻辑
    */
-  public static void set(HttpServletRequest originalRequest) {
-    Request request = new Request(originalRequest);
+  public static void set(HttpServletRequest originalRequest, Action action) {
+    Request request = new Request(originalRequest, action);
     request.params = new HashMap<>(8);
+    request.pathVariables = new HashMap<>(2);
     request.cookies = new HashMap<>(4);
     request.headers = new HashMap<>(4);
     LOCAL.set(request);

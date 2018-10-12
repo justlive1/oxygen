@@ -20,64 +20,26 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 请求
+ * path参数注解 从path中取值
  *
  * @author wubo
  */
 @Documented
-@Target(ElementType.METHOD)
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Request {
+public @interface PathParam {
 
   /**
-   * 请求路径 (e.g. "/myPath.do").
+   * 属性名称
    *
-   * @return path of request
+   * @return name
    */
-  String value();
+  String value() default "";
 
   /**
-   * 请求类型:GET, POST, HEAD, OPTIONS, PUT, PATCH, DELETE, TRACE.
+   * 默认值
    *
-   * @return 支持的类型 默认{}为全部支持
+   * @return default value
    */
-  HttpMethod[] method() default {};
-
-  /**
-   * http请求类型
-   */
-  enum HttpMethod {
-    /**
-     * get
-     */
-    GET,
-    /**
-     * post
-     */
-    POST,
-    /**
-     * head
-     */
-    HEAD,
-    /**
-     * options
-     */
-    OPTIONS,
-    /**
-     * put
-     */
-    PUT,
-    /**
-     * patch
-     */
-    PATCH,
-    /**
-     * delete
-     */
-    DELETE,
-    /**
-     * trace
-     */
-    TRACE
-  }
+  String defaultValue() default "";
 }

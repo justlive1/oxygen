@@ -65,7 +65,6 @@ public class Constants {
   public static final String WEB_JSP_PREFIX = "web.view.jsp.prefix";
 
 
-
   /**
    * 成功code
    */
@@ -90,6 +89,19 @@ public class Constants {
    * unknown
    */
   public static final String UNKNOWN = "unknown";
+  /**
+   * The Carriage Return ASCII character value.
+   */
+  public static final byte CR = 0x0D;
+
+  /**
+   * The Line Feed ASCII character value.
+   */
+  public static final byte LF = 0x0A;
+  /**
+   * The dash (-) ASCII character value.
+   */
+  public static final byte DASH = 0x2D;
   /**
    * 空字符串
    */
@@ -119,6 +131,10 @@ public class Constants {
    */
   public static final String QUESTION_MARK = "?";
   /**
+   * 双引号
+   */
+  public static final String DOUBLE_QUOTATION_MARK = "\"";
+  /**
    * 与
    */
   public static final String AND = "&";
@@ -130,7 +146,6 @@ public class Constants {
    * 内部数组类名前缀: "["
    */
   public static final String INTERNAL_ARRAY_PREFIX = "[";
-
   /**
    * 内部非基本数组类名前缀: "[L"
    */
@@ -207,14 +222,22 @@ public class Constants {
   // http
 
   public static final String BODY_STORE_KEY = "_body";
+  public static final String BOUNDARY = "boundary";
   public static final String HTTP_PREFIX = "http://";
   public static final String HTTPS_PREFIX = "https://";
+  public static final String MULTIPART = "multipart/";
+  public static final String FORM_DATA = "form-data";
+  public static final String FORM_DATA_NAME = "name";
+  public static final String FORM_DATA_FILENAME = "filename";
+
 
   public static final String ACCEPT = "Accept";
   public static final String ACCEPT_CHARSET = "Accept-Charset";
   public static final String ACCEPT_ENCODING = "Accept-Encoding";
   public static final String CHARSET = "charset";
   public static final String CONTENT_TYPE = "Content-Type";
+  public static final String CONTENT_DISPOSITION = "Content-disposition";
+  public static final String CONTENT_LENGTH = "Content-length";
   public static final String COOKIE = "Cookie";
   public static final String HOST_NAME = "Host";
   public static final String PROXY_CLIENT_IP = "Proxy-Client-IP";
@@ -274,6 +297,9 @@ public class Constants {
    * ipv4校验正则
    */
   public static final String REGEX_IP = "[1-9](\\d{1,2})?\\.(0|([1-9](\\d{1,2})?))\\.(0|([1-9](\\d{1,2})?))\\.(0|([1-9](\\d{1,2})?))";
+
+  public static final String REGEX_PATH_VAR = "\\{\\w+\\}";
+  public static final String REGEX_PATH_VAR_REPLACE = "(\\\\w+)";
 
   private Constants() {
   }

@@ -16,8 +16,10 @@ package vip.justlive.oxygen.web.http;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.web.mapping.Mapping.HttpMethod;
 
 /**
  * header解析器
@@ -50,13 +52,21 @@ public class HeaderRequestParse extends AbstractRequestParse {
   void parseContentType(Request request) {
     String contentType = request.getHeader(Constants.CONTENT_TYPE);
     if (contentType != null) {
-      request.setContentType(contentType);
-      int index = contentType.indexOf(Constants.SEMICOLON);
-      if (index > 0) {
-        request.setContentType(contentType.substring(0, index));
-        String[] arr = contentType.substring(index + 1).trim().split(Constants.EQUAL);
-        if (arr.length == 2 && arr[0].trim().equalsIgnoreCase(Constants.CHARSET)) {
-          request.setEncoding(arr[1].trim());
+      String[] arr = contentType.split(Constants.SEMICOLON);
+      request.setContentType(arr[0]);
+      for (int i = 1; i < arr.length; i++) {
+        String[] args = arr[i].split(Constants.EQUAL);
+        if (args.length != 2) {
+          continue;
+        }
+        String key = args[0].trim();
+        String value = args[1].trim();
+        if (key.equalsIgnoreCase(Constants.CHARSET)) {
+          request.setEncoding(value);
+        } else if (key.equalsIgnoreCase(Constants.BOUNDARY) && HttpMethod.POST.name()
+            .equalsIgnoreCase(request.getOriginalRequest().getMethod()) && contentType
+            .toLowerCase(Locale.ENGLISH).startsWith(Constants.MULTIPART)) {
+          request.setMultipart(new Multipart(value, request.getEncoding()));
         }
       }
     }

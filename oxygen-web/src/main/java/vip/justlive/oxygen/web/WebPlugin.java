@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
@@ -33,8 +35,8 @@ import vip.justlive.oxygen.web.handler.ParamHandler;
 import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.mapping.Action;
 import vip.justlive.oxygen.web.mapping.DataBinder;
-import vip.justlive.oxygen.web.mapping.Request;
-import vip.justlive.oxygen.web.mapping.Request.HttpMethod;
+import vip.justlive.oxygen.web.mapping.Mapping;
+import vip.justlive.oxygen.web.mapping.Mapping.HttpMethod;
 import vip.justlive.oxygen.web.mapping.Router;
 import vip.justlive.oxygen.web.view.ViewResolver;
 
@@ -47,13 +49,17 @@ public class WebPlugin implements Plugin {
 
   static final List<RequestParse> REQUEST_PARSES = new LinkedList<>();
   private static final List<ParamHandler> PARAM_HANDLERS = new LinkedList<>();
-  private static final Map<HttpMethod, Map<String, Action>> ACTION_MAP = new ConcurrentHashMap<>(8,
-      1f);
+  private static final Map<HttpMethod, Map<String, Action>> SIMPLE_ACTION_MAP = new ConcurrentHashMap<>(
+      8, 1f);
+  private static final Map<HttpMethod, Map<String, Action>> REGEX_ACTION_MAP = new ConcurrentHashMap<>(
+      8, 1f);
   private static final Set<ViewResolver> VIEW_RESOLVERS = new HashSet<>(4);
+  private static final Pattern REGEX_PATH_GROUP = Pattern.compile("\\{(\\w+)\\}");
 
   static {
     for (HttpMethod httpMethod : HttpMethod.values()) {
-      ACTION_MAP.put(httpMethod, new ConcurrentHashMap<>(4, 1f));
+      SIMPLE_ACTION_MAP.put(httpMethod, new ConcurrentHashMap<>(4, 1f));
+      REGEX_ACTION_MAP.put(httpMethod, new ConcurrentHashMap<>(4, 1f));
     }
   }
 
@@ -65,12 +71,17 @@ public class WebPlugin implements Plugin {
    * @return action
    */
   public static Action findActionByPath(String path, HttpMethod httpMethod) {
-    Map<String, Action> actionMap = ACTION_MAP.get(httpMethod);
+    Map<String, Action> actionMap = SIMPLE_ACTION_MAP.get(httpMethod);
     Action action = actionMap.get(path);
     if (action != null) {
       return action;
     }
-    // TODO path vars
+    actionMap = REGEX_ACTION_MAP.get(httpMethod);
+    for (Map.Entry<String, Action> entry : actionMap.entrySet()) {
+      if (Pattern.compile(entry.getKey()).matcher(path).matches()) {
+        return entry.getValue();
+      }
+    }
     return null;
   }
 
@@ -129,7 +140,8 @@ public class WebPlugin implements Plugin {
 
   @Override
   public void stop() {
-    ACTION_MAP.clear();
+    SIMPLE_ACTION_MAP.clear();
+    REGEX_ACTION_MAP.clear();
     REQUEST_PARSES.clear();
   }
 
@@ -178,26 +190,45 @@ public class WebPlugin implements Plugin {
     Class<?> actualClass = ClassUtils.getCglibActualClass(clazz);
     try {
       for (Method method : actualClass.getDeclaredMethods()) {
-        if (!method.isAnnotationPresent(Request.class)) {
+        if (!method.isAnnotationPresent(Mapping.class)) {
           continue;
         }
         Method requestMethod = clazz.getMethod(method.getName(), method.getParameterTypes());
-        Request request = method.getAnnotation(Request.class);
-        String path = request.value();
-        HttpMethod[] httpMethods = request.method();
+        Mapping mapping = method.getAnnotation(Mapping.class);
+        String path = mapping.value();
+        HttpMethod[] httpMethods = mapping.method();
         String routePath = makePath(rootPath, path);
-        Action action = new Action(routePath, routerBean, requestMethod, method);
         HttpMethod[] realMethods = httpMethods;
         if (realMethods.length == 0) {
           realMethods = HttpMethod.values();
         }
+        Action action = createAction(routePath, routerBean, requestMethod, method);
         for (HttpMethod httpMethod : realMethods) {
-          ACTION_MAP.get(httpMethod).put(action.getPath(), action);
+          if (action.getPathVariables().isEmpty()) {
+            SIMPLE_ACTION_MAP.get(httpMethod).put(action.getPath(), action);
+          } else {
+            REGEX_ACTION_MAP.get(httpMethod).put(action.getPath(), action);
+          }
         }
       }
     } catch (NoSuchMethodException e) {
       throw Exceptions.wrap(e);
     }
+  }
+
+  private Action createAction(String routePath, Object routerBean, Method requestMethod,
+      Method method) {
+    List<String> pathVariables = new LinkedList<>();
+    Matcher matcher = REGEX_PATH_GROUP.matcher(routePath);
+    int start = 0;
+    if (matcher.find(start)) {
+      do {
+        pathVariables.add(matcher.group(1));
+        start = matcher.end();
+      } while (matcher.find(start));
+      routePath = routePath.replaceAll(Constants.REGEX_PATH_VAR, Constants.REGEX_PATH_VAR_REPLACE);
+    }
+    return new Action(routePath, routerBean, requestMethod, method, pathVariables);
   }
 
   private String makePath(String parent, String child) {
@@ -218,9 +249,7 @@ public class WebPlugin implements Plugin {
     if (child.endsWith(Constants.ROOT_PATH)) {
       sb.deleteCharAt(sb.length() - 1);
     }
-    // TODO path vars
     return sb.toString();
   }
-
 
 }

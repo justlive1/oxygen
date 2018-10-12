@@ -59,6 +59,36 @@ oxygen-jdbc
   
 ```
 
+oxygen-web
+* use`ServletContainerInitializer` to auto startup
+* no require the file `web.xml`
+* use `@Router` to mark a router class
+* use `@Mapping` to mark a request handler method
+* use `@Param,@HeaderParam,@CookieParam,@PathParam` to mark the parameter where to fetch, `@Param` is default
+* supported simple types , `Map<String,Object>` and object class user defined
+* supported return json , view and anything handled by yourself
+
+```
+├─ src/main
+  │─ java/.../web 
+  │  │- handler // parameter hander
+  │  │- http // http parse
+  │  │- mapping  // url mapping and paratemer mapping
+  │  │- router  // an example
+  │  │- view  // view resolver
+  │  │- DefaultWebAppInitializer.java  // default web app initializer 
+  │  │- DispatcherServlet.java  // dispathcer
+  │  │- WebAppInitializer.java  // interface of web app initializer
+  │  │- WebContainerInitializer.java  // support of web container initializer
+  │  └─ WebPlugin.java  // web plugin
+  └─ resources/META-INF/services
+      │- ...ServletContainerIntializer // servlet3.0
+      │- ...core.Plugin  // add web plugin
+      │- ...ParamHandler // add paramhander services
+      │- ...RequestParse // add request parser services 
+      └─ ...ViewResolver // add view resolver services
+```
+
 
 ## Features
 
@@ -82,6 +112,14 @@ Add dependencies to your pom.xml:
     <artifactId>oxygen-jdbc</artifactId>
     <version>${oxygen.version}</version>
 </dependency>
+
+<!-- web -->
+<dependency>
+    <groupId>vip.justlive</groupId>
+    <artifactId>oxygen-web</artifactId>
+    <version>${oxygen.version}</version>
+</dependency>
+
 ```
 
 ## Quick start
@@ -342,6 +380,115 @@ Jdbc.addJdbcInterceptor(JdbcInterceptor interceptor)
 
 ```
 
+
+### web
+
+#### 基础使用
+- use `@Router @Mapping @Param...` to mark router class, request handle method and parameter
+- use `View` to render or redirect views，return json when the return type is not `void` or `View`
+- use `Request.current(),Response.current()` to get request or response in one thread
+
+```
+// use @Router
+@Router("/common")
+public class CommonRouter {
+
+  // mark request path and request method, default is all
+  @Mapping(value = "/localDate",method = HttpMethod.GET)
+  public Resp localDate() {
+    return Resp.success(
+            LocalDate.now().plusDays(offset).atStartOfDay(ZoneOffset.systemDefault()).toInstant()
+                .toEpochMilli());
+  }
+
+  // view render
+  @Mapping("/index")
+  public View index() {
+    View view = new View();
+    view.setPath("/index.jsp");
+    return view;
+  }
+  
+  // view redirect
+  @Mapping("/view")
+  public View index() {
+    View view = new View();
+    view.setPath("/index");
+    view.setRedirect(true);
+    return view;
+  }
+  
+  // handle by yourself, the example is download
+  @Mapping("download")
+  public void download(HttpServletResponse resp) throws IOException {
+    resp.setCharacterEncoding("utf-8");
+    resp.setContentType("application/octet-stream;charset=utf-8");
+    resp.setHeader("Content-disposition", "attachment;filename=xx.txt");
+    Files.copy(new File("xxx.txt"), resp.getOutputStream());
+  }
+}
+
+// get Request Response
+Request.current()
+Response.current()
+
+```
+
+
+#### add your ViewResolver
+- implement`ViewResolver`
+- use`ServiceLoader` or `WebPlugin.addViewResolver` to add
+
+```
+// an example in system
+public class DefaultViewResolver implements ViewResolver {
+
+  @Override
+  public boolean supported(Object data) {
+    // redirect
+    if (data != null && data.getClass() == View.class && ((View) data).isRedirect()) {
+      return true;
+    }
+    // null or not view, return json
+    return data == null || data.getClass() != View.class;
+  }
+
+  @Override
+  public void resolveView(HttpServletRequest request, HttpServletResponse response, Object data) {
+    try {
+      if (data != null && data.getClass() == View.class) {
+        View view = (View) data;
+        String redirectUrl = view.getPath();
+        if (!redirectUrl.startsWith(Constants.HTTP_PREFIX) && !redirectUrl
+            .startsWith(Constants.HTTPS_PREFIX)) {
+          redirectUrl = request.getContextPath() + view.getPath();
+        }
+        response.sendRedirect(redirectUrl);
+      } else {
+        response.getWriter().print(JSON.toJSONString(data));
+      }
+    } catch (IOException e) {
+      throw Exceptions.wrap(e);
+    }
+  }
+}
+```
+
+#### add your WebAppInitializer
+only need implement`WebAppInitializer` and the system can auto load
+
+```
+public class MyWebAppInitializer implements WebAppInitializer {
+  @Override
+  public void onStartup(ServletContext context) {
+    ...
+  }
+  @Override
+  public int order() {
+    ...
+  }
+}
+```
 
 
 ## Contact information
