@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.util.Checks;
+import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.ResourceUtils;
 
 /**
@@ -92,7 +93,7 @@ public class ClassPathResource implements SourceResource {
     } else if (this.classLoader != null) {
       is = this.classLoader.getResourceAsStream(this.path);
     } else {
-      is = ClassLoader.getSystemResourceAsStream(this.path);
+      is = ClassUtils.getDefaultClassLoader().getResourceAsStream(this.path);
     }
     if (is == null) {
       throw new FileNotFoundException(this.path + " cannot be opened because it does not exist");

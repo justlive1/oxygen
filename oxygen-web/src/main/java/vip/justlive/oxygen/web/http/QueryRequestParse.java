@@ -33,8 +33,7 @@ public class QueryRequestParse extends AbstractRequestParse {
 
   @Override
   public void handle(HttpServletRequest req) {
-    Request request = Request.current();
-    margeParam(request.getParams(), request.getOriginalRequest().getParameterMap());
+    margeParam(Request.current().getParams(), req.getParameterMap());
   }
 
 }

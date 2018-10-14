@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.web.view;
 
+import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
 
@@ -38,4 +39,34 @@ public class View {
    * 数据
    */
   private Map<String, Object> data;
+
+  /**
+   * 添加属性
+   *
+   * @param key key
+   * @param value value
+   * @return view
+   */
+  public View addAttribute(String key, Object value) {
+    if (data == null) {
+      data = new HashMap<>(4);
+    }
+    data.put(key, value);
+    return this;
+  }
+
+  /**
+   * 添加属性集合
+   *
+   * @param attrs 属性集合
+   * @return view
+   */
+  public View addAttributes(Map<String, Object> attrs) {
+    if (data == null) {
+      data = new HashMap<>(attrs);
+    } else {
+      data.putAll(attrs);
+    }
+    return this;
+  }
 }

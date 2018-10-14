@@ -49,6 +49,7 @@ public class DefaultViewResolver implements ViewResolver {
         }
         response.sendRedirect(redirectUrl);
       } else {
+        response.setContentType(Constants.APPLICATION_JSON);
         response.getWriter().print(JSON.toJSONString(data));
       }
     } catch (IOException e) {

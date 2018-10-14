@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.web.WebConf;
 
 /**
  * jsp视图解析
@@ -29,12 +30,10 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 public class JspViewResolver implements ViewResolver {
 
   private static final String SUFFIX = ".jsp";
-  private static final String PREFIX = "/WEB-INF/";
-
   private final String jspPrefix;
 
   public JspViewResolver() {
-    jspPrefix = ConfigFactory.getProperty(Constants.WEB_JSP_PREFIX, PREFIX);
+    jspPrefix = ConfigFactory.load(WebConf.class).getJspPrefix();
   }
 
   @Override

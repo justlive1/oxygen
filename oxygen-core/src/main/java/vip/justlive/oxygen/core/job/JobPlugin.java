@@ -21,9 +21,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.ioc.BeanStore;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
@@ -34,6 +35,7 @@ import vip.justlive.oxygen.core.util.ThreadUtils;
  *
  * @author wubo
  */
+@Slf4j
 public class JobPlugin implements Plugin {
 
   private static final Map<Class<?>, Object> JOB_CACHE = new ConcurrentHashMap<>(8, 1F);
@@ -41,14 +43,18 @@ public class JobPlugin implements Plugin {
   static ScheduledExecutorService executorService;
 
   private static void init() {
-    int poolSize = Constants.DEFAULT_JOB_CORE_POOL_SIZE;
-    String jobCorePoolSize = ConfigFactory.getProperty(Constants.JOB_CORE_POOL_SIZE_KEY);
-    if (jobCorePoolSize != null) {
-      poolSize = Integer.parseInt(jobCorePoolSize);
-    }
-    String jobNameFormat = ConfigFactory.getProperty(Constants.JOB_THREAD_NAME_FORMAT_KEY,
-        Constants.DEFAULT_JOB_THREAD_NAME_FORMAT);
-    executorService = ThreadUtils.newScheduledExecutor(poolSize, jobNameFormat);
+    CoreConf config = ConfigFactory.load(CoreConf.class);
+    executorService = ThreadUtils
+        .newScheduledExecutor(config.getJobPoolSize(), config.getJobThreadFormat());
+  }
+
+  /**
+   * 获取当前job数量
+   *
+   * @return size of scheduled jobs
+   */
+  public static int currentJobSize() {
+    return SCHEDULED_JOBS.size();
   }
 
   @Override
@@ -86,6 +92,9 @@ public class JobPlugin implements Plugin {
       }
       if (scheduled.onApplicationStart()) {
         addOnApplicationStartJob(job, scheduled.async());
+      }
+      if(log.isDebugEnabled()){
+        log.debug("add a job [{}]", job);
       }
     }
   }

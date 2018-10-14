@@ -21,6 +21,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.constant.Constants;
 
 /**
@@ -47,8 +48,8 @@ public final class Bootstrap {
    */
   public static void initConfig(String... locations) {
     ConfigFactory.loadProperties(locations);
-    String overridePath = ConfigFactory.getProperty(Constants.CONFIG_OVERRIDE_PATH_KEY);
-    if (overridePath != null) {
+    String overridePath = ConfigFactory.load(CoreConf.class).getConfigOverridePath();
+    if (overridePath != null && overridePath.length() > 0) {
       ConfigFactory.loadProperties(overridePath.split(Constants.COMMA));
     }
   }

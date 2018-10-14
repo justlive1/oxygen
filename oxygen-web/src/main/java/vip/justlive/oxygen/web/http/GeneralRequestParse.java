@@ -31,24 +31,24 @@ public class GeneralRequestParse extends AbstractRequestParse {
   @Override
   public void handle(HttpServletRequest req) {
     Request request = Request.current();
-    request.setQueryString(req.getQueryString());
-    request.setMethod(req.getMethod().intern());
-    request.setPath(req.getServletPath());
-    request.setContentPath(req.getContextPath());
-    request.setUrl(req.getRequestURL().toString());
+    request.queryString = req.getQueryString();
+    request.method = req.getMethod().intern();
+    request.path = req.getServletPath();
+    request.contentPath = req.getContextPath();
+    request.url = req.getRequestURL().toString();
     if (request.getQueryString() != null) {
-      request.setUrl(request.getUrl() + Constants.QUESTION_MARK + request.getQueryString());
+      request.url = request.getUrl() + Constants.QUESTION_MARK + request.getQueryString();
     }
-    String host = request.getOriginalRequest().getHeader(Constants.HOST_NAME);
+    String host = req.getHeader(Constants.HOST_NAME);
     if (host.contains(Constants.COLON)) {
       String[] arr = host.split(Constants.COLON);
-      request.setHost(arr[0]);
-      request.setPort(Integer.parseInt(arr[1]));
+      request.host = arr[0];
+      request.port = Integer.parseInt(arr[1]);
     } else {
-      request.setHost(host);
-      request.setPort(80);
+      request.host = host;
+      request.port = 90;
     }
-    request.setRemoteAddress(getIpAddress(request, req.getRemoteAddr()));
+    request.remoteAddress = getIpAddress(request, req.getRemoteAddr());
   }
 
   private String getIpAddress(final Request request, String remoteIp) {

@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ClassUtils;
 
@@ -77,10 +77,10 @@ public final class JCache {
   }
 
   static Cache createCache() {
-    String cacheImplClass = ConfigFactory.getProperty(Constants.CACHE_IMPL_CLASS);
-    if (cacheImplClass != null) {
+    CoreConf config = ConfigFactory.load(CoreConf.class);
+    if (config.getCacheImplClass() != null && config.getCacheImplClass().length() > 0) {
       try {
-        Class<?> clazz = ClassUtils.forName(cacheImplClass);
+        Class<?> clazz = ClassUtils.forName(config.getCacheImplClass());
         return (Cache) clazz.newInstance();
       } catch (InstantiationException | IllegalAccessException e) {
         throw Exceptions.wrap(e);

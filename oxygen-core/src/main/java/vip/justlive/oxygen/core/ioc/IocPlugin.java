@@ -66,7 +66,7 @@ public class IocPlugin implements Plugin {
     BeanStore.BEANS.clear();
   }
 
-  void scan() {
+  private void scan() {
     // Configuration
     for (Class<?> clazz : ClassScannerPlugin.getTypesAnnotatedWith(Configuration.class)) {
       configBeans(clazz);
@@ -75,7 +75,7 @@ public class IocPlugin implements Plugin {
     for (Class<?> clazz : ClassScannerPlugin.getTypesAnnotatedWith(Bean.class)) {
       Bean singleton = clazz.getAnnotation(Bean.class);
       String beanName = singleton.value();
-      if (beanName == null || beanName.length() == 0) {
+      if (beanName.length() == 0) {
         beanName = clazz.getName();
       }
       BeanStore.seize(clazz, beanName);
@@ -83,7 +83,7 @@ public class IocPlugin implements Plugin {
     }
   }
 
-  void configBeans(Class<?> clazz) {
+  private void configBeans(Class<?> clazz) {
     Object obj;
     try {
       obj = clazz.newInstance();
@@ -135,7 +135,7 @@ public class IocPlugin implements Plugin {
     }
   }
 
-  void instance() {
+  private void instance() {
     BeanStore.BEANS.forEach((clazz, value) -> value.forEach((name, v) -> {
       if (v == BeanStore.EMPTY) {
         Object inst = instanceBean(clazz);
@@ -147,7 +147,7 @@ public class IocPlugin implements Plugin {
     }));
   }
 
-  void merge() {
+  private void merge() {
     for (Entry<Class<?>, ConcurrentMap<String, Object>> entry : BeanStore.BEANS.entrySet()) {
       Class<?> clazz = entry.getKey();
       BeanStore.merge(clazz, entry.getValue().values().iterator().next());

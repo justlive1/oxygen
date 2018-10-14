@@ -11,42 +11,52 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.web.http;
+package vip.justlive.oxygen.core.config;
 
-import java.io.Serializable;
 import lombok.Data;
 
 /**
- * cookie
+ * 系统配置类
  *
  * @author wubo
  */
 @Data
-public class Cookie implements Serializable {
+public class CoreConf {
 
-  private static final long serialVersionUID = 1L;
   /**
-   * Cookie name
+   * 临时文件base目录
    */
-  private String name;
+  @Value("${main.temp.dir:.oxygen}")
+  private String baseTempDir;
   /**
-   * Cookie domain
+   * 类扫描路径属性
    */
-  private String domain;
+  @Value("${main.class.scan:}")
+  private String classScan;
+
   /**
-   * Cookie path
+   * 缓存实现类
    */
-  private String path;
+  @Value("${cache.impl.class:}")
+  private String cacheImplClass;
+
   /**
-   * Cookie value
+   * override配置文件地址属性
    */
-  private String value;
+  @Value("${config.override.path:}")
+  private String configOverridePath;
+
   /**
-   * Cookie max-age in second
+   * job线程名称格式
    */
-  private Integer maxAge;
+  @Value("${job.thread.name.format:jobs-%d}")
+  private String jobThreadFormat;
+
   /**
-   * Secure ... e.g. use SSL
+   * job核心线程池大小
    */
-  private boolean secure;
+  @Value("${job.core.pool.size:10}")
+  private Integer jobPoolSize;
+
+
 }

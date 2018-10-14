@@ -23,7 +23,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
+import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.ioc.BeanStore;
@@ -38,6 +40,8 @@ import vip.justlive.oxygen.web.mapping.DataBinder;
 import vip.justlive.oxygen.web.mapping.Mapping;
 import vip.justlive.oxygen.web.mapping.Mapping.HttpMethod;
 import vip.justlive.oxygen.web.mapping.Router;
+import vip.justlive.oxygen.web.mapping.StaticMapping;
+import vip.justlive.oxygen.web.mapping.StaticMapping.StaticSource;
 import vip.justlive.oxygen.web.view.ViewResolver;
 
 /**
@@ -45,10 +49,12 @@ import vip.justlive.oxygen.web.view.ViewResolver;
  *
  * @author wubo
  */
+@Slf4j
 public class WebPlugin implements Plugin {
 
   static final List<RequestParse> REQUEST_PARSES = new LinkedList<>();
   private static final List<ParamHandler> PARAM_HANDLERS = new LinkedList<>();
+  private static final StaticMapping STATIC_MAPPING = new StaticMapping();
   private static final Map<HttpMethod, Map<String, Action>> SIMPLE_ACTION_MAP = new ConcurrentHashMap<>(
       8, 1f);
   private static final Map<HttpMethod, Map<String, Action>> REGEX_ACTION_MAP = new ConcurrentHashMap<>(
@@ -56,11 +62,23 @@ public class WebPlugin implements Plugin {
   private static final Set<ViewResolver> VIEW_RESOLVERS = new HashSet<>(4);
   private static final Pattern REGEX_PATH_GROUP = Pattern.compile("\\{(\\w+)\\}");
 
+
   static {
     for (HttpMethod httpMethod : HttpMethod.values()) {
       SIMPLE_ACTION_MAP.put(httpMethod, new ConcurrentHashMap<>(4, 1f));
       REGEX_ACTION_MAP.put(httpMethod, new ConcurrentHashMap<>(4, 1f));
     }
+
+  }
+
+  /**
+   * 增加静态资源
+   *
+   * @param prefix 请求前缀
+   * @param basePath base路径
+   */
+  public static void addStaticResources(String prefix, String basePath) {
+    STATIC_MAPPING.addStaticResource(prefix, basePath);
   }
 
   /**
@@ -71,11 +89,18 @@ public class WebPlugin implements Plugin {
    * @return action
    */
   public static Action findActionByPath(String path, HttpMethod httpMethod) {
+    // simple
     Map<String, Action> actionMap = SIMPLE_ACTION_MAP.get(httpMethod);
     Action action = actionMap.get(path);
     if (action != null) {
       return action;
     }
+    // static
+    StaticSource source = STATIC_MAPPING.findStaticResource(path);
+    if (source != null) {
+      throw new StaticMapping.StaticException(source);
+    }
+    // regex
     actionMap = REGEX_ACTION_MAP.get(httpMethod);
     for (Map.Entry<String, Action> entry : actionMap.entrySet()) {
       if (Pattern.compile(entry.getKey()).matcher(path).matches()) {
@@ -107,6 +132,9 @@ public class WebPlugin implements Plugin {
    */
   public static void addViewResolver(ViewResolver viewResolver) {
     VIEW_RESOLVERS.add(viewResolver);
+    if (log.isDebugEnabled()) {
+      log.debug("add a view resolver [{}]", viewResolver.getClass());
+    }
   }
 
   /**
@@ -135,6 +163,7 @@ public class WebPlugin implements Plugin {
     loadRequestParse();
     loadParamHandler();
     loadViewResolver();
+    loadStaticMapping();
   }
 
 
@@ -149,6 +178,9 @@ public class WebPlugin implements Plugin {
     ServiceLoader<RequestParse> loader = ServiceLoader.load(RequestParse.class);
     for (RequestParse requestParse : loader) {
       REQUEST_PARSES.add(requestParse);
+      if (log.isDebugEnabled()) {
+        log.debug("loaded a request parser [{}]", requestParse.getClass());
+      }
     }
   }
 
@@ -156,6 +188,9 @@ public class WebPlugin implements Plugin {
     ServiceLoader<ParamHandler> loader = ServiceLoader.load(ParamHandler.class);
     for (ParamHandler paramHandler : loader) {
       PARAM_HANDLERS.add(paramHandler);
+      if (log.isDebugEnabled()) {
+        log.debug("loaded a param handler [{}]", paramHandler.getClass());
+      }
     }
   }
 
@@ -203,6 +238,10 @@ public class WebPlugin implements Plugin {
           realMethods = HttpMethod.values();
         }
         Action action = createAction(routePath, routerBean, requestMethod, method);
+        if (log.isDebugEnabled()) {
+          log.debug("mapping a router [{}] to method [{}] for request of [{}]", action.getPath(),
+              method, realMethods);
+        }
         for (HttpMethod httpMethod : realMethods) {
           if (action.getPathVariables().isEmpty()) {
             SIMPLE_ACTION_MAP.get(httpMethod).put(action.getPath(), action);
@@ -252,4 +291,14 @@ public class WebPlugin implements Plugin {
     return sb.toString();
   }
 
+  private void loadStaticMapping() {
+    WebConf conf = ConfigFactory.load(WebConf.class);
+    String[] paths = conf.getDefaultStaticPaths();
+    if (paths == null) {
+      return;
+    }
+    for (String path : paths) {
+      addStaticResources(conf.getDefaultStaticPrefix(), path);
+    }
+  }
 }

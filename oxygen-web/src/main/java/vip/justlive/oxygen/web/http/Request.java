@@ -18,7 +18,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import vip.justlive.oxygen.web.mapping.Action;
 
 /**
@@ -26,7 +28,9 @@ import vip.justlive.oxygen.web.mapping.Action;
  *
  * @author wubo
  */
-@Data
+@Getter
+@ToString
+@EqualsAndHashCode
 public class Request implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -40,68 +44,99 @@ public class Request implements Serializable {
   /**
    * 主机名
    */
-  private String host;
+  String host;
   /**
    * 请求路径 去除host:port
    */
-  private String path;
+  String path;
   /**
    * 容器路径
    */
-  private String contentPath;
+  String contentPath;
   /**
    * 请求全路径 http://host:port/path?queryString
    */
-  private String url;
+  String url;
   /**
    * 请求类型
    */
-  private String method;
+  String method;
   /**
    * 客户端ip
    */
-  private String remoteAddress;
+  String remoteAddress;
   /**
    * 端口
    */
-  private Integer port;
+  Integer port;
   /**
    * 内容类型
    */
-  private String contentType = "text/html";
+  String contentType = "text/html";
   /**
    * 字符集编码
    */
-  private String encoding = StandardCharsets.UTF_8.name();
+  String encoding = StandardCharsets.UTF_8.name();
   /**
    * queryString
    */
-  private String queryString;
-
+  String queryString;
+  /**
+   * multipart
+   */
+  Multipart multipart;
   /**
    * query params
    */
   private Map<String, String[]> params;
-
   /**
    * 请求路径参数
    */
   private Map<String, String> pathVariables;
-
   /**
    * headers
    */
   private Map<String, String[]> headers;
-
   /**
    * cookies
    */
   private Map<String, Cookie> cookies;
 
+  Request(HttpServletRequest originalRequest, Action action) {
+    this.originalRequest = originalRequest;
+    this.action = action;
+  }
+
   /**
-   * multipart
+   * 设置线程值Request
+   *
+   * @param originalRequest 原始request
+   * @param action 执行逻辑
    */
-  private Multipart multipart;
+  public static void set(HttpServletRequest originalRequest, Action action) {
+    Request request = new Request(originalRequest, action);
+    request.params = new HashMap<>(8);
+    request.pathVariables = new HashMap<>(2);
+    request.cookies = new HashMap<>(4);
+    request.headers = new HashMap<>(4);
+    LOCAL.set(request);
+  }
+
+  /**
+   * 当前请求的request
+   *
+   * @return request
+   */
+  public static Request current() {
+    return LOCAL.get();
+  }
+
+  /**
+   * 清除request数据
+   */
+  public static void clear() {
+    LOCAL.remove();
+  }
 
   /**
    * 是否为multipart请求
@@ -197,36 +232,5 @@ public class Request implements Serializable {
       return cookie.getValue();
     }
     return null;
-  }
-
-  /**
-   * 设置线程值Request
-   *
-   * @param originalRequest 原始request
-   * @param action 执行逻辑
-   */
-  public static void set(HttpServletRequest originalRequest, Action action) {
-    Request request = new Request(originalRequest, action);
-    request.params = new HashMap<>(8);
-    request.pathVariables = new HashMap<>(2);
-    request.cookies = new HashMap<>(4);
-    request.headers = new HashMap<>(4);
-    LOCAL.set(request);
-  }
-
-  /**
-   * 当前请求的request
-   *
-   * @return request
-   */
-  public static Request current() {
-    return LOCAL.get();
-  }
-
-  /**
-   * 清除request数据
-   */
-  public static void clear() {
-    LOCAL.remove();
   }
 }

@@ -52,8 +52,9 @@ public class WebContainerInitializer implements ServletContainerInitializer {
     }
 
     if (initializers.isEmpty()) {
-      ctx.log("No WebAppInitializer types detected on classpath");
-      return;
+      // 兼容一些jetty版本扫描不到jar中实现
+      ctx.log("No WebAppInitializer types detected on classpath and add DefaultWebAppInitializer");
+      initializers.add(new DefaultWebAppInitializer());
     }
 
     Collections.sort(initializers);

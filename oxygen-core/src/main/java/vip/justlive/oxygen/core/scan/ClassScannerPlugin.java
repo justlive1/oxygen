@@ -24,6 +24,7 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.constant.Constants;
 
 /**
@@ -62,14 +63,14 @@ public class ClassScannerPlugin implements Plugin {
 
   @Override
   public void start() {
-    String path = ConfigFactory.getProperty(Constants.CLASS_SCAN_KEY);
+    CoreConf config = ConfigFactory.load(CoreConf.class);
     Reflections ref;
-    if (path == null) {
+    if (config.getClassScan() == null || config.getClassScan().length() == 0) {
       ref = new Reflections("vip.justlive", new SubTypesScanner(), new TypeAnnotationsScanner(),
           new MethodAnnotationsScanner());
     } else {
-      ref = new Reflections("vip.justlive", path.split(Constants.COMMA), new SubTypesScanner(),
-          new TypeAnnotationsScanner(), new MethodAnnotationsScanner());
+      ref = new Reflections("vip.justlive", config.getClassScan().split(Constants.COMMA),
+          new SubTypesScanner(), new TypeAnnotationsScanner(), new MethodAnnotationsScanner());
     }
     REFS.put(Constants.DEFAULT_PROFILE, ref);
   }

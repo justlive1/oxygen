@@ -14,8 +14,12 @@
 package vip.justlive.oxygen.web.http;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
+import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * Response
@@ -29,6 +33,26 @@ public class Response implements Serializable {
   private static final ThreadLocal<Response> LOCAL = new ThreadLocal<>();
 
   private final transient HttpServletResponse originalResponse;
+
+  /**
+   * 编码
+   */
+  private String encoding = StandardCharsets.UTF_8.name();
+
+  /**
+   * contentType
+   */
+  private String contentType;
+
+  /**
+   * cookies
+   */
+  private Map<String, Cookie> cookies = new HashMap<>(4);
+
+  /**
+   * headers
+   */
+  private Map<String, String> headers = new HashMap<>(4);
 
   /**
    * 设置线程值response
@@ -54,5 +78,106 @@ public class Response implements Serializable {
    */
   public static void clear() {
     LOCAL.remove();
+  }
+
+  /**
+   * 设置cookie
+   *
+   * @param name name of cookie
+   * @param value value
+   */
+  public void setCookie(String name, String value) {
+    setCookie(name, value, null);
+  }
+
+  /**
+   * 设置cookie
+   *
+   * @param name name of cookie
+   * @param value value
+   * @param maxAge max age
+   */
+  public void setCookie(String name, String value, Integer maxAge) {
+    setCookie(name, value, null, Constants.ROOT_PATH, maxAge, false);
+  }
+
+  /**
+   * 设置cookie
+   *
+   * @param name name of cookie
+   * @param value value
+   * @param maxAge max age
+   * @param secure secure
+   */
+  public void setCookie(String name, String value, Integer maxAge, boolean secure) {
+    setCookie(name, value, null, Constants.ROOT_PATH, maxAge, secure);
+  }
+
+  /**
+   * 设置cookie
+   *
+   * @param name name of cookie
+   * @param value value
+   * @param domain domain
+   * @param path path
+   * @param maxAge max age
+   * @param secure secure
+   */
+  public void setCookie(String name, String value, String domain, String path, Integer maxAge,
+      boolean secure) {
+    Cookie cookie = cookies.get(name);
+    if (cookie == null) {
+      cookie = new Cookie();
+      cookies.put(name, cookie);
+    }
+    cookie.setName(name);
+    cookie.setValue(value);
+    cookie.setDomain(domain);
+    cookie.setPath(path);
+    cookie.setMaxAge(maxAge);
+    cookie.setSecure(secure);
+  }
+
+  /**
+   * 删除cookie
+   *
+   * @param name name of cookie
+   */
+  public void removeCookie(String name) {
+    cookies.remove(name);
+  }
+
+  /**
+   * 设置header
+   *
+   * @param name name of header
+   * @param value value
+   */
+  public void setHeader(String name, String value) {
+    headers.put(name, value);
+  }
+
+  /**
+   * 获取header
+   *
+   * @param name name of header
+   * @return value
+   */
+  public String getHeader(String name) {
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      if (entry.getKey().equalsIgnoreCase(name)) {
+        return entry.getValue();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * 删除header
+   *
+   * @param name name of header
+   */
+  public void removeHeader(String name) {
+    headers.remove(name);
   }
 }

@@ -11,42 +11,40 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.web.http;
+package vip.justlive.oxygen.web;
 
-import java.io.Serializable;
 import lombok.Data;
+import vip.justlive.oxygen.core.config.Value;
 
 /**
- * cookie
+ * web相关配置
  *
  * @author wubo
  */
 @Data
-public class Cookie implements Serializable {
+public class WebConf {
 
-  private static final long serialVersionUID = 1L;
   /**
-   * Cookie name
+   * 默认静态资源请求前缀
    */
-  private String name;
+  @Value("${web.static.default.prefix:/public}")
+  private String defaultStaticPrefix;
   /**
-   * Cookie domain
+   * 默认静态资源目录
    */
-  private String domain;
+  @Value("${web.static.default.path:/public,/static}")
+  private String[] defaultStaticPaths;
+
   /**
-   * Cookie path
+   * 静态资源缓存时间
    */
-  private String path;
+  @Value("${web.static.cache:3600}")
+  private Integer staticCache;
+
   /**
-   * Cookie value
+   * web jsp路径前缀
    */
-  private String value;
-  /**
-   * Cookie max-age in second
-   */
-  private Integer maxAge;
-  /**
-   * Secure ... e.g. use SSL
-   */
-  private boolean secure;
+  @Value("${web.view.jsp.prefix:/WEB-INF/}")
+  private String jspPrefix;
+
 }

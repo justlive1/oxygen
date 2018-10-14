@@ -14,17 +14,27 @@
 package vip.justlive.oxygen.web;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.web.http.Cookie;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.mapping.Action;
 import vip.justlive.oxygen.web.mapping.Mapping.HttpMethod;
+import vip.justlive.oxygen.web.mapping.StaticMapping.StaticException;
+import vip.justlive.oxygen.web.mapping.StaticMapping.StaticSource;
 import vip.justlive.oxygen.web.view.ViewResolver;
 
 /**
@@ -44,16 +54,20 @@ public class DispatcherServlet extends HttpServlet {
           httpMethod);
     }
 
-    Action action = WebPlugin.findActionByPath(requestPath, httpMethod);
-    if (action == null) {
-      handlerNotFound(req, resp);
-      return;
+    try {
+      Action action = WebPlugin.findActionByPath(requestPath, httpMethod);
+      if (action == null) {
+        handlerNotFound(req, resp);
+        return;
+      }
+      handlerAction(action, req, resp);
+    } catch (StaticException e) {
+      handlerStatic(req, resp, e.getSource());
     }
 
-    handlerAction(action, req, resp);
   }
 
-  void handlerAction(Action action, HttpServletRequest req, HttpServletResponse resp) {
+  private void handlerAction(Action action, HttpServletRequest req, HttpServletResponse resp) {
     Request.set(req, action);
     Response.set(resp);
 
@@ -65,10 +79,11 @@ public class DispatcherServlet extends HttpServlet {
 
     try {
       Object result = action.invoke();
+      copyResponse(Response.current(), resp);
       if (action.needRenderView()) {
         ViewResolver viewResolver = WebPlugin.findViewResolver(result);
         if (viewResolver == null) {
-          hanlderNoViewResolver(resp);
+          handlerNoViewResolver(resp);
           return;
         }
         viewResolver.resolveView(req, resp, result);
@@ -82,7 +97,29 @@ public class DispatcherServlet extends HttpServlet {
 
   }
 
-  private void hanlderNoViewResolver(HttpServletResponse resp) {
+  private void copyResponse(Response response, HttpServletResponse resp) {
+    if (response.getContentType() != null) {
+      resp.setContentType(response.getContentType());
+    }
+    resp.setCharacterEncoding(response.getEncoding());
+    response.getHeaders().forEach(resp::addHeader);
+    for (Cookie cookie : response.getCookies().values()) {
+      javax.servlet.http.Cookie jCookie = new javax.servlet.http.Cookie(cookie.getName(),
+          cookie.getValue());
+      jCookie.setPath(cookie.getPath());
+      jCookie.setSecure(cookie.isSecure());
+      if (cookie.getMaxAge() != null) {
+        jCookie.setMaxAge(cookie.getMaxAge());
+      }
+      if (cookie.getDomain() != null) {
+        jCookie.setDomain(cookie.getDomain());
+      }
+      resp.addCookie(jCookie);
+    }
+
+  }
+
+  private void handlerNoViewResolver(HttpServletResponse resp) {
     String msg = String
         .format("No ViewResolver found in container for [%s]", Request.current().getPath());
     log.error(msg);
@@ -113,6 +150,39 @@ public class DispatcherServlet extends HttpServlet {
       throw Exceptions.wrap(ie);
     }
   }
+
+  private void handlerStatic(HttpServletRequest req, HttpServletResponse resp,
+      StaticSource source) {
+    if (log.isDebugEnabled()) {
+      log.debug("handle static source [{}] for path [{}]", source.getPath(), req.getServletPath());
+    }
+    resp.setContentType(source.getContentType());
+    String browserETag = req.getHeader(Constants.IF_NONE_MATCH);
+    String ifModifiedSince = req.getHeader(Constants.IF_MODIFIED_SINCE);
+    long last = source.lastModified();
+    String eTag = source.eTag();
+    SimpleDateFormat format = new SimpleDateFormat(Constants.ETAG_DATA_FORMAT, Locale.US);
+    resp.setHeader(Constants.ETAG, eTag);
+    try {
+      if (eTag.equals(browserETag) && ifModifiedSince != null
+          && format.parse(ifModifiedSince).getTime() >= last) {
+        resp.setStatus(304);
+        return;
+      }
+    } catch (ParseException e) {
+      log.warn("Can't parse 'If-Modified-Since' header date [{}]", ifModifiedSince);
+    }
+    String lastDate = format.format(new Date(last));
+    resp.setHeader(Constants.LAST_MODIFIED, lastDate);
+    resp.setHeader(Constants.CACHE_CONTROL,
+        Constants.MAX_AGE + Constants.EQUAL + ConfigFactory.load(WebConf.class).getStaticCache());
+    try {
+      Files.copy(source.getPath(), resp.getOutputStream());
+    } catch (IOException e) {
+      throw Exceptions.wrap(e);
+    }
+  }
+
 
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse resp)

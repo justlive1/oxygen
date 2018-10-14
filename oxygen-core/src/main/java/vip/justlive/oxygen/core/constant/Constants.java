@@ -25,44 +25,12 @@ public class Constants {
   /**
    * 配置文件默认地址
    */
-  public static final String[] CONFIG_PATHS = {"classpath:/config/*.properties",
-      "classpath:/*.properties"};
-  /**
-   * override配置文件地址属性key
-   */
-  public static final String CONFIG_OVERRIDE_PATH_KEY = "config.override.path";
-  /**
-   * 类扫描路径属性key
-   */
-  public static final String CLASS_SCAN_KEY = "main.class.scan";
+  public static final String[] CONFIG_PATHS = {"classpath*:config.properties",
+      "classpath*:/config/*.properties"};
   /**
    * 默认profile
    */
   public static final String DEFAULT_PROFILE = "default";
-  /**
-   * job核心线程池大小key
-   */
-  public static final String JOB_CORE_POOL_SIZE_KEY = "job.core.pool.size";
-  /**
-   * job核心线程池默认大小
-   */
-  public static final int DEFAULT_JOB_CORE_POOL_SIZE = 10;
-  /**
-   * job线程名称格式
-   */
-  public static final String JOB_THREAD_NAME_FORMAT_KEY = "job.thread.name.format";
-  /**
-   * job线程名称默认格式
-   */
-  public static final String DEFAULT_JOB_THREAD_NAME_FORMAT = "jobs-%d";
-  /**
-   * 缓存实现类
-   */
-  public static final String CACHE_IMPL_CLASS = "cache.impl.class";
-  /**
-   * web jsp路径前缀
-   */
-  public static final String WEB_JSP_PREFIX = "web.view.jsp.prefix";
 
 
   /**
@@ -138,6 +106,10 @@ public class Constants {
    * 与
    */
   public static final String AND = "&";
+  /**
+   * 连字符
+   */
+  public static final String HYPHEN = "-";
   /**
    * 数组类名前缀: "[]"
    */
@@ -221,6 +193,7 @@ public class Constants {
 
   // http
 
+  public static final String ETAG_DATA_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
   public static final String BODY_STORE_KEY = "_body";
   public static final String BOUNDARY = "boundary";
   public static final String HTTP_PREFIX = "http://";
@@ -229,17 +202,25 @@ public class Constants {
   public static final String FORM_DATA = "form-data";
   public static final String FORM_DATA_NAME = "name";
   public static final String FORM_DATA_FILENAME = "filename";
+  public static final String MAX_AGE = "max-age";
 
 
   public static final String ACCEPT = "Accept";
   public static final String ACCEPT_CHARSET = "Accept-Charset";
   public static final String ACCEPT_ENCODING = "Accept-Encoding";
+  public static final String CACHE_CONTROL = "Cache-Control";
   public static final String CHARSET = "charset";
   public static final String CONTENT_TYPE = "Content-Type";
   public static final String CONTENT_DISPOSITION = "Content-disposition";
   public static final String CONTENT_LENGTH = "Content-length";
   public static final String COOKIE = "Cookie";
+  public static final String ETAG = "ETag";
+  public static final String EXPIRES = "Expires";
   public static final String HOST_NAME = "Host";
+  public static final String IF_MATCH = "If-Match";
+  public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
+  public static final String IF_NONE_MATCH = "If-None-Match";
+  public static final String LAST_MODIFIED = "Last-Modified";
   public static final String PROXY_CLIENT_IP = "Proxy-Client-IP";
   public static final String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
   public static final String X_FORWARDED_FOR = "X-Forwarded-For";
