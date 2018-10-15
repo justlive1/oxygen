@@ -33,9 +33,9 @@ oxygen-core 核心部分
   │  │- scan  //类扫描实现目录
   │  │- util  //工具类目录
   │  │- Bootstrap.java  //框架启动引导类
-  │  └─ Plugin.java   //插件接口
+  │  └- Plugin.java   //插件接口
   └─ resources/META-INF/services
-     └─ ...core.Plugin  //Plugin服务实现配置文件
+     └- ...core.Plugin  //Plugin服务实现配置文件
   
 ```
 
@@ -52,10 +52,10 @@ oxygen-jdbc jdbc实现
   │  │- interceptor  //拦截器目录，拦截sql执行前后及异常
   │  │- Jdbc.java  //Jdbc核心操作类，提供crud操作
   │  │- JdbcException.java  //jdbc异常封装
-  │  └─ JdbcPlugin.java   //jdbc插件，与oxygen-core配套使用
+  │  └- JdbcPlugin.java   //jdbc插件，与oxygen-core配套使用
   └─ resources/META-INF/services
      │- ...handler.ColumnHandler //列处理服务配置文件
-     └─ ...core.Plugin  //增加jdbcPlugin服务实现，与oxygen-core配套使用
+     └- ...core.Plugin  //增加jdbcPlugin服务实现，与oxygen-core配套使用
   
 ```
 
@@ -76,18 +76,20 @@ oxygen-web
   │  │- http //http请求解析
   │  │- mapping  //url映射，参数映射相关注解和实体
   │  │- router  //一个示例路由（获取服务器时间）
+  │  │- server  //内置server接口和启动类
   │  │- view  //视图解析
   │  │- DefaultWebAppInitializer.java  //默认初始化实现
   │  │- DispatcherServlet.java  //路由分发器
   │  │- WebAppInitializer.java  //web自动初始化接口，提供给用户自定义使用
   │  │- WebContainerInitializer.java  //容器自动初始化
-  │  └─ WebPlugin.java  //web插件
+  │  │- WebConf.java  //web配置
+  │  └- WebPlugin.java  //web插件
   └─ resources/META-INF/services
       │- ...ServletContainerIntializer //servlet3.0规范
       │- ...core.Plugin  //增加web插件
       │- ...ParamHandler //参数处理服务
       │- ...RequestParse //请求解析服务
-      └─ ...ViewResolver //视图解析服务
+      └- ...ViewResolver //视图解析服务
 ```
 
 
@@ -119,6 +121,13 @@ oxygen-web
 <dependency>
     <groupId>vip.justlive</groupId>
     <artifactId>oxygen-web</artifactId>
+    <version>${oxygen.version}</version>
+</dependency>
+
+<!-- 已依赖了web 并提供了embeded tomcat -->
+<dependency>
+    <groupId>vip.justlive</groupId>
+    <artifactId>oxygen-web-tomcat</artifactId>
     <version>${oxygen.version}</version>
 </dependency>
 
@@ -487,6 +496,27 @@ public class MyWebAppInitializer implements WebAppInitializer {
 }
 ```
 
+#### 使用内置容器启动
+- 依赖 `oxygen-web-tomcat`
+- 在main中使用 `Server.start`启动
+
+```
+<!-- 已依赖了web 并提供了embeded tomcat -->
+<dependency>
+    <groupId>vip.justlive</groupId>
+    <artifactId>oxygen-web-tomcat</artifactId>
+    <version>${oxygen.version}</version>
+</dependency>
+
+
+public static void main(String[] args) {
+  // 启动容器
+  Server.start();
+  ...
+  // 关闭容器
+  Server.stop();
+}
+```
 
 
 ## 联系信息

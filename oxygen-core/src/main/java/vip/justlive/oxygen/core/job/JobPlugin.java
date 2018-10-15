@@ -93,7 +93,7 @@ public class JobPlugin implements Plugin {
       if (scheduled.onApplicationStart()) {
         addOnApplicationStartJob(job, scheduled.async());
       }
-      if(log.isDebugEnabled()){
+      if (log.isDebugEnabled()) {
         log.debug("add a job [{}]", job);
       }
     }

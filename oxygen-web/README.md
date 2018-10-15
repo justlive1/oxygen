@@ -164,3 +164,26 @@ public class MyWebAppInitializer implements WebAppInitializer {
 }
 ```
 
+
+### 使用内置容器启动
+- 依赖 `oxygen-web-tomcat`
+- 在main中使用 `Server.start`启动
+
+```
+<!-- 已依赖了web 并提供了embeded tomcat -->
+<dependency>
+    <groupId>vip.justlive</groupId>
+    <artifactId>oxygen-web-tomcat</artifactId>
+    <version>${oxygen.version}</version>
+</dependency>
+
+
+public static void main(String[] args) {
+  // 启动容器
+  Server.start();
+  ...
+  // 关闭容器
+  Server.stop();
+}
+```
+

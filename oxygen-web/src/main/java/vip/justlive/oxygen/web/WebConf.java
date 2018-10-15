@@ -25,14 +25,33 @@ import vip.justlive.oxygen.core.config.Value;
 public class WebConf {
 
   /**
+   * embedded 启动端口
+   */
+  @Value("${server.port:8080}")
+  private Integer port;
+
+  /**
+   * context path
+   */
+  @Value("${server.contextPath:}")
+  private String contextPath;
+
+  /**
+   * docBase
+   */
+  @Value("${server.docBase:src/main/webapp}")
+  private String docBase;
+
+  /**
    * 默认静态资源请求前缀
    */
   @Value("${web.static.default.prefix:/public}")
   private String defaultStaticPrefix;
+
   /**
    * 默认静态资源目录
    */
-  @Value("${web.static.default.path:/public,/static}")
+  @Value("${web.static.default.path:/public,/static,classpath:/META-INF/resources/webjars}")
   private String[] defaultStaticPaths;
 
   /**

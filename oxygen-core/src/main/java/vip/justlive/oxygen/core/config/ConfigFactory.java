@@ -16,6 +16,9 @@ package vip.justlive.oxygen.core.config;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -56,6 +59,10 @@ public class ConfigFactory {
    * 临时编号前缀
    */
   private static final String TMP_PREFIX = "ConfigFactory.tmp.%s";
+  /**
+   * 解析过的locations
+   */
+  private static final Set<String> PARSED_LOCATIONS = new HashSet<>(4);
 
   private ConfigFactory() {
   }
@@ -77,7 +84,16 @@ public class ConfigFactory {
    * @param locations 路径
    */
   public static void loadProperties(Charset charset, boolean ignoreNotFound, String... locations) {
-    PropertiesLoader loader = new PropertiesLoader(locations);
+    List<String> list = new LinkedList<>();
+    for (String location : locations) {
+      if (PARSED_LOCATIONS.add(location)) {
+        list.add(location);
+      }
+    }
+    if (list.isEmpty()) {
+      return;
+    }
+    PropertiesLoader loader = new PropertiesLoader(list.toArray(new String[0]));
     loader.setCharset(charset);
     loader.setIgnoreNotFound(ignoreNotFound);
     loadProperties(loader);
@@ -178,6 +194,7 @@ public class ConfigFactory {
   public static void clear() {
     FACTORY.clear();
     PROPS.clear();
+    PARSED_LOCATIONS.clear();
   }
 
   /**

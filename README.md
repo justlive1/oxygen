@@ -33,9 +33,9 @@ oxygen-core
   │  │- scan  //class scan module
   │  │- util  //util module
   │  │- Bootstrap.java  //the class to start framework
-  │  └─ Plugin.java   //the interface of plugin
+  │  └- Plugin.java   //the interface of plugin
   └─ resources/META-INF/services
-     └─ ...core.Plugin  //Plugin service configuration file
+     └- ...core.Plugin  //Plugin service configuration file
   
 ```
 
@@ -52,10 +52,10 @@ oxygen-jdbc
   │  │- interceptor  //jdbc execute interceptor
   │  │- Jdbc.java  //the class used to operate database
   │  │- JdbcException.java  //jdbc excption
-  │  └─ JdbcPlugin.java   //jdbc plugin
+  │  └- JdbcPlugin.java   //jdbc plugin
   └─ resources/META-INF/services
      │- ...handler.ColumnHandler //columnHandler service configuration file
-     └─ ...core.Plugin  //add jdbcPlugin
+     └- ...core.Plugin  //add jdbcPlugin
   
 ```
 
@@ -75,18 +75,20 @@ oxygen-web
   │  │- http // http parse
   │  │- mapping  // url mapping and paratemer mapping
   │  │- router  // an example
+  │  │- server  // embedded server
   │  │- view  // view resolver
   │  │- DefaultWebAppInitializer.java  // default web app initializer 
   │  │- DispatcherServlet.java  // dispathcer
   │  │- WebAppInitializer.java  // interface of web app initializer
   │  │- WebContainerInitializer.java  // support of web container initializer
-  │  └─ WebPlugin.java  // web plugin
+  │  │- WebConf.java  // web config properties
+  │  └- WebPlugin.java  // web plugin
   └─ resources/META-INF/services
       │- ...ServletContainerIntializer // servlet3.0
       │- ...core.Plugin  // add web plugin
       │- ...ParamHandler // add paramhander services
       │- ...RequestParse // add request parser services 
-      └─ ...ViewResolver // add view resolver services
+      └- ...ViewResolver // add view resolver services
 ```
 
 
@@ -117,6 +119,13 @@ Add dependencies to your pom.xml:
 <dependency>
     <groupId>vip.justlive</groupId>
     <artifactId>oxygen-web</artifactId>
+    <version>${oxygen.version}</version>
+</dependency>
+
+<!-- web with embedded tomcat-->
+<dependency>
+    <groupId>vip.justlive</groupId>
+    <artifactId>oxygen-web-tomcat</artifactId>
     <version>${oxygen.version}</version>
 </dependency>
 
@@ -489,6 +498,30 @@ public class MyWebAppInitializer implements WebAppInitializer {
   }
 }
 ```
+
+
+#### run with embedded server
+- depend `oxygen-web-tomcat`
+- run application using `Server.start`
+
+```
+<!-- web wiht embeded tomcat -->
+<dependency>
+    <groupId>vip.justlive</groupId>
+    <artifactId>oxygen-web-tomcat</artifactId>
+    <version>${oxygen.version}</version>
+</dependency>
+
+
+public static void main(String[] args) {
+  // start server
+  Server.start();
+  ...
+  // stop server
+  Server.stop();
+}
+```
+
 
 
 ## Contact information

@@ -29,8 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.core.io.ClassPathResource;
-import vip.justlive.oxygen.core.io.FileSystemResource;
+import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.ExpiringMap;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
@@ -125,13 +124,10 @@ public class StaticMapping {
 
   private StaticSource findMappedSource(String path, String prefix, String basePath) {
     String filePath = basePath + path.substring(prefix.length());
-    SourceResource sourceResource;
-    if (filePath.startsWith(Constants.FILE_PREFIX)) {
-      sourceResource = new FileSystemResource(filePath);
-    } else {
-      sourceResource = new ClassPathResource(filePath);
-    }
-    try (InputStream is = sourceResource.getInputStream()) {
+    InputStream is = null;
+    try {
+      SourceResource sourceResource = new SimpleResourceLoader(filePath);
+      is = sourceResource.getInputStream();
       File savedFile = new File(TEMP_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
       Files.copy(is, savedFile.toPath());
       savedFile.deleteOnExit();
@@ -139,6 +135,14 @@ public class StaticMapping {
     } catch (IOException e) {
       // not found or error happens ignore
       return null;
+    } finally {
+      if (is != null) {
+        try {
+          is.close();
+        } catch (IOException e) {
+          // nothing
+        }
+      }
     }
   }
 
@@ -190,8 +194,8 @@ public class StaticMapping {
      * @return etag
      */
     public String eTag() {
-      return Constants.DOUBLE_QUOTATION_MARK + lastModified() + Constants.HYPHEN
-          + path.hashCode() + Constants.DOUBLE_QUOTATION_MARK;
+      return Constants.DOUBLE_QUOTATION_MARK + lastModified() + Constants.HYPHEN + path.hashCode()
+          + Constants.DOUBLE_QUOTATION_MARK;
     }
   }
 
