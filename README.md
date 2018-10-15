@@ -95,7 +95,7 @@ oxygen-web
 ## Features
 
 * light and simple to use
-* user `ServiceLoader` to load plugins and easy to extend
+* use `ServiceLoader` to load plugins and easy to extend
 
 ## Install
 
