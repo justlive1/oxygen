@@ -125,11 +125,7 @@ public class Response implements Serializable {
    */
   public void setCookie(String name, String value, String domain, String path, Integer maxAge,
       boolean secure) {
-    Cookie cookie = cookies.get(name);
-    if (cookie == null) {
-      cookie = new Cookie();
-      cookies.put(name, cookie);
-    }
+    Cookie cookie = cookies.computeIfAbsent(name, k -> new Cookie());
     cookie.setName(name);
     cookie.setValue(value);
     cookie.setDomain(domain);

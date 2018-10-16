@@ -190,6 +190,47 @@ public class Constants {
    * file
    */
   public static final String FILE_PREFIX = "file:";
+  /**
+   * 后缀名jar
+   */
+  public static final String JAR_EXT = ".jar";
+
+  /**
+   * META-INF
+   */
+  public static final String META_INF = "META-INF";
+  /**
+   * /META-INF
+   */
+  public static final String META_INF_PATH = "/META-INF";
+  /**
+   * META-INF/resources
+   */
+  public static final String META_INF_RESOURCES = "META-INF/resources";
+  /**
+   * /META-INF/resources
+   */
+  public static final String META_INF_RESOURCES_PATH = "/META-INF/resources";
+  /**
+   * WEB-INF
+   */
+  public static final String WEB_INF = "WEB-INF";
+  /**
+   * /WEB-INF
+   */
+  public static final String WEB_INF_PATH = "/WEB-INF";
+  /**
+   * WEB-INF/web.xml
+   */
+  public static final String WEB_INF_WEB_XML = "WEB-INF/web.xml";
+  /**
+   * /WEB-INF/lib/
+   */
+  public static final String WEB_INF_LIB = "/WEB-INF/lib/";
+  /**
+   * /WEB-INF/classes
+   */
+  public static final String WEB_INF_CLASSES = "/WEB-INF/classes";
 
   // http
 

@@ -2,7 +2,10 @@ package vip.justlive.oxygen.web.tomcat;
 
 import java.io.File;
 import java.util.concurrent.Executors;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
+import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
@@ -21,9 +24,21 @@ import vip.justlive.oxygen.web.server.WebServer;
  *
  * @author wubo
  */
+@Slf4j
 public class TomcatWebServer implements WebServer {
 
   private Tomcat tomcat;
+
+  private void checkDir(File... dirs) {
+    if (dirs == null) {
+      return;
+    }
+    for (File dir : dirs) {
+      if (!dir.exists() && dir.mkdirs()) {
+        log.info("create dir [{}]", dir.getAbsolutePath());
+      }
+    }
+  }
 
   private void initServer() {
     if (tomcat == null) {
@@ -31,12 +46,18 @@ public class TomcatWebServer implements WebServer {
     }
 
     WebConf webConf = ConfigFactory.load(WebConf.class);
-    String baseDir = new File(ConfigFactory.load(CoreConf.class).getBaseTempDir(),
-        Tomcat.class.getSimpleName()).getAbsolutePath();
-    String docBase = new File(webConf.getDocBase()).getAbsolutePath();
-    tomcat.setBaseDir(baseDir);
-    tomcat.getHost().setAutoDeploy(false);
-    tomcat.addWebapp(webConf.getContextPath(), docBase);
+    File baseDir = new File(ConfigFactory.load(CoreConf.class).getBaseTempDir(),
+        Tomcat.class.getSimpleName());
+    File docBase = new File(baseDir, Context.class.getSimpleName());
+    checkDir(baseDir, docBase);
+    tomcat.setBaseDir(baseDir.getAbsolutePath());
+    Host host = tomcat.getHost();
+    host.setAutoDeploy(false);
+    Context ctx = tomcat.addWebapp(host, webConf.getContextPath(), docBase.getAbsolutePath(),
+        new FatJarContextConfig());
+    ctx.setJarScanner(new FatJarScanner());
+    ctx.setParentClassLoader(getClass().getClassLoader());
+    ctx.addLifecycleListener(new FatJarWebXmlListener());
     tomcat.setPort(webConf.getPort());
 
     TomcatConf tomcatConf = ConfigFactory.load(TomcatConf.class);
@@ -48,14 +69,14 @@ public class TomcatWebServer implements WebServer {
     connector.setURIEncoding(tomcatConf.getUriEncoding());
     ProtocolHandler protocolHandler = connector.getProtocolHandler();
     if (protocolHandler instanceof AbstractProtocol) {
-      AbstractProtocol<?> handler = (AbstractProtocol) protocolHandler;
+      AbstractProtocol<?> handler = (AbstractProtocol<?>) protocolHandler;
       handler.setAcceptCount(tomcatConf.getAcceptCount());
       handler.setMaxConnections(tomcatConf.getMaxConnections());
       handler.setMinSpareThreads(tomcatConf.getMinSpareThreads());
       handler.setMaxThreads(tomcatConf.getMaxThreads());
       handler.setConnectionTimeout(tomcatConf.getConnectionTimeout());
       if (handler instanceof AbstractHttp11Protocol) {
-        AbstractHttp11Protocol protocol = (AbstractHttp11Protocol) handler;
+        AbstractHttp11Protocol<?> protocol = (AbstractHttp11Protocol<?>) handler;
         protocol.setMaxHttpHeaderSize(tomcatConf.getMaxHttpHeaderSize());
       }
     }
