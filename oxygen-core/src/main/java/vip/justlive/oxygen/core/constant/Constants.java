@@ -234,6 +234,9 @@ public class Constants {
 
   // http
 
+  public static final int NOT_FOUND = 404;
+  public static final int SERVER_ERROR = 500;
+
   public static final String ETAG_DATA_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
   public static final String BODY_STORE_KEY = "_body";
   public static final String BOUNDARY = "boundary";
@@ -266,6 +269,9 @@ public class Constants {
   public static final String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
   public static final String X_FORWARDED_FOR = "X-Forwarded-For";
   public static final String X_REAL_IP = "X-Real-IP";
+  public static final String X_REQUESTED_WITH = "X-Requested-With";
+  public static final String XML_HTTP_REQUEST = "XMLHttpRequest";
+
 
   public static final String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
   public static final String APPLICATION_JSON = "application/json";

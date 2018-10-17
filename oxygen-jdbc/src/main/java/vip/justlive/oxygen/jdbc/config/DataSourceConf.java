@@ -66,6 +66,8 @@ public class DataSourceConf {
 
   /**
    * 校验合法
+   *
+   * @return conf
    */
   public DataSourceConf validate() {
     vip.justlive.oxygen.core.util.Checks.notNull(driverClassName, "driverClassName cannot be null");

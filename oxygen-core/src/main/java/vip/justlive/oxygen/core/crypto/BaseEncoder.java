@@ -88,7 +88,7 @@ public abstract class BaseEncoder implements Encoder {
    * 生成并包装salt
    *
    * @param salt salt
-   * @return
+   * @return wrapper salt
    */
   public String wrapperSalt(String salt) {
     return PREFIX.concat(salt).concat(SUFFIX);

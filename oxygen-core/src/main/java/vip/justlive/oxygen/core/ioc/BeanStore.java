@@ -36,6 +36,7 @@ public class BeanStore {
    * 根据类型获取bean
    *
    * @param clazz 类
+   * @param <T> 泛型
    * @return bean
    */
   public static <T> T getBean(Class<T> clazz) {
@@ -67,6 +68,7 @@ public class BeanStore {
    *
    * @param name beanId
    * @param clazz 类
+   * @param <T> 泛型
    * @return bean
    */
   public static <T> T getBean(String name, Class<T> clazz) {

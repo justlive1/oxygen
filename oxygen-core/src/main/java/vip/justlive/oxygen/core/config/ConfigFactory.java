@@ -210,6 +210,7 @@ public class ConfigFactory {
    * 解析
    *
    * @param clazz 类
+   * @param prefix 前綴
    * @param <T> 泛型类
    * @return 配置类
    */

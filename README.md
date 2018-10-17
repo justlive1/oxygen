@@ -441,6 +441,16 @@ public class CommonRouter {
 Request.current()
 Response.current()
 
+
+// redirect page for 404 error
+web.error.404.page=
+// handler by yourself for 404 error
+web.error.404.handler=
+// redirect page for 500 error
+web.error.500.page=
+// handler by yourself for 404 error
+web.error.500.handler=
+
 ```
 
 

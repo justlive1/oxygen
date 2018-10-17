@@ -26,8 +26,8 @@ public interface ColumnHandler {
   /**
    * 是否支持该类型处理
    *
-   * @param type
-   * @return
+   * @param type type
+   * @return true is supported
    */
   boolean supported(Class<?> type);
 

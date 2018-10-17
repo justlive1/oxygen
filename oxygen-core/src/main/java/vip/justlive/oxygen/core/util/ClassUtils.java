@@ -263,6 +263,7 @@ public class ClassUtils {
    * 验证类名是否为cglib代理类名
    *
    * @param className the class name to check
+   * @return true为是代理类
    */
   public static boolean isCglibProxyClassName(String className) {
     return (className != null && className.contains(Constants.CGLIB_CLASS_SEPARATOR));

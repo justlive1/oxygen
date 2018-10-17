@@ -438,6 +438,15 @@ public class CommonRouter {
 Request.current()
 Response.current()
 
+// 配置404错误页面跳转
+web.error.404.page=
+// 配置404自定义处理
+web.error.404.handler=
+// 配置500错误页面跳转
+web.error.500.page=
+// 配置500自定义处理
+web.error.500.handler=
+
 ```
 
 

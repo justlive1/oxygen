@@ -14,3 +14,4 @@
 
 vip.justlive.oxygen.web.view.DefaultViewResolver
 vip.justlive.oxygen.web.view.JspViewResolver
+vip.justlive.oxygen.web.view.ThymeleafViewResolver

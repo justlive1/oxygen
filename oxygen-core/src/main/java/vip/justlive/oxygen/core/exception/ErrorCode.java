@@ -55,7 +55,7 @@ public class ErrorCode implements Serializable {
   /**
    * 获取module + code
    *
-   * @return
+   * @return module + code
    */
   public String getModuleCode() {
     if (module == null) {

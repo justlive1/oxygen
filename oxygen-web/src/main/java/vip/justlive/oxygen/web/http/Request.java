@@ -17,10 +17,12 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.web.mapping.Action;
 
 /**
@@ -40,7 +42,6 @@ public class Request implements Serializable {
 
   private final transient HttpServletRequest originalRequest;
   private final transient Action action;
-
   /**
    * 主机名
    */
@@ -85,6 +86,10 @@ public class Request implements Serializable {
    * multipart
    */
   Multipart multipart;
+  /**
+   * 异常
+   */
+  transient Exception exception;
   /**
    * query params
    */
@@ -232,5 +237,23 @@ public class Request implements Serializable {
       return cookie.getValue();
     }
     return null;
+  }
+
+  /**
+   * 设置当前请求异常
+   *
+   * @param exception 异常
+   */
+  public void setException(Exception exception) {
+    this.exception = exception;
+  }
+
+  /**
+   * 是否为ajax请求
+   *
+   * @return true为ajax请求
+   */
+  public boolean isAjax() {
+    return Objects.equals(getHeader(Constants.X_REQUESTED_WITH), Constants.XML_HTTP_REQUEST);
   }
 }

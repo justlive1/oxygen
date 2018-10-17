@@ -135,20 +135,13 @@ public class DispatcherServlet extends HttpServlet {
       log.debug("DispatcherServlet not found path [{}] on method [{}]", req.getServletPath(),
           req.getMethod());
     }
-    try {
-      resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-    } catch (IOException e) {
-      throw Exceptions.wrap(e);
-    }
+    WebPlugin.ERROR_HANDLERS.get(Constants.NOT_FOUND).handle(req, resp);
   }
 
   private void handlerError(HttpServletRequest req, HttpServletResponse resp, Exception e) {
     log.error("DispatcherServlet occurs an error for path [{}]", req.getServletPath(), e);
-    try {
-      resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    } catch (IOException ie) {
-      throw Exceptions.wrap(ie);
-    }
+    Request.current().setException(e);
+    WebPlugin.ERROR_HANDLERS.get(Constants.SERVER_ERROR).handle(req, resp);
   }
 
   private void handlerStatic(HttpServletRequest req, HttpServletResponse resp,

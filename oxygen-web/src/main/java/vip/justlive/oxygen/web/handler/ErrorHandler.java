@@ -11,33 +11,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.ioc;
+package vip.justlive.oxygen.web.handler;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
- * 注入策略
+ * 错误处理接口
  *
  * @author wubo
  */
-public interface Strategy {
+public interface ErrorHandler {
 
   /**
-   * 实例对象
+   * 处理
    *
-   * @param clazz 类
-   * @return 实例
+   * @param request req
+   * @param response resp
    */
-  Object instance(Class<?> clazz);
-
-  /**
-   * 设置非必须
-   */
-  void nonRequired();
-
-  /**
-   * 是否需要
-   *
-   * @return true需要
-   */
-  boolean isRequired();
-
+  void handle(HttpServletRequest request, HttpServletResponse response);
 }

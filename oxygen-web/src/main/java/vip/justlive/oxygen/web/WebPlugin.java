@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.web;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +34,8 @@ import vip.justlive.oxygen.core.ioc.IocPlugin;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 import vip.justlive.oxygen.core.util.Checks;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.web.handler.DefaultErrorHandler;
+import vip.justlive.oxygen.web.handler.ErrorHandler;
 import vip.justlive.oxygen.web.handler.ParamHandler;
 import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.mapping.Action;
@@ -53,6 +56,7 @@ import vip.justlive.oxygen.web.view.ViewResolver;
 public class WebPlugin implements Plugin {
 
   static final List<RequestParse> REQUEST_PARSES = new LinkedList<>();
+  static final Map<Integer, ErrorHandler> ERROR_HANDLERS = new HashMap<>(2, 1f);
   private static final List<ParamHandler> PARAM_HANDLERS = new LinkedList<>();
   private static final StaticMapping STATIC_MAPPING = new StaticMapping();
   private static final Map<HttpMethod, Map<String, Action>> SIMPLE_ACTION_MAP = new ConcurrentHashMap<>(
@@ -61,7 +65,6 @@ public class WebPlugin implements Plugin {
       8, 1f);
   private static final Set<ViewResolver> VIEW_RESOLVERS = new HashSet<>(4);
   private static final Pattern REGEX_PATH_GROUP = Pattern.compile("\\{(\\w+)\\}");
-
 
   static {
     for (HttpMethod httpMethod : HttpMethod.values()) {
@@ -164,14 +167,15 @@ public class WebPlugin implements Plugin {
     loadParamHandler();
     loadViewResolver();
     loadStaticMapping();
+    loadErrorHandler();
   }
-
 
   @Override
   public void stop() {
     SIMPLE_ACTION_MAP.clear();
     REGEX_ACTION_MAP.clear();
     REQUEST_PARSES.clear();
+    ERROR_HANDLERS.clear();
   }
 
   private void loadRequestParse() {
@@ -301,4 +305,30 @@ public class WebPlugin implements Plugin {
       addStaticResources(conf.getDefaultStaticPrefix(), path);
     }
   }
+
+  private void loadErrorHandler() {
+    WebConf webConf = ConfigFactory.load(WebConf.class);
+    try {
+      ErrorHandler errorHandler;
+      if (webConf.getError404Handler() != null && webConf.getError404Handler().length() > 0) {
+        errorHandler = (ErrorHandler) ClassUtils
+            .forName(webConf.getError404Handler(), ClassUtils.getDefaultClassLoader())
+            .newInstance();
+      } else {
+        errorHandler = new DefaultErrorHandler(webConf.getError404Page(), Constants.NOT_FOUND);
+      }
+      ERROR_HANDLERS.put(Constants.NOT_FOUND, errorHandler);
+      if (webConf.getError500Handler() != null && webConf.getError500Handler().length() > 0) {
+        errorHandler = (ErrorHandler) ClassUtils
+            .forName(webConf.getError500Handler(), ClassUtils.getDefaultClassLoader())
+            .newInstance();
+      } else {
+        errorHandler = new DefaultErrorHandler(webConf.getError500Page(), Constants.SERVER_ERROR);
+      }
+      ERROR_HANDLERS.put(Constants.SERVER_ERROR, errorHandler);
+    } catch (Exception e) {
+      throw Exceptions.wrap(e);
+    }
+  }
+
 }
