@@ -41,7 +41,7 @@ public class Request implements Serializable {
   private static final String[] EMPTY = new String[0];
 
   private final transient HttpServletRequest originalRequest;
-  private final transient Action action;
+  private transient Action action;
   /**
    * 主机名
    */
@@ -107,19 +107,17 @@ public class Request implements Serializable {
    */
   private Map<String, Cookie> cookies;
 
-  Request(HttpServletRequest originalRequest, Action action) {
+  Request(HttpServletRequest originalRequest) {
     this.originalRequest = originalRequest;
-    this.action = action;
   }
 
   /**
    * 设置线程值Request
    *
    * @param originalRequest 原始request
-   * @param action 执行逻辑
    */
-  public static void set(HttpServletRequest originalRequest, Action action) {
-    Request request = new Request(originalRequest, action);
+  public static void set(HttpServletRequest originalRequest) {
+    Request request = new Request(originalRequest);
     request.params = new HashMap<>(8);
     request.pathVariables = new HashMap<>(2);
     request.cookies = new HashMap<>(4);
@@ -255,5 +253,14 @@ public class Request implements Serializable {
    */
   public boolean isAjax() {
     return Objects.equals(getHeader(Constants.X_REQUESTED_WITH), Constants.XML_HTTP_REQUEST);
+  }
+
+  /**
+   * 设置action
+   *
+   * @param action action
+   */
+  public void setAction(Action action) {
+    this.action = action;
   }
 }

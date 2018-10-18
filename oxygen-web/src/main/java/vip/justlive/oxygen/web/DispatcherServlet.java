@@ -54,6 +54,9 @@ public class DispatcherServlet extends HttpServlet {
           httpMethod);
     }
 
+    Request.set(req);
+    Response.set(resp);
+
     try {
       Action action = WebPlugin.findActionByPath(requestPath, httpMethod);
       if (action == null) {
@@ -63,14 +66,15 @@ public class DispatcherServlet extends HttpServlet {
       handlerAction(action, req, resp);
     } catch (StaticException e) {
       handlerStatic(req, resp, e.getSource());
+    } finally {
+      Request.clear();
+      Response.clear();
     }
 
   }
 
   private void handlerAction(Action action, HttpServletRequest req, HttpServletResponse resp) {
-    Request.set(req, action);
-    Response.set(resp);
-
+    Request.current().setAction(action);
     for (RequestParse requestParse : WebPlugin.REQUEST_PARSES) {
       if (requestParse.supported(req)) {
         requestParse.handle(req);
@@ -90,9 +94,6 @@ public class DispatcherServlet extends HttpServlet {
       }
     } catch (Exception e) {
       handlerError(req, resp, e);
-    } finally {
-      Request.clear();
-      Response.clear();
     }
 
   }

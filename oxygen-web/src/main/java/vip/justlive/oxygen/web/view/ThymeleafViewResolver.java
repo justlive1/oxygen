@@ -17,6 +17,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ClassUtils;
 
@@ -57,6 +58,7 @@ public class ThymeleafViewResolver implements ViewResolver {
     check();
     View view = (View) data;
     try {
+      response.setContentType(Constants.TEXT_HTML);
       handler.handler(view.getPath(), view.getData(), response.getWriter());
     } catch (IOException e) {
       throw Exceptions.wrap(e);

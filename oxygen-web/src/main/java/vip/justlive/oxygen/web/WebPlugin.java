@@ -277,19 +277,18 @@ public class WebPlugin implements Plugin {
   private String makePath(String parent, String child) {
     Checks.notNull(parent);
     Checks.notNull(child);
-    StringBuilder sb = new StringBuilder();
-    if (!parent.startsWith(Constants.ROOT_PATH)) {
-      sb.append(Constants.ROOT_PATH);
-    }
-    sb.append(parent);
-    if (parent.endsWith(Constants.ROOT_PATH)) {
+    StringBuilder sb = new StringBuilder(parent);
+    if (parent.endsWith(Constants.ROOT_PATH) && child.startsWith(Constants.ROOT_PATH)) {
       sb.deleteCharAt(sb.length() - 1);
     }
-    if (!child.startsWith(Constants.ROOT_PATH)) {
+    if (!parent.endsWith(Constants.ROOT_PATH) && !child.startsWith(Constants.ROOT_PATH)) {
       sb.append(Constants.ROOT_PATH);
     }
     sb.append(child);
-    if (child.endsWith(Constants.ROOT_PATH)) {
+    if (sb.indexOf(Constants.ROOT_PATH) != 0) {
+      sb.insert(0, Constants.ROOT_PATH);
+    }
+    if (sb.length() > 1 && sb.lastIndexOf(Constants.ROOT_PATH) == sb.length() - 1) {
       sb.deleteCharAt(sb.length() - 1);
     }
     return sb.toString();

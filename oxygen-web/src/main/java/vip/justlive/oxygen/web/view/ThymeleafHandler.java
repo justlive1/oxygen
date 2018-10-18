@@ -22,12 +22,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.thymeleaf.IEngineConfiguration;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.IContext;
+import org.thymeleaf.context.WebContext;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 import org.thymeleaf.templateresource.ITemplateResource;
 import org.thymeleaf.templateresource.StringTemplateResource;
@@ -38,6 +37,8 @@ import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.web.http.Request;
+import vip.justlive.oxygen.web.http.Response;
 
 /**
  * thymeleaf handler
@@ -67,7 +68,10 @@ public class ThymeleafHandler {
   }
 
   public void handler(String path, Map<String, Object> data, Writer writer) {
-    templateEngine.process(path, new WebContext(data, Locale.getDefault()), writer);
+    Request request = Request.current();
+    templateEngine.process(path,
+        new WebContext(request.getOriginalRequest(), Response.current().getOriginalResponse(),
+            request.getOriginalRequest().getServletContext(), Locale.getDefault(), data), writer);
   }
 
   /**
@@ -121,38 +125,4 @@ public class ThymeleafHandler {
     }
   }
 
-  public static class WebContext implements IContext {
-
-    private final Map<String, Object> data;
-    private final Locale locale;
-
-    WebContext(Map<String, Object> data, Locale locale) {
-      this.data = data;
-      if (locale == null) {
-        this.locale = Locale.getDefault();
-      } else {
-        this.locale = locale;
-      }
-    }
-
-    @Override
-    public java.util.Locale getLocale() {
-      return locale;
-    }
-
-    @Override
-    public boolean containsVariable(String name) {
-      return data.containsKey(name);
-    }
-
-    @Override
-    public Set<String> getVariableNames() {
-      return data.keySet();
-    }
-
-    @Override
-    public Object getVariable(String name) {
-      return data.get(name);
-    }
-  }
 }
