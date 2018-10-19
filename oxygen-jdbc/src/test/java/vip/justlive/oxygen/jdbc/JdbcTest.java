@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
+import vip.justlive.oxygen.jdbc.record.Record;
 
 /**
  * @author wubo
@@ -49,5 +50,27 @@ public class JdbcTest {
 
     Assert.assertNull(Jdbc.query(sql, Option.class, 2));
     Assert.assertEquals(0, Jdbc.queryForList(sql, Option.class, 2).size());
+
+    option = Record.findById(Option.class, 1);
+    Assert.assertEquals(Long.valueOf(1222), option.getLl());
+
+    option = new Option();
+    option.setId(123l);
+    option.setFl(0.2f);
+    Record.insert(option);
+
+    Assert.assertEquals(2, Record.count(new Option()));
+
+    Record.deleteById(Option.class, 123);
+
+    Jdbc.startTx();
+    Record.delete(new Option());
+    Jdbc.rollbackTx();
+
+    Jdbc.closeTx();
+
+    Assert.assertEquals(1, Record.count(new Option()));
+
   }
+
 }

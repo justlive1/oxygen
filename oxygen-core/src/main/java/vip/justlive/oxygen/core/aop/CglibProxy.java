@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.core.aop;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import vip.justlive.oxygen.core.util.ClassUtils;
 
 /**
  * cglib代理
@@ -59,10 +59,7 @@ public class CglibProxy implements MethodInterceptor {
     Enhancer enhancer = new Enhancer();
     enhancer.setSuperclass(targetClass);
     enhancer.setCallback(CGLIB_PROXY);
-    Class<?>[] classes = new Class[args.length];
-    for (int i = 0; i < args.length; i++) {
-      classes[i] = ClassUtils.getCglibActualClass(args[i].getClass());
-    }
+    Class<?>[] classes = getArgsTypes(targetClass, args);
     return targetClass.cast(enhancer.create(classes, args));
   }
 
@@ -88,11 +85,31 @@ public class CglibProxy implements MethodInterceptor {
         invocation.setReturnValue(methodProxy.invokeSuper(obj, args));
       }
     } catch (Exception e) {
-      doCathing(interceptors, invocation);
+      doCatching(interceptors, invocation);
       throw e;
     }
     doAfter(interceptors, invocation);
     return invocation.getReturnValue();
+  }
+
+  private static Class<?>[] getArgsTypes(Class<?> clazz, Object... args) {
+    for (Constructor<?> constructor : clazz.getConstructors()) {
+      if (constructor.getParameterCount() != args.length) {
+        continue;
+      }
+      Class<?>[] paramsTypes = constructor.getParameterTypes();
+      boolean matched = true;
+      for (int i = 0; i < args.length; i++) {
+        if (!paramsTypes[i].isAssignableFrom(args[i].getClass())) {
+          matched = false;
+          break;
+        }
+      }
+      if (matched) {
+        return paramsTypes;
+      }
+    }
+    return new Class<?>[args.length];
   }
 
   private boolean doBefore(List<Interceptor> interceptors, Invocation invocation) {
@@ -108,7 +125,7 @@ public class CglibProxy implements MethodInterceptor {
     return false;
   }
 
-  private boolean doCathing(List<Interceptor> interceptors, Invocation invocation) {
+  private boolean doCatching(List<Interceptor> interceptors, Invocation invocation) {
     for (int index = interceptors.size() - 1; index >= 0; index--) {
       if (!interceptors.get(index).catching(invocation)) {
         if (log.isDebugEnabled()) {

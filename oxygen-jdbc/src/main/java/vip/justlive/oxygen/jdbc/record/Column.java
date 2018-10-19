@@ -11,39 +11,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.jdbc;
+package vip.justlive.oxygen.jdbc.record;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import lombok.Data;
-import vip.justlive.oxygen.jdbc.record.Column;
-import vip.justlive.oxygen.jdbc.record.Table;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * 列
+ *
  * @author wubo
  */
-@Data
-@Table
-public class Option {
+@Documented
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Column {
 
-  @Column(pk = true)
-  private Long id;
+  /**
+   * 列名
+   *
+   * @return 列名
+   */
+  String value() default "";
 
-  private String st;
-
-  private Integer it;
-
-  private Long lo;
-
-  private float fl;
-
-  private boolean bl;
-
-  private BigDecimal bd;
-
-  private Date dt;
-
-  @Column("lo")
-  private Long ll;
-
+  /**
+   * 是否主键
+   *
+   * @return true为主键
+   */
+  boolean pk() default false;
 }

@@ -138,6 +138,7 @@ public class Jdbc {
     Connection connection = getConnection(dataSourceName);
     if (connection != null) {
       try {
+        connection.setAutoCommit(false);
         connection.commit();
         connection.close();
       } catch (SQLException e) {
@@ -149,9 +150,33 @@ public class Jdbc {
   }
 
   /**
+   * 回滚事务 默认primary数据源
+   */
+  public static void rollbackTx() {
+    rollbackTx(PRIMARY_KEY);
+  }
+
+  /**
+   * 回滚事务
+   *
+   * @param dataSourceName 数据源名称
+   */
+  public static void rollbackTx(String dataSourceName) {
+    Connection connection = getConnection(dataSourceName);
+    if (connection != null) {
+      try {
+        connection.setAutoCommit(false);
+        connection.rollback();
+      } catch (SQLException e) {
+        throw JdbcException.wrap(e);
+      }
+    }
+  }
+
+  /**
    * 执行 select 操作
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param clazz bean类型
@@ -166,7 +191,7 @@ public class Jdbc {
   /**
    * 执行 select 操作
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param clazz bean类型
@@ -181,7 +206,7 @@ public class Jdbc {
   /**
    * 执行 select 操作
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -197,7 +222,7 @@ public class Jdbc {
   /**
    * 执行 select 操作
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -214,7 +239,7 @@ public class Jdbc {
   /**
    * 执行 select 操作
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param handler 结果集处理器
@@ -229,7 +254,7 @@ public class Jdbc {
   /**
    * 执行 select 操作
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param handler 结果集处理器
@@ -244,7 +269,7 @@ public class Jdbc {
   /**
    * 执行 select 操作
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -261,7 +286,7 @@ public class Jdbc {
   /**
    * 执行 select 操作
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -272,7 +297,12 @@ public class Jdbc {
    */
   public static <T> T query(String dataSourceName, String sql, ResultSetHandler<T> handler,
       List<Object> params) {
-    return query(getConnection(dataSourceName), sql, handler, params, true);
+    Connection connection = getConnection(dataSourceName);
+    try {
+      return query(connection, sql, handler, params, connection.getAutoCommit());
+    } catch (SQLException e) {
+      throw JdbcException.wrap(e);
+    }
   }
 
   /**
@@ -364,7 +394,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为对象集合
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param clazz bean类型
@@ -379,7 +409,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为对象集合
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -396,7 +426,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为对象集合
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param clazz bean类型
@@ -411,7 +441,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为对象集合
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -428,7 +458,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为map
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param params 参数
@@ -441,7 +471,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为map
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -456,7 +486,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为map
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param params 参数
@@ -469,7 +499,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为map
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -484,7 +514,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为map集合
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param params 参数
@@ -497,7 +527,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为map集合
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -512,7 +542,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为map集合
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param params 参数
@@ -525,7 +555,7 @@ public class Jdbc {
   /**
    * 执行 select 操作 并转换为map集合
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -540,7 +570,7 @@ public class Jdbc {
   /**
    * 执行 INSERT、 UPDATE、 DELETE 操作
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param params 参数
@@ -553,7 +583,7 @@ public class Jdbc {
   /**
    * 执行 INSERT、 UPDATE、 DELETE 操作
    * <br>
-   * 使用primary数据源，自动关闭连接
+   * 使用primary数据源
    *
    * @param sql sql
    * @param params 参数
@@ -566,7 +596,7 @@ public class Jdbc {
   /**
    * 执行 INSERT、 UPDATE、 DELETE 操作
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -574,13 +604,18 @@ public class Jdbc {
    * @return 受影响行数
    */
   public static int update(String dataSourceName, String sql, Object... params) {
-    return update(getConnection(dataSourceName), sql, Arrays.asList(params));
+    Connection connection = getConnection(dataSourceName);
+    try {
+      return update(connection, sql, Arrays.asList(params), connection.getAutoCommit());
+    } catch (SQLException e) {
+      throw JdbcException.wrap(e);
+    }
   }
 
   /**
    * 执行 INSERT、 UPDATE、 DELETE 操作
    * <br>
-   * 使用dataSourceName数据源，自动关闭连接
+   * 使用dataSourceName数据源
    *
    * @param dataSourceName 数据源名称
    * @param sql sql
@@ -588,7 +623,12 @@ public class Jdbc {
    * @return 受影响行数
    */
   public static int update(String dataSourceName, String sql, List<Object> params) {
-    return update(getConnection(dataSourceName), sql, params, true);
+    Connection connection = getConnection(dataSourceName);
+    try {
+      return update(connection, sql, params, connection.getAutoCommit());
+    } catch (SQLException e) {
+      throw JdbcException.wrap(e);
+    }
   }
 
   /**
@@ -645,6 +685,7 @@ public class Jdbc {
       close(stmt);
       if (closeCon) {
         close(connection);
+        removeThreadLocal(connection);
       }
       onFinally(sql, params, rows);
     }

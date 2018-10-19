@@ -109,10 +109,12 @@ public class ThymeleafHandler {
         throw Exceptions.wrap(e);
       } finally {
         try {
-          if (isCacheable()) {
-            CACHE.putIfAbsent(template, path);
-          } else {
-            Files.deleteIfExists(path);
+          if (path != null) {
+            if (isCacheable()) {
+              CACHE.putIfAbsent(template, path);
+            } else {
+              Files.deleteIfExists(path);
+            }
           }
           if (is != null) {
             is.close();

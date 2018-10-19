@@ -30,6 +30,10 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <hikaricp.version>3.2.0</hikaricp.version>
+    <h2.version>1.4.197</h2.version>
+    <logback.version>1.2.3</logback.version>
   </properties>
 
 
@@ -48,6 +52,13 @@
     </dependency>
 
     <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <optional>true</optional>
+      <version>${hikaricp.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -56,14 +67,14 @@
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <version>1.4.197</version>
+      <version>${h2.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.2.3</version>
+      <version>${logback.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

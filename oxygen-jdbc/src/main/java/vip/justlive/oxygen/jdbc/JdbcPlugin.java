@@ -66,7 +66,7 @@ public class JdbcPlugin implements Plugin {
       for (String name : primary.getMulti()) {
         DataSourceConf conf = ConfigFactory
             .load(DataSourceConf.class, String.format(Jdbc.TEMPLATE, name));
-        Jdbc.addDataSource(name, DataSourceBuilder.build(conf.validate()));
+        Jdbc.addDataSource(name, DataSourceBuilder.build(conf.validate(), name));
       }
     }
   }

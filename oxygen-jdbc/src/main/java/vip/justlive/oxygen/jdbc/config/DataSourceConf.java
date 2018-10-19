@@ -25,6 +25,16 @@ import lombok.Data;
 public class DataSourceConf {
 
   /**
+   * 数据源类型
+   */
+  public enum TYPE {
+    /**
+     * hikari
+     */
+    HIKARI
+  }
+
+  /**
    * 是否禁用jdbc插件自动初始化
    */
   private boolean disabled = false;

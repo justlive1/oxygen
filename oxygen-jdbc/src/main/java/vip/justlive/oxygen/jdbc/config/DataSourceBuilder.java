@@ -22,8 +22,33 @@ import javax.sql.DataSource;
  */
 public class DataSourceBuilder {
 
+  DataSourceBuilder() {
+  }
+
+  /**
+   * 构造数据源
+   *
+   * @param conf 数据源配置
+   * @return DataSource
+   */
   public static DataSource build(DataSourceConf conf) {
-    // TODO pool
+    if (HikariBuilder.isEnabled(conf)) {
+      return HikariBuilder.build(conf);
+    }
+    return new SimpleDataSource(conf);
+  }
+
+  /**
+   * 构造数据源
+   *
+   * @param conf 数据源配置
+   * @param name 数据源名称
+   * @return DataSource
+   */
+  public static DataSource build(DataSourceConf conf, String name) {
+    if (HikariBuilder.isEnabled(conf)) {
+      return HikariBuilder.build(conf, name);
+    }
     return new SimpleDataSource(conf);
   }
 

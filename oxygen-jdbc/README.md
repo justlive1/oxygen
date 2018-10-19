@@ -18,6 +18,7 @@ oxygen-jdbc jdbc实现
   │  │- config  //配置数据源目录
   │  │- handler  //处理器目录，包括结果集处理 行处理 列处理
   │  │- interceptor  //拦截器目录，拦截sql执行前后及异常
+  │  │- record  //基础crud
   │  │- Jdbc.java  //Jdbc核心操作类，提供crud操作
   │  │- JdbcException.java  //jdbc异常封装
   │  └─ JdbcPlugin.java   //jdbc插件，与oxygen-core配套使用
@@ -82,6 +83,21 @@ Jdbc.startTx(String dataSourceName)
 Jdbc.closeTx()
 // 关闭指定数据源的事务
 Jdbc.closeTx(String dataSourceName)
+
+// 回滚事务
+Jdbc.rollbackTx()
+// 回滚指定数据源的事务
+Jdbc.rollbackTx(String dataSourceName)
+
+// 基础crud
+Option opt = new Option()
+...
+Record.insert(opt)
+Record.findById(Option.class, 1)
+Record.find(opt)
+Record.update(opt)
+Record.deleteById(Option.class, 1)
+Record.delete(opt);
 
 
 // 配合oxygen-core使用, 只需在配置文件中配置数据源即可自动装载

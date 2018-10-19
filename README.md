@@ -50,6 +50,7 @@ oxygen-jdbc
   │  │- config  //datasource config 
   │  │- handler  //data handler
   │  │- interceptor  //jdbc execute interceptor
+  │  │- record  //base crud
   │  │- Jdbc.java  //the class used to operate database
   │  │- JdbcException.java  //jdbc excption
   │  └- JdbcPlugin.java   //jdbc plugin
@@ -322,6 +323,24 @@ Jdbc.startTx(String dataSourceName)
 Jdbc.closeTx()
 // close named datasource transaction
 Jdbc.closeTx(String dataSourceName)
+
+
+
+// roback
+Jdbc.rollbackTx()
+// roback 
+Jdbc.rollbackTx(String dataSourceName)
+
+// base crud
+Option opt = new Option()
+...
+Record.insert(opt)
+Record.findById(Option.class, 1)
+Record.find(opt)
+Record.update(opt)
+Record.deleteById(Option.class, 1)
+Record.delete(opt);
+
 
 // use oxygen-core, only need to write configuration file
 // multi datasource names
