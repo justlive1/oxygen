@@ -14,7 +14,6 @@
 package vip.justlive.oxygen.jdbc.record;
 
 import java.lang.reflect.Field;
-import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +28,6 @@ import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
  * @author wubo
  */
 public final class Record {
-
-  Record() {
-  }
 
   private static final Map<Class<?>, Model> CACHED = new ConcurrentHashMap<>(4);
   private static final String SEAT = " ? ";
@@ -48,13 +44,8 @@ public final class Record {
   private static final String DELETE = "delete from ";
   private static final String COUNT = "select count(*) from ";
 
-  private static final ResultSetHandler<Integer> INT_HANDLER = rs -> {
-    try {
-      return rs.next() ? rs.getInt(1) : 0;
-    } catch (SQLException e) {
-      throw JdbcException.wrap(e);
-    }
-  };
+  Record() {
+  }
 
   /**
    * 根据主键获取record
@@ -78,7 +69,7 @@ public final class Record {
    * @return list
    */
   public static <T> List<T> find(T obj) {
-    Class<T> clazz = (Class<T>) obj.getClass();
+    @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>) obj.getClass();
     Model model = parseClass(clazz);
     List<Object> params = new LinkedList<>();
     StringBuilder sb = new StringBuilder(model.getBaseQuery());
@@ -98,7 +89,7 @@ public final class Record {
     StringBuilder sb = new StringBuilder(COUNT).append(model.table).append(WHERE);
     List<Object> params = new LinkedList<>();
     margeWhere(model, obj, sb, params);
-    return Jdbc.query(sb.toString(), INT_HANDLER, params);
+    return Jdbc.query(sb.toString(), ResultSetHandler.intHandler(), params);
   }
 
   /**

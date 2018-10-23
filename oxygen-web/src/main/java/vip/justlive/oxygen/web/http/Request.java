@@ -202,9 +202,10 @@ public class Request implements Serializable {
    */
   public String[] getHeaders(String key) {
     if (headers != null) {
-      String[] values = headers.get(key.toLowerCase());
-      if (values != null) {
-        return values;
+      for (Map.Entry<String, String[]> entry : headers.entrySet()) {
+        if (entry.getKey().equalsIgnoreCase(key)) {
+          return entry.getValue();
+        }
       }
     }
     return EMPTY;

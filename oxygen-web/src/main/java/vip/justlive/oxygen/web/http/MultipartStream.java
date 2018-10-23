@@ -14,15 +14,22 @@
 package vip.justlive.oxygen.web.http;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 
 /**
  * multipart 流解析
@@ -36,6 +43,7 @@ class MultipartStream {
 
   private final InputStream inputStream;
   private final byte[] boundary;
+  private final byte[] endOfBoundary;
   private final Charset charset;
   Map<String, String> formData;
   List<MultipartItem> items = new LinkedList<>();
@@ -48,6 +56,8 @@ class MultipartStream {
     current.write(STREAM_TERMINATOR);
     current.write(boundary);
     this.boundary = current.toByteArray();
+    current.write(STREAM_TERMINATOR);
+    this.endOfBoundary = current.toByteArray();
     current.reset();
     formData = new HashMap<>(4);
   }
@@ -81,7 +91,7 @@ class MultipartStream {
       item.setName(disposition[1]);
       item.setFilename(disposition[2]);
       item.setCharset(charset);
-      item.setBody(line);
+      readFile(line, item);
       items.add(item);
     }
     readMultipartItem();
@@ -132,6 +142,28 @@ class MultipartStream {
         current.write(read);
       }
     }
+  }
+
+  private void readFile(byte[] line, MultipartItem item) throws IOException {
+    Path path = createPath();
+    item.setPath(path);
+    while (true) {
+      Files.write(path, line, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+      line = readLine();
+      if (Arrays.equals(line, boundary) || Arrays.equals(line, endOfBoundary)) {
+        break;
+      }
+      Files.write(path, LINE_SEPARATOR, StandardOpenOption.APPEND);
+    }
+  }
+
+  private Path createPath() {
+    File dir = new File(ConfigFactory.load(CoreConf.class).getBaseTempDir(),
+        MultipartItem.class.getSimpleName());
+    if (!dir.exists() && !dir.mkdirs()) {
+      throw new IllegalArgumentException("cannot make directory for " + dir.getAbsolutePath());
+    }
+    return new File(dir, String.valueOf(SnowflakeIdWorker.defaultNextId())).toPath();
   }
 
   class WrapByteArrayOutputStream extends ByteArrayOutputStream {

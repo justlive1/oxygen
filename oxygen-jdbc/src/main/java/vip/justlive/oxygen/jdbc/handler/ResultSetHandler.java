@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.jdbc.handler;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
@@ -23,14 +24,6 @@ import java.util.Map;
  * @author wubo
  */
 public interface ResultSetHandler<T> {
-
-  /**
-   * 处理结果集
-   *
-   * @param rs 结果集
-   * @return bean
-   */
-  T handle(ResultSet rs);
 
   /**
    * map处理
@@ -89,4 +82,31 @@ public interface ResultSetHandler<T> {
   static <T> ResultSetHandler<List<T>> beanListHandler(Class<T> clazz) {
     return new BeanListResultSetHandler<>(clazz);
   }
+
+  /**
+   * int 处理
+   *
+   * @return IntResultHandler
+   */
+  static ResultSetHandler<Integer> intHandler() {
+    return IntResultHandler.INSTANCE;
+  }
+
+  /**
+   * BigDecimal 处理
+   *
+   * @return BigDecimalResultHandler
+   */
+  static ResultSetHandler<BigDecimal> bigDecimalHandler() {
+    return BigDecimalResultHandler.INSTANCE;
+  }
+
+
+  /**
+   * 处理结果集
+   *
+   * @param rs 结果集
+   * @return bean
+   */
+  T handle(ResultSet rs);
 }

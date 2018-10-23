@@ -16,7 +16,6 @@ package vip.justlive.oxygen.web.view;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ClassUtils;
@@ -26,7 +25,6 @@ import vip.justlive.oxygen.core.util.ClassUtils;
  *
  * @author wubo
  */
-@Slf4j
 public class ThymeleafViewResolver implements ViewResolver {
 
   private static final boolean THYMELEAF_SUPPORTED = ClassUtils
