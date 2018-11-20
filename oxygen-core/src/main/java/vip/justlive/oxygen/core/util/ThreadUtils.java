@@ -14,7 +14,6 @@
 package vip.justlive.oxygen.core.util;
 
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -22,17 +21,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 线程工具类
  *
  * @author wubo
  */
-@Slf4j
 public class ThreadUtils {
 
   private static final ThreadLocal<Map<String, Object>> LOCAL =
@@ -135,55 +129,16 @@ public class ThreadUtils {
   }
 
   /**
-   * 重试任务
+   * 线程sleep等待
    *
-   * @param callable 任务
-   * @param limit 重试限制次数
+   * @param millis 毫秒值
    */
-  public static void retry(Callable<?> callable, int limit) {
-    INNER_EXECUTOR.submit(new RetryTask(--limit, callable));
-  }
-
-  /**
-   * 重试任务
-   *
-   * @param callable 任务
-   * @param limit 重试限制次数
-   * @param failCall 重试失败回调
-   */
-  public static void retry(Callable<?> callable, int limit, Callable<?> failCall) {
-    INNER_EXECUTOR.submit(new RetryTask(--limit, callable, failCall));
-  }
-
-
-  @AllArgsConstructor
-  @RequiredArgsConstructor
-  private static class RetryTask implements Callable<Boolean> {
-
-    @NonNull
-    private Integer limit;
-    @NonNull
-    private Callable<?> callable;
-    private Callable<?> failCall;
-
-    @Override
-    public Boolean call() throws Exception {
-      log.info("start retry task，{}, limit:[{}]", callable, limit);
-      try {
-        callable.call();
-        return true;
-      } catch (Exception e) {
-        if (limit > 0) {
-          log.error("retry task error and {} times left", limit, e);
-          INNER_EXECUTOR.submit(new RetryTask(--limit, callable, failCall));
-        } else {
-          log.error("retry task error and no any more times", e);
-          if (failCall != null) {
-            failCall.call();
-          }
-        }
-      }
-      return false;
+  public static void sleep(long millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     }
   }
+
 }

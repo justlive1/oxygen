@@ -15,6 +15,7 @@ package vip.justlive.oxygen.core.cache;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.crypto.Encoder;
 import vip.justlive.oxygen.core.crypto.Md5Encoder;
 import vip.justlive.oxygen.core.ioc.Bean;
@@ -31,9 +32,12 @@ public class DefaultKeyGenerator implements KeyGenerator {
 
   @Override
   public Object generate(Object target, Method method, Object... params) {
-    String src = method.getName();
+    String src;
     if (params.length > 0) {
-      src += Arrays.deepToString(params);
+      src = String.join(Constants.DOT, method.getDeclaringClass().getName(), method.getName(),
+          Arrays.deepToString(params));
+    } else {
+      src = String.join(Constants.DOT, method.getDeclaringClass().getName(), method.getName());
     }
     return encoder.encode(src);
   }

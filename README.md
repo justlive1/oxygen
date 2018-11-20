@@ -175,6 +175,57 @@ throw Exceptions.fault(Throwable e, String code, String message, Object... param
 
 ```
 
+
+### Retry
+
+retry, support sync and async
+
+```
+RetryBuilder.newBuilder()
+  // time limit
+  .withTimeLimit(10, TimeUnit.MILLISECONDS)
+  // retry if throw exception
+  .retryIfException()
+  // set max attempt numbers
+  .withMaxAttempt(3)
+  // block use sleep
+  .withSleepBlock(100)
+  // build sync retryer
+  .build()
+  // execute
+  .call(Math::random);
+  
+RetryBuilder.newBuilder()
+    // retry if throw ArithmeticException 
+    .retryIfException(ArithmeticException.class)
+    // retry if result < 0.5
+    .retryIfResult(r -> r < 0.5)
+    // set max delay time
+    .withMaxDelay(1000)
+    // block use wait
+    .withWaitBlock(100)
+    // build sync retryer
+    .build()
+    // execute
+    .call(Math::random);
+
+RetryBuilder.newBuilder()
+    // retry by yourslef
+    .retryIf(attmapt -> attmapt.hasException())
+    // listern of retry
+    .onRetry(System.out::println)
+    // listern of final fail
+    .onFinalFail(System.out::println)
+    // listern of success
+    .onSuccess(System.out::println)
+    // set user async executor
+    .withAsyncExecutor(scheduleService)
+    // build async retryer
+    .buildAsync()
+    // execute
+    .callAsync(Math::random);
+```
+
 ### IOC 
 
 you can use IOC container with annotation

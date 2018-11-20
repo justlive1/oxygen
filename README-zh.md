@@ -177,6 +177,56 @@ throw Exceptions.fault(Throwable e, String code, String message, Object... param
 
 ```
 
+### Retry
+
+重试，支持同步/异步
+
+```
+RetryBuilder.newBuilder()
+  // 超时限制
+  .withTimeLimit(10, TimeUnit.MILLISECONDS)
+  // 抛出异常就重试 
+  .retryIfException()
+  // 最大尝试次数
+  .withMaxAttempt(3)
+  // 使用sleep进行阻塞
+  .withSleepBlock(100)
+  // 构造同步重试器
+  .build()
+  // 执行逻辑
+  .call(Math::random);
+  
+RetryBuilder.newBuilder()
+    // 抛出ArithmeticException异常就重试 
+    .retryIfException(ArithmeticException.class)
+    // 结果小于0.5就重试
+    .retryIfResult(r -> r < 0.5)
+    // 最大延时时间
+    .withMaxDelay(1000)
+    // 使用wait进行阻塞
+    .withWaitBlock(100)
+    // 构造同步重试器
+    .build()
+    // 执行逻辑
+    .call(Math::random);
+
+RetryBuilder.newBuilder()
+    // 自定义重试判断
+    .retryIf(attmapt -> attmapt.hasException())
+    // 重试监听
+    .onRetry(System.out::println)
+    // 最终失败监听
+    .onFinalFail(System.out::println)
+    // 成功监听
+    .onSuccess(System.out::println)
+    // 设置用户线程池
+    .withAsyncExecutor(scheduleService)
+    // 构造异步重试器
+    .buildAsync()
+    // 执行异步逻辑
+    .callAsync(Math::random);
+```
+
 ### IOC 
 
 通过注解使用IOC容器
