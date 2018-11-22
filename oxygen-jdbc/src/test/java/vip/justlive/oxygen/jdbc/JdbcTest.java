@@ -29,13 +29,23 @@ public class JdbcTest {
   @Before
   public void before() {
     Bootstrap.start();
-    Jdbc.update(
-        "create table option (id int primary key, st varchar, it varchar, lo varchar, fl decimal, bl boolean, bd decimal, dt timestamp);");
-    Jdbc.update("insert into option values (1, 'st', '1', '1222', 3.5, true, 5.891, CURRENT_TIME)");
   }
 
   @Test
   public void test() {
+    test(Jdbc.PRIMARY_KEY);
+    test("a");
+    Jdbc.use(Jdbc.PRIMARY_KEY);
+    Assert.assertEquals(1, Record.count(new Option()));
+  }
+
+  private void test(String dataSourceName) {
+
+    Jdbc.use(dataSourceName);
+    Jdbc.update(
+        "create table option (id int primary key, st varchar, it varchar, lo varchar, fl decimal, bl boolean, bd decimal, dt timestamp);");
+    Jdbc.update("insert into option values (1, 'st', '1', '1222', 3.5, true, 5.891, CURRENT_TIME)");
+
     String sql = "select * from option where id = ?";
     Assert.assertEquals(8, Jdbc.queryForMap(sql, 1).size());
     Assert.assertEquals(1, Jdbc.queryForMapList(sql, 1).size());
@@ -70,7 +80,6 @@ public class JdbcTest {
     Jdbc.closeTx();
 
     Assert.assertEquals(1, Record.count(new Option()));
-
   }
 
 }

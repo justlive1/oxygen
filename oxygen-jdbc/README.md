@@ -64,6 +64,11 @@ Jdbc.addPrimaryDataSource(DataSource dataSource)
 // 添加多数据源
 Jdbc.addDataSource(String name, DataSource dataSource)
 
+// 切换当前线程的数据源
+Jdbc.use(dataSourceName)
+// 还原当前线程的数据源
+Jdbc.clear()
+
 // crud
 T Jdbc.query(String sql, Class<T> clazz, Object... params)
 List<T> Jdbc.queryForList(String sql, Class<T> clazz, Object... params)
@@ -99,6 +104,18 @@ Record.update(opt)
 Record.deleteById(Option.class, 1)
 Record.delete(opt);
 
+// 批处理
+// 开启批处理
+Batch.use()
+// 添加预处理sql
+.addBatch("insert into system (key, value) values (?,?)", 1, 3)
+.addBatch("insert into system (key, value) values (?,?)", Arrays.asList(4, 4))
+// 添加直接处理sql
+.addBatch("insert into system (key,value) values(1,2)")
+// 提交批处理
+.commit();
+// 批量插入
+Record.insertBatch(list);
 
 // 配合oxygen-core使用, 只需在配置文件中配置数据源即可自动装载
 // 多数据源名称

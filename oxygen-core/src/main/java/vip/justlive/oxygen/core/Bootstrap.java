@@ -43,6 +43,15 @@ public final class Bootstrap {
 
   /**
    * 初始化配置
+   * <br>
+   * 使用默认地址进行加载，然后使用覆盖路径再次加载
+   */
+  public static void initConfig() {
+    initConfig(Constants.CONFIG_PATHS);
+  }
+
+  /**
+   * 初始化配置
    *
    * @param locations 配置文件路径
    */
@@ -67,6 +76,43 @@ public final class Bootstrap {
   }
 
   /**
+   * 获取启动的插件
+   *
+   * @return plugins
+   */
+  public static List<Plugin> enabledPlugins() {
+    return Collections.unmodifiableList(PLUGINS);
+  }
+
+  /**
+   * 执行插件前置逻辑
+   */
+  public static void invokeBeforePlugins() {
+    PLUGINS.forEach(Plugin::beforeInvoke);
+  }
+
+  /**
+   * 执行插件后置逻辑
+   */
+  public static void invokeAfterPlugins() {
+    PLUGINS.forEach(Plugin::afterInvoke);
+  }
+
+  /**
+   * 执行插件异常逻辑
+   */
+  public static void invokeOnExceptionPlugins() {
+    PLUGINS.forEach(Plugin::onExceptionInvoke);
+  }
+
+  /**
+   * 执行插件最终逻辑
+   */
+  public static void invokeFinalPlugins() {
+    PLUGINS.forEach(Plugin::finalInvoke);
+  }
+
+  /**
    * 启动Bootstrap
    */
   public static void start() {
@@ -86,15 +132,6 @@ public final class Bootstrap {
   public static synchronized void close() {
     doClose();
     Runtime.getRuntime().removeShutdownHook(SHUTDOWN_HOOK);
-  }
-
-  /**
-   * 初始化配置
-   * <br>
-   * 使用默认地址进行加载，然后使用覆盖路径再次加载
-   */
-  private static void initConfig() {
-    initConfig(Constants.CONFIG_PATHS);
   }
 
   /**

@@ -72,6 +72,7 @@ public class RetryBuilder<T> {
   /**
    * 创建构造器
    *
+   * @param <T> 泛型
    * @return builder
    */
   public static <T> RetryBuilder<T> newBuilder() {

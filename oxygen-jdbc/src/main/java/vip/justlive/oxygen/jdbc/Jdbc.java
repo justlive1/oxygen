@@ -34,15 +34,17 @@ import vip.justlive.oxygen.jdbc.interceptor.JdbcInterceptor;
  */
 public class Jdbc {
 
-  Jdbc() {
-  }
-
-  static final String TEMPLATE = "datasource.%s";
   static final String PRIMARY_KEY = Jdbc.class.getSimpleName();
+  static final String TEMPLATE = "datasource.%s";
   static final List<JdbcInterceptor> JDBC_INTERCEPTORS = new ArrayList<>(4);
   static final Map<String, DataSource> DATA_SOURCE_MAP = new ConcurrentHashMap<>(2, 1f);
-  static final ThreadLocal<Map<String, Connection>> CONNECTION_CONTAINER = ThreadLocal
+  private static final ThreadLocal<Map<String, Connection>> CONNECTION_CONTAINER = ThreadLocal
       .withInitial(ConcurrentHashMap::new);
+  private static final ThreadLocal<String> CURRENT_DATASOURCE = ThreadLocal
+      .withInitial(() -> PRIMARY_KEY);
+
+  Jdbc() {
+  }
 
   /**
    * 添加主数据源
@@ -76,6 +78,37 @@ public class Jdbc {
   }
 
   /**
+   * 当前线程使用默认数据源
+   */
+  public static void use() {
+    use(PRIMARY_KEY);
+  }
+
+  /**
+   * 当前线程使用指定数据源
+   *
+   * @param dataSourceName 数据源名称
+   */
+  public static void use(String dataSourceName) {
+    CURRENT_DATASOURCE.set(dataSourceName);
+  }
+
+  /**
+   * 还原当前线程为默认数据源
+   */
+  public static void clear() {
+    CURRENT_DATASOURCE.remove();
+  }
+
+  /**
+   * 还原当前线程数据源，并清空所有数据源连接
+   */
+  public static void clearAll() {
+    clear();
+    CONNECTION_CONTAINER.remove();
+  }
+
+  /**
    * 获取数据库连接
    *
    * @param dataSourceName 数据源名称
@@ -103,7 +136,8 @@ public class Jdbc {
    * 开启事务 默认primary数据源
    */
   public static void startTx() {
-    startTx(PRIMARY_KEY);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    startTx(dataSourceName);
   }
 
   /**
@@ -126,7 +160,8 @@ public class Jdbc {
    * 关闭事务 默认primary数据源
    */
   public static void closeTx() {
-    closeTx(PRIMARY_KEY);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    closeTx(dataSourceName);
   }
 
   /**
@@ -153,7 +188,8 @@ public class Jdbc {
    * 回滚事务 默认primary数据源
    */
   public static void rollbackTx() {
-    rollbackTx(PRIMARY_KEY);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    rollbackTx(dataSourceName);
   }
 
   /**
@@ -185,7 +221,8 @@ public class Jdbc {
    * @return result
    */
   public static <T> T query(String sql, Class<T> clazz, Object... params) {
-    return query(PRIMARY_KEY, sql, clazz, params);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return query(dataSourceName, sql, clazz, params);
   }
 
   /**
@@ -200,7 +237,8 @@ public class Jdbc {
    * @return result
    */
   public static <T> T query(String sql, Class<T> clazz, List<Object> params) {
-    return query(PRIMARY_KEY, sql, clazz, params);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return query(dataSourceName, sql, clazz, params);
   }
 
   /**
@@ -248,7 +286,8 @@ public class Jdbc {
    * @return result
    */
   public static <T> T query(String sql, ResultSetHandler<T> handler, Object... params) {
-    return query(PRIMARY_KEY, sql, handler, params);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return query(dataSourceName, sql, handler, params);
   }
 
   /**
@@ -263,7 +302,8 @@ public class Jdbc {
    * @return result
    */
   public static <T> T query(String sql, ResultSetHandler<T> handler, List<Object> params) {
-    return query(getConnection(PRIMARY_KEY), sql, handler, params, true);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return query(getConnection(dataSourceName), sql, handler, params, true);
   }
 
   /**
@@ -435,7 +475,8 @@ public class Jdbc {
    * @return result
    */
   public static <T> List<T> queryForList(String sql, Class<T> clazz, List<Object> params) {
-    return queryForList(PRIMARY_KEY, sql, clazz, params);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return queryForList(dataSourceName, sql, clazz, params);
   }
 
   /**
@@ -465,7 +506,8 @@ public class Jdbc {
    * @return result
    */
   public static Map<String, Object> queryForMap(String sql, Object... params) {
-    return queryForMap(PRIMARY_KEY, sql, params);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return queryForMap(dataSourceName, sql, params);
   }
 
   /**
@@ -493,7 +535,8 @@ public class Jdbc {
    * @return result
    */
   public static Map<String, Object> queryForMap(String sql, List<Object> params) {
-    return queryForMap(PRIMARY_KEY, sql, params);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return queryForMap(dataSourceName, sql, params);
   }
 
   /**
@@ -521,7 +564,8 @@ public class Jdbc {
    * @return result
    */
   public static List<Map<String, Object>> queryForMapList(String sql, Object... params) {
-    return queryForMapList(PRIMARY_KEY, sql, params);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return queryForMapList(dataSourceName, sql, params);
   }
 
   /**
@@ -549,7 +593,8 @@ public class Jdbc {
    * @return result
    */
   public static List<Map<String, Object>> queryForMapList(String sql, List<Object> params) {
-    return queryForMapList(PRIMARY_KEY, sql, params);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return queryForMapList(dataSourceName, sql, params);
   }
 
   /**
@@ -577,7 +622,8 @@ public class Jdbc {
    * @return 受影响行数
    */
   public static int update(String sql, Object... params) {
-    return update(PRIMARY_KEY, sql, params);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return update(dataSourceName, sql, params);
   }
 
   /**
@@ -590,7 +636,8 @@ public class Jdbc {
    * @return 受影响行数
    */
   public static int update(String sql, List<Object> params) {
-    return update(PRIMARY_KEY, sql, params);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return update(dataSourceName, sql, params);
   }
 
   /**
@@ -692,8 +739,7 @@ public class Jdbc {
     return rows;
   }
 
-  private static void fillStatement(PreparedStatement stmt, List<Object> params)
-      throws SQLException {
+  static void fillStatement(PreparedStatement stmt, List<Object> params) throws SQLException {
     if (params != null && !params.isEmpty()) {
       for (int i = 0, len = params.size(); i < len; i++) {
         stmt.setObject(i + 1, params.get(i));

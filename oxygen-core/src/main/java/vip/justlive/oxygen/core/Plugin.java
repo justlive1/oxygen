@@ -34,15 +34,39 @@ public interface Plugin extends Comparable<Plugin> {
   }
 
   /**
-   * 启动
+   * 程序启动
    */
   default void start() {
   }
 
   /**
-   * 停止
+   * 程序停止
    */
   default void stop() {
+  }
+
+  /**
+   * 前置处理
+   */
+  default void beforeInvoke() {
+  }
+
+  /**
+   * 后置处理
+   */
+  default void afterInvoke() {
+  }
+
+  /**
+   * 异常处理
+   */
+  default void onExceptionInvoke() {
+  }
+
+  /**
+   * 最终处理
+   */
+  default void finalInvoke() {
   }
 
   /**

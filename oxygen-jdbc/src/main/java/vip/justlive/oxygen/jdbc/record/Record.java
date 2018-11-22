@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import vip.justlive.oxygen.jdbc.Batch;
 import vip.justlive.oxygen.jdbc.Jdbc;
 import vip.justlive.oxygen.jdbc.JdbcException;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
@@ -131,20 +132,32 @@ public final class Record {
     Model model = parseClass(obj.getClass());
     List<Object> params = new LinkedList<>();
     try {
-      StringBuilder fields = new StringBuilder();
-      StringBuilder values = new StringBuilder();
-      for (Property property : model.properties) {
-        Object value = property.field.get(obj);
-        if (value != null) {
-          fields.append(property.name).append(COMMA);
-          values.append(SEAT).append(COMMA);
-          params.add(value);
-        }
-      }
-      fields.deleteCharAt(fields.length() - 1);
-      values.deleteCharAt(values.length() - 1);
-      String sql = String.format(INSERT, model.table, fields.toString(), values.toString());
+      String sql = formatInsertSql(model, obj, params);
       return Jdbc.update(sql, params);
+    } catch (IllegalAccessException e) {
+      throw JdbcException.wrap(e);
+    }
+  }
+
+  /**
+   * 批量插入
+   *
+   * @param list 集合
+   * @param <T> 泛型
+   */
+  public static <T> void insertBatch(List<T> list) {
+    if (list == null || list.isEmpty()) {
+      return;
+    }
+    Model model = parseClass(list.get(0).getClass());
+    try {
+      Batch batch = Batch.use();
+      for (T obj : list) {
+        List<Object> params = new LinkedList<>();
+        String sql = formatInsertSql(model, obj, params);
+        batch.addBatch(sql, params);
+      }
+      batch.commit();
     } catch (IllegalAccessException e) {
       throw JdbcException.wrap(e);
     }
@@ -178,6 +191,23 @@ public final class Record {
     List<Object> params = new LinkedList<>();
     margeWhere(model, obj, sb, params);
     return Jdbc.update(sb.toString(), params);
+  }
+
+  private static String formatInsertSql(Model model, Object obj, List<Object> params)
+      throws IllegalAccessException {
+    StringBuilder fields = new StringBuilder();
+    StringBuilder values = new StringBuilder();
+    for (Property property : model.properties) {
+      Object value = property.field.get(obj);
+      if (value != null) {
+        fields.append(property.name).append(COMMA);
+        values.append(SEAT).append(COMMA);
+        params.add(value);
+      }
+    }
+    fields.deleteCharAt(fields.length() - 1);
+    values.deleteCharAt(values.length() - 1);
+    return String.format(INSERT, model.table, fields.toString(), values.toString());
   }
 
   private static void margeWhere(Model model, Object obj, StringBuilder sb, List<Object> params) {

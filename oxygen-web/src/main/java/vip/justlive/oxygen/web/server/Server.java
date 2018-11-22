@@ -15,8 +15,7 @@ package vip.justlive.oxygen.web.server;
 
 import java.util.ServiceLoader;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.Bootstrap;
 
 /**
  * server 启动类
@@ -36,7 +35,7 @@ public class Server {
     if (loader.iterator().hasNext()) {
       webServer = loader.iterator().next();
     }
-    ConfigFactory.loadProperties(Constants.CONFIG_PATHS);
+    Bootstrap.initConfig();
   }
 
   /**

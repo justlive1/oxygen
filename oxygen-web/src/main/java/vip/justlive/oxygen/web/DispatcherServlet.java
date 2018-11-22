@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
@@ -63,10 +64,13 @@ public class DispatcherServlet extends HttpServlet {
         handlerNotFound(req, resp);
         return;
       }
+      Bootstrap.invokeBeforePlugins();
       handlerAction(action, req, resp);
+      Bootstrap.invokeAfterPlugins();
     } catch (StaticException e) {
       handlerStatic(req, resp, e.getSource());
     } finally {
+      Bootstrap.invokeFinalPlugins();
       Request.clear();
       Response.clear();
     }
@@ -141,6 +145,7 @@ public class DispatcherServlet extends HttpServlet {
 
   private void handlerError(HttpServletRequest req, HttpServletResponse resp, Exception e) {
     log.error("DispatcherServlet occurs an error for path [{}]", req.getServletPath(), e);
+    Bootstrap.invokeOnExceptionPlugins();
     Request.current().setException(e);
     WebPlugin.ERROR_HANDLERS.get(Constants.SERVER_ERROR).handle(req, resp);
   }

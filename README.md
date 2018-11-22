@@ -355,6 +355,11 @@ Jdbc.addPrimaryDataSource(DataSource dataSource)
 // add mutli datasource
 Jdbc.addDataSource(String name, DataSource dataSource)
 
+// change used dataSource in current thread
+Jdbc.use(dataSourceName)
+// reset used dataSource in current thread
+Jdbc.clear()
+
 // crud
 T Jdbc.query(String sql, Class<T> clazz, Object... params)
 List<T> Jdbc.queryForList(String sql, Class<T> clazz, Object... params)
@@ -392,6 +397,18 @@ Record.update(opt)
 Record.deleteById(Option.class, 1)
 Record.delete(opt);
 
+// batch
+// open batch
+Batch.use()
+// add PrepareStatemnet
+.addBatch("insert into system (key, value) values (?,?)", 1, 3)
+.addBatch("insert into system (key, value) values (?,?)", Arrays.asList(4, 4))
+// add Statemnet
+.addBatch("insert into system (key,value) values(1,2)")
+// commit batch
+.commit();
+// record batch insert
+Record.insertBatch(list);
 
 // use oxygen-core, only need to write configuration file
 // multi datasource names

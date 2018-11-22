@@ -35,6 +35,7 @@ public class HikariBuilder {
   /**
    * 是否可用
    *
+   * @param conf 配置
    * @return true为可用
    */
   public static boolean isEnabled(DataSourceConf conf) {
