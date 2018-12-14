@@ -73,7 +73,7 @@ public class CoreConf {
   /**
    * i18n默认国家
    */
-  @Value("${i18n.default.language:CN}")
+  @Value("${i18n.default.country:CN}")
   private String i18nDefaultCountry;
 
   /**

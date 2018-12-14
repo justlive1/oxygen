@@ -27,6 +27,7 @@ oxygen-core
   │  │- crypto  //crypto module
   │  │- domain  //domain module
   │  │- exception  //exception module
+  │  │- i18n  //i18n
   │  │- io  //io module
   │  │- ioc  //ioc module
   │  │- job  //scheduled job module
@@ -74,6 +75,7 @@ oxygen-web
   │─ java/.../web 
   │  │- handler // parameter hander
   │  │- http // http parse
+  │  │- i18n  //i18n aop
   │  │- mapping  // url mapping and paratemer mapping
   │  │- router  // an example
   │  │- server  // embedded server
@@ -338,6 +340,30 @@ public Object method(Object arg0, Object arg1) {
 ```
 
 
+### i18n
+
+use `Lang` to get i18n message
+```
+// file path for i18n
+i18n.path=classpath:message/*.properties
+// i18n default language
+i18n.default.language=zh
+// i18n default country
+i18n.default.country=CN
+
+// set thread locale
+Lang.setThreadLocale(new Locale("en", "US"))
+// reset thread locale
+Lang.clearThreadLocale()
+// get message for current thread locale
+Lang.getMessage("key")
+// get message for locale
+Lang.getMessage("key", new Locale("en", "US")
+Lang.getMessage("key", "en", "US")
+
+```
+
+
 ### Jdbc
 
 #### basic
@@ -596,6 +622,30 @@ public class MyWebAppInitializer implements WebAppInitializer {
 }
 ```
 
+
+#### i18n
+embedded `I18nAop` to change locale by request 
+
+```
+// file path for i18n
+i18n.path=classpath:message/*.properties
+// i18n default language
+i18n.default.language=zh
+// i18n default country
+i18n.default.country=CN
+// param key of request to set locale
+i18n.param.key=locale
+// key of session to save locale 
+i18n.session.key=I18N_SESSION_LOCALE
+
+// eg
+// default locale
+http://localhost:8080/page.html
+// set locale zh_CN
+http://localhost:8080/page1.html?locale=zh_CN
+// in a same session, locale is zh_CN
+http://localhost:8080/page2.html
+```
 
 #### run with embedded server
 - depend `oxygen-web-tomcat`

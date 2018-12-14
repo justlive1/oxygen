@@ -27,6 +27,7 @@ oxygen-core 核心部分
   │  │- crypto  //密码加密目录
   │  │- domain  //基础实体目录
   │  │- exception  //异常管理目录
+  │  │- i18n  //i18n
   │  │- io  //io读写目录
   │  │- ioc  //ioc实现目录
   │  │- job  //定时任务实现目录
@@ -75,6 +76,7 @@ oxygen-web
   │─ java/.../web  //oxygen-web代码目录
   │  │- handler //参数绑定处理
   │  │- http //http请求解析
+  │  │- i18n  //i18n切面
   │  │- mapping  //url映射，参数映射相关注解和实体
   │  │- router  //一个示例路由（获取服务器时间）
   │  │- server  //内置server接口和启动类
@@ -334,6 +336,30 @@ public Object method(Object arg0, Object arg1) {
 
 ```
 
+
+### 国际化
+
+使用 `Lang` 获取国际化信息
+```
+// 配置国际化文件路径
+i18n.path=classpath:message/*.properties
+// i18n默认国家
+i18n.default.language=zh
+// i18n默认国家
+i18n.default.country=CN
+
+// 设置当前线程国际化
+Lang.setThreadLocale(new Locale("en", "US"))
+// 还原当前线程国际化
+Lang.clearThreadLocale()
+// 获取默认locale的国际化信息
+Lang.getMessage("key")
+// 获取指定locale的国际化信息
+Lang.getMessage("key", new Locale("en", "US")
+Lang.getMessage("key", "en", "US")
+
+```
+
 ### Jdbc
 
 #### 基础使用
@@ -587,6 +613,30 @@ public class MyWebAppInitializer implements WebAppInitializer {
     ...
   }
 }
+```
+
+#### 国际化
+内置提供了切面`I18nAop`用于动态切换语言
+
+```
+// 配置国际化文件路径
+i18n.path=classpath:message/*.properties
+// i18n默认国家
+i18n.default.language=zh
+// i18n默认国家
+i18n.default.country=CN
+// 设置locale的请求入参
+i18n.param.key=locale
+// session 保存的key
+i18n.session.key=I18N_SESSION_LOCALE
+
+// 动态切换例子
+// 默认locale
+http://localhost:8080/page.html
+// 指定locale为zh_CN
+http://localhost:8080/page1.html?locale=zh_CN
+// 相同session下 locale为设置的zh_CN
+http://localhost:8080/page2.html
 ```
 
 #### 使用内置容器启动

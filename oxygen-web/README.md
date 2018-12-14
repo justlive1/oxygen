@@ -21,6 +21,7 @@ oxygen-web
   │─ java/.../web  //oxygen-web代码目录
   │  │- handler //参数绑定处理
   │  │- http //http请求解析
+  │  │- i18n //i18n切面
   │  │- mapping  //url映射，参数映射相关注解和实体
   │  │- router  //一个示例路由（获取服务器时间）
   │  │- view  //视图解析
@@ -174,6 +175,28 @@ public class MyWebAppInitializer implements WebAppInitializer {
 }
 ```
 
+### 国际化
+
+使用 `Lang` 获取国际化信息
+```
+// 配置国际化文件路径
+i18n.path=classpath:message/*.properties
+// i18n默认国家
+i18n.default.language=zh
+// i18n默认国家
+i18n.default.country=CN
+
+// 设置当前线程国际化
+Lang.setThreadLocale(new Locale("en", "US"))
+// 还原当前线程国际化
+Lang.clearThreadLocale()
+// 获取默认locale的国际化信息
+Lang.getMessage("key")
+// 获取指定locale的国际化信息
+Lang.getMessage("key", new Locale("en", "US")
+Lang.getMessage("key", "en", "US")
+
+```
 
 ### 使用内置容器启动
 - 依赖 `oxygen-web-tomcat`
