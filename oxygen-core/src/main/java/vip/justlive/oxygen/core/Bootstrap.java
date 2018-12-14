@@ -169,6 +169,7 @@ public final class Bootstrap {
     for (Plugin plugin : PLUGINS) {
       plugin.stop();
     }
+    STATE.set(false);
     log.info("bootstrap closed ! bye bye");
   }
 }

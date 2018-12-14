@@ -64,6 +64,7 @@ public class IocPlugin implements Plugin {
   @Override
   public void stop() {
     BeanStore.BEANS.clear();
+    TODO_INJECT.set(0);
   }
 
   private void scan() {

@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,6 +31,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 有失效时间的 Map，可对每个键值对设置失效时间
@@ -52,90 +54,51 @@ import java.util.stream.Collectors;
  * @param <V> 泛型类
  * @author wubo
  */
+@Slf4j
 public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private static final AtomicLong INSTANCES = new AtomicLong();
+
   private final transient ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
   private final transient Lock readLock = readWriteLock.readLock();
   private final transient Lock writeLock = readWriteLock.writeLock();
-  private transient ScheduledExecutorService executorService;
   private final transient AtomicLong accumulate = new AtomicLong();
 
-  /**
-   * 失效策略
-   *
-   * @author wubo
-   */
-  public enum ExpiringPolicy {
-    /**
-     * 创建后duration失效
-     */
-    CREATED,
-    /**
-     * 访问键值刷新duration
-     */
-    ACCESSED
-  }
-
-
-  /**
-   * 失效清除策略
-   *
-   * @author wubo
-   */
-  public enum CleanPolicy {
-    /**
-     * 定时任务
-     */
-    SCHEDULE,
-    /**
-     * 累计
-     */
-    ACCUMULATE
-  }
-
-
+  private transient ScheduledExecutorService executorService;
   /**
    * 失效监听
    */
   private transient List<ExpiredListener<K, V>> asyncExpiredListeners;
-
   /**
    * 最大数量
    */
   private int maxSize;
-
   /**
    * 有效期
    */
   private long duration;
-
   /**
    * 有效期单位
    */
   private TimeUnit timeUnit;
-
   /**
    * 失效策略
    */
   private ExpiringPolicy expiringPolicy;
-
   /**
    * 失效清除策略
    */
   private CleanPolicy cleanPolicy;
-
   /**
    * 定时清理延迟
    */
   private int scheduleDelay;
-
   /**
    * 累积阈值
    */
   private int accumulateThreshold;
-
   /**
    * 实际数据
    */
@@ -155,7 +118,11 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     expiringPolicy = builder.expiringPolicy;
     scheduleDelay = builder.scheduleDelay;
     accumulateThreshold = builder.accumulateThreshold;
-    runCleanPolicy();
+    executorService = ThreadUtils
+        .newScheduledExecutor(1, "ExpiringMap-" + INSTANCES.getAndIncrement() + "-Clean-Pool-%d");
+    executorService
+        .scheduleWithFixedDelay(this::runScheduleCleanPolicy, scheduleDelay, scheduleDelay,
+            TimeUnit.SECONDS);
     data = new TreeMap<>();
   }
 
@@ -398,8 +365,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     try {
       readLock.lock();
       ExpiringValue<V> wrapValue = data.get(key);
-      if (wrapValue != null && !wrapValue.isExpired()
-          && Objects.equals(wrapValue.value, oldValue)) {
+      if (wrapValue != null && !wrapValue.isExpired() && Objects
+          .equals(wrapValue.value, oldValue)) {
         ExpiringValue<V> newWrapValue = new ExpiringValue<>(newValue);
         newWrapValue.duration = wrapValue.duration;
         newWrapValue.expireAt = wrapValue.expireAt;
@@ -460,31 +427,28 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     }
   }
 
-  private void runCleanPolicy() {
-    executorService = ThreadUtils.newScheduledExecutor(1, "ExpiringMap-Clean-Pool-%d");
-    if (cleanPolicy == CleanPolicy.SCHEDULE) {
-      runScheduleCleanPolicy();
-    }
-  }
-
   private void expiredClean() {
     try {
       writeLock.lock();
-      for (Entry<K, ExpiringValue<V>> entry : data.entrySet()) {
+      Iterator<Entry<K, ExpiringValue<V>>> it = data.entrySet().iterator();
+      while (it.hasNext()) {
+        Entry<K, ExpiringValue<V>> entry = it.next();
         if (entry.getValue().isExpired()) {
           K key = entry.getKey();
           V value = entry.getValue().value;
-          data.remove(key);
+          it.remove();
           notifyListener(key, value);
         }
       }
     } finally {
       writeLock.unlock();
     }
-
   }
 
   private void notifyListener(K key, V value) {
+    if (log.isDebugEnabled()) {
+      log.debug("expired key [{}] and now realSize is [{}]", key, this.realSize());
+    }
     if (asyncExpiredListeners != null && !asyncExpiredListeners.isEmpty()) {
       for (ExpiredListener<K, V> listener : asyncExpiredListeners) {
         listener.expire(key, value);
@@ -493,12 +457,49 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   }
 
   private void runScheduleCleanPolicy() {
-    executorService.scheduleWithFixedDelay(this::expiredClean, scheduleDelay, scheduleDelay,
-        TimeUnit.SECONDS);
+    if (log.isDebugEnabled()) {
+      log.debug("enter into runScheduleCleanPolicy and realSize is [{}]", this.realSize());
+    }
+    this.expiredClean();
   }
 
   private void runAccumulateCleanPolicy() {
+    if (log.isDebugEnabled()) {
+      log.debug("enter into runAccumulateCleanPolicy and accumulate is {}", accumulate.get());
+    }
     executorService.execute(this::expiredClean);
+  }
+
+  /**
+   * 失效策略
+   *
+   * @author wubo
+   */
+  public enum ExpiringPolicy {
+    /**
+     * 创建后duration失效
+     */
+    CREATED,
+    /**
+     * 访问键值刷新duration
+     */
+    ACCESSED
+  }
+
+  /**
+   * 失效清除策略
+   *
+   * @author wubo
+   */
+  public enum CleanPolicy {
+    /**
+     * 定时任务
+     */
+    SCHEDULE,
+    /**
+     * 累计
+     */
+    ACCUMULATE
   }
 
   /**

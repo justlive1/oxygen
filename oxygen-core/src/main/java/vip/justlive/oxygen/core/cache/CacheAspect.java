@@ -31,13 +31,12 @@ import vip.justlive.oxygen.core.ioc.Inject;
 @Bean
 public class CacheAspect {
 
+  static final Cache CACHE = new LocalCacheImpl();
   private final DefaultKeyGenerator defaultKeyGenerator;
   private final ArgsKeyGenerator argsKeyGenerator;
-  static final Cache CACHE = new LocalCacheImpl();
 
   @Inject
-  public CacheAspect(DefaultKeyGenerator defaultKeyGenerator,
-      ArgsKeyGenerator argsKeyGenerator) {
+  public CacheAspect(DefaultKeyGenerator defaultKeyGenerator, ArgsKeyGenerator argsKeyGenerator) {
     this.defaultKeyGenerator = defaultKeyGenerator;
     this.argsKeyGenerator = argsKeyGenerator;
   }
@@ -70,8 +69,8 @@ public class CacheAspect {
   }
 
   Ctx parse(Invocation invocation) {
-    String cacheKey = String.join(Constants.COLON, invocation.getMethod().getName(),
-        Arrays.deepToString(invocation.getArgs()));
+    String cacheKey = String.join(Constants.COLON, invocation.getTarget().getClass().getName(),
+        invocation.getMethod().getName(), Arrays.deepToString(invocation.getArgs()));
     Ctx ctx = CACHE.get(cacheKey, Ctx.class);
     if (ctx != null) {
       return ctx;

@@ -111,6 +111,10 @@ public class Constants {
    */
   public static final String HYPHEN = "-";
   /**
+   * 下划线
+   */
+  public static final String UNDERSCORE = "_";
+  /**
    * 数组类名前缀: "[]"
    */
   public static final String ARRAY_SUFFIX = "[]";

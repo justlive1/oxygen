@@ -58,5 +58,33 @@ public class CoreConf {
   @Value("${job.core.pool.size:10}")
   private Integer jobPoolSize;
 
+  /**
+   * i18n配置文件地址
+   */
+  @Value("${i18n.path:classpath:message/*.properties}")
+  private String[] i18nPath;
 
+  /**
+   * i18n默认语言
+   */
+  @Value("${i18n.default.language:zh}")
+  private String i18nDefaultLanguage;
+
+  /**
+   * i18n默认国家
+   */
+  @Value("${i18n.default.language:CN}")
+  private String i18nDefaultCountry;
+
+  /**
+   * i18n参数key
+   */
+  @Value("${i18n.param.key:locale}")
+  private String i18nParamKey;
+
+  /**
+   * i18n Session key
+   */
+  @Value("${i18n.session.key:I18N_SESSION_LOCALE}")
+  private String i18nSessionKey;
 }
