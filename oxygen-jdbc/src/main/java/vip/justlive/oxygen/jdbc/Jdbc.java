@@ -443,7 +443,8 @@ public class Jdbc {
    * @return result
    */
   public static <T> List<T> queryForList(String sql, Class<T> clazz, Object... params) {
-    return queryForList(PRIMARY_KEY, sql, clazz, params);
+    String dataSourceName = CURRENT_DATASOURCE.get();
+    return queryForList(dataSourceName, sql, clazz, params);
   }
 
   /**

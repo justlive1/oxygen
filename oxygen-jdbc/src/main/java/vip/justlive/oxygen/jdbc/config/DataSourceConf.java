@@ -45,6 +45,11 @@ public class DataSourceConf {
   private boolean logSql = false;
 
   /**
+   * 是否为主数据源
+   */
+  private boolean primary = false;
+
+  /**
    * 多数据源名称
    */
   private String[] multi;
@@ -73,6 +78,11 @@ public class DataSourceConf {
    * 数据源实现
    */
   private String type;
+
+  /**
+   * 数据源代称
+   */
+  private String alias;
 
   /**
    * 校验合法

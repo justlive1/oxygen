@@ -58,6 +58,12 @@ public class DispatcherServlet extends HttpServlet {
     Request.set(req);
     Response.set(resp);
 
+    if (requestPath.length() > 1) {
+      if (requestPath.endsWith(Constants.ROOT_PATH)) {
+        requestPath = requestPath.substring(0, requestPath.length() - 1);
+      }
+    }
+
     try {
       Action action = WebPlugin.findActionByPath(requestPath, httpMethod);
       if (action == null) {

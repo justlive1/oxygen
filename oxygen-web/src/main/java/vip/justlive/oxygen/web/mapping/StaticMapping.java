@@ -127,6 +127,10 @@ public class StaticMapping {
     InputStream is = null;
     try {
       SourceResource sourceResource = new SimpleResourceLoader(filePath);
+      File file = sourceResource.getFile();
+      if (file != null && file.isDirectory()) {
+        return null;
+      }
       is = sourceResource.getInputStream();
       File savedFile = new File(TEMP_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
       Files.copy(is, savedFile.toPath());

@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.jdbc;
 
+import javax.sql.DataSource;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.jdbc.config.DataSourceBuilder;
@@ -66,13 +67,34 @@ public class JdbcPlugin implements Plugin {
    */
   private void loadFromConfig() {
     DataSourceConf primary = ConfigFactory.load(DataSourceConf.class);
-    Jdbc.addPrimaryDataSource(DataSourceBuilder.build(primary.validate()));
+    if (primary.getUrl() != null && primary.getUrl().length() > 0) {
+      addDataSource(primary);
+    }
     if (primary.getMulti() != null && primary.getMulti().length > 0) {
       for (String name : primary.getMulti()) {
         DataSourceConf conf = ConfigFactory
             .load(DataSourceConf.class, String.format(Jdbc.TEMPLATE, name));
-        Jdbc.addDataSource(name, DataSourceBuilder.build(conf.validate(), name));
+        addDataSource(conf, name);
       }
+    }
+  }
+
+  private void addDataSource(DataSourceConf conf) {
+    DataSource ds = DataSourceBuilder.build(conf.validate());
+    Jdbc.addPrimaryDataSource(ds);
+    if (conf.getAlias() != null && conf.getAlias().length() > 0) {
+      Jdbc.addDataSource(conf.getAlias(), ds);
+    }
+  }
+
+  private void addDataSource(DataSourceConf conf, String name) {
+    DataSource ds = DataSourceBuilder.build(conf.validate(), name);
+    Jdbc.addDataSource(name, ds);
+    if (conf.isPrimary()) {
+      Jdbc.addPrimaryDataSource(ds);
+    }
+    if (conf.getAlias() != null && conf.getAlias().length() > 0) {
+      Jdbc.addDataSource(conf.getAlias(), ds);
     }
   }
 
