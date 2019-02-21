@@ -152,6 +152,9 @@ public abstract class AbstractResourceLoader {
     List<SourceResource> list = new LinkedList<>();
     for (String location : locations) {
       try {
+        if (log.isDebugEnabled()) {
+          log.debug("parsing resource for [{}]", location);
+        }
         if (location.startsWith(ALL_CLASSPATH_PREFIX)) {
           list.addAll(
               this.resolveAllClassPathResource(location.substring(ALL_CLASSPATH_PREFIX.length())));
@@ -184,12 +187,9 @@ public abstract class AbstractResourceLoader {
   protected List<SourceResource> resolveAllClassPathResource(String location) throws IOException {
     List<SourceResource> list = new LinkedList<>();
     if (matcher.isPattern(location)) {
-      list.addAll(this.findMatchPath(location));
+      list.addAll(this.findMatchPath(location, true));
     } else {
-      if (location.startsWith(Constants.ROOT_PATH)) {
-        location = location.substring(Constants.ROOT_PATH.length());
-      }
-      Enumeration<URL> res = loader.getResources(location);
+      Enumeration<URL> res = loader.getResources(ResourceUtils.cutRootPath(location));
       if (res == null) {
         return list;
       }
@@ -211,7 +211,7 @@ public abstract class AbstractResourceLoader {
   protected List<SourceResource> resolveClassPathResource(String location) throws IOException {
     List<SourceResource> list = new LinkedList<>();
     if (matcher.isPattern(location)) {
-      list.addAll(this.findMatchPath(location));
+      list.addAll(this.findMatchPath(location, false));
     } else {
       list.add(new ClassPathResource(location, loader));
     }
@@ -228,7 +228,7 @@ public abstract class AbstractResourceLoader {
   protected List<SourceResource> resolveFileSystemResource(String location) throws IOException {
     List<SourceResource> list = new LinkedList<>();
     if (matcher.isPattern(location)) {
-      list.addAll(this.findMatchPath(location));
+      list.addAll(this.findMatchPath(location, false));
     } else {
       list.add(new FileSystemResource(location.substring(FILE_PREFIX.length())));
     }
@@ -239,14 +239,25 @@ public abstract class AbstractResourceLoader {
    * 获取匹配的路径
    *
    * @param location 路径
+   * @param multi is classpath*
    * @return 资源列表
    * @throws IOException io异常
    */
-  protected List<SourceResource> findMatchPath(String location) throws IOException {
+  protected List<SourceResource> findMatchPath(String location, boolean multi) throws IOException {
     List<SourceResource> all = new LinkedList<>();
     String rootPath = this.getRootDir(location);
     String subPattern = location.substring(rootPath.length());
-    List<SourceResource> rootResources = this.parse(rootPath);
+    List<SourceResource> rootResources;
+    if (multi) {
+      Enumeration<URL> urls = this.loader.getResources(ResourceUtils.cutRootPath(rootPath));
+      rootResources = new LinkedList<>();
+      while (urls.hasMoreElements()) {
+        rootResources.add(new UrlResource(urls.nextElement()));
+      }
+    } else {
+      rootResources = this.parse(rootPath);
+    }
+
     for (SourceResource resource : rootResources) {
       URL rootUrl = resource.getURL();
       if (Constants.URL_PROTOCOL_FILE.equals(rootUrl.getProtocol())) {

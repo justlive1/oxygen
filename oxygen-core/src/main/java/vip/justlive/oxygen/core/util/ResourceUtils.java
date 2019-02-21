@@ -36,11 +36,10 @@ public class ResourceUtils {
    */
   public static boolean isJarURL(URL url) {
     String protocol = url.getProtocol();
-    return (Constants.URL_PROTOCOL_JAR.equals(protocol)
-        || Constants.URL_PROTOCOL_WAR.equals(protocol)
-        || Constants.URL_PROTOCOL_ZIP.equals(protocol)
-        || Constants.URL_PROTOCOL_VFSZIP.equals(protocol)
-        || Constants.URL_PROTOCOL_WSJAR.equals(protocol));
+    return (Constants.URL_PROTOCOL_JAR.equals(protocol) || Constants.URL_PROTOCOL_WAR
+        .equals(protocol) || Constants.URL_PROTOCOL_ZIP.equals(protocol)
+        || Constants.URL_PROTOCOL_VFSZIP.equals(protocol) || Constants.URL_PROTOCOL_WSJAR
+        .equals(protocol));
   }
 
   /**
@@ -83,5 +82,19 @@ public class ResourceUtils {
       newPath += relative;
     }
     return newPath;
+  }
+
+  /**
+   * 去除路径起始的/
+   *
+   * @param path 路径
+   * @return 处理后的路径
+   */
+  public static String cutRootPath(String path) {
+    String usePath = path;
+    if (usePath.startsWith(Constants.ROOT_PATH)) {
+      usePath = usePath.substring(Constants.ROOT_PATH.length());
+    }
+    return usePath;
   }
 }

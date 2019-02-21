@@ -54,6 +54,14 @@ public class GeneralRequestParse extends AbstractRequestParse {
   private String getIpAddress(final Request request, String remoteIp) {
     String ip = request.getHeader(Constants.X_FORWARDED_FOR);
     if (checkIp(ip)) {
+      // 应对x-forwarded-for 中返回多个服务器ip的情况
+      if (ip.contains(Constants.COMMA)) {
+        for (String a : ip.split(Constants.COMMA)) {
+          if (checkIp(ip)) {
+            return a.trim();
+          }
+        }
+      }
       return ip;
     }
     ip = request.getHeader(Constants.PROXY_CLIENT_IP);
@@ -71,14 +79,6 @@ public class GeneralRequestParse extends AbstractRequestParse {
     ip = remoteIp;
     if (checkIp(ip)) {
       return ip;
-    }
-    // 应对x-forwarded-for 中返回多个服务器ip的情况
-    if (ip != null && ip.contains(Constants.COLON)) {
-      for (String a : ip.split(Constants.COLON)) {
-        if (checkIp(ip)) {
-          return a.trim();
-        }
-      }
     }
     return ip;
   }

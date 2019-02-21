@@ -51,7 +51,7 @@ public class ClassPathResource implements SourceResource {
    * @param classLoader 类加载器
    */
   public ClassPathResource(String path, ClassLoader classLoader) {
-    this.path = this.cutRootPath(Checks.notNull(path));
+    this.path = ResourceUtils.cutRootPath(Checks.notNull(path));
     this.classLoader = classLoader;
   }
 
@@ -62,22 +62,8 @@ public class ClassPathResource implements SourceResource {
    * @param clazz 类
    */
   public ClassPathResource(String path, Class<?> clazz) {
-    this.path = this.cutRootPath(Checks.notNull(path));
+    this.path = ResourceUtils.cutRootPath(Checks.notNull(path));
     this.clazz = clazz;
-  }
-
-  /**
-   * 去除路径起始的/
-   *
-   * @param path 路径
-   * @return 处理后的路径
-   */
-  String cutRootPath(String path) {
-    String usePath = path;
-    if (usePath.startsWith(Constants.ROOT_PATH)) {
-      usePath = usePath.substring(Constants.ROOT_PATH.length());
-    }
-    return usePath;
   }
 
   @Override

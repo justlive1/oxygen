@@ -34,6 +34,10 @@ public class Constants {
 
 
   /**
+   * 默认模块
+   */
+  public static final String DEFAULT_NODULE = "ERROR";
+  /**
    * 成功code
    */
   public static final String SUCCESS_CODE = "00000";

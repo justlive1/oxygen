@@ -70,7 +70,9 @@ public class StaticMapping {
   }
 
   private void cleanExpiredFile(String key, StaticSource source) {
-    log.info("static mapping cached source expired for [{}] [{}]", key, source);
+    if (log.isDebugEnabled()) {
+      log.debug("static mapping cached source expired for [{}] [{}]", key, source);
+    }
     if (source != null && source.path != null) {
       try {
         Files.deleteIfExists(source.path);

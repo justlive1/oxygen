@@ -80,6 +80,9 @@ public class PropertiesLoader extends AbstractResourceLoader implements Property
     this.resources.addAll(this.parse(this.locations));
     for (SourceResource resource : this.resources) {
       try {
+        if (log.isDebugEnabled()) {
+          log.debug("loading resource [{}]", resource.path());
+        }
         props.load(this.getReader(resource));
       } catch (IOException e) {
         if (log.isDebugEnabled()) {

@@ -13,6 +13,8 @@
  */
 package vip.justlive.oxygen.core.exception;
 
+import vip.justlive.oxygen.core.constant.Constants;
+
 /**
  * 用于创建CodedException
  * <p>
@@ -48,7 +50,7 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException wrap(Throwable e, String code, String message) {
-    return new CodedException(e, errorMessage(null, code, message));
+    return new CodedException(e, errorMessage(Constants.DEFAULT_NODULE, code, message));
   }
 
   /**
@@ -100,13 +102,23 @@ public class Exceptions {
   /**
    * 创建可带参数的业务逻辑异常
    *
+   * @param message 异常消息
+   * @return 包装异常
+   */
+  public static CodedException fail(String message) {
+    return fail(Constants.DEFAULT_FAIL_CODE, message);
+  }
+
+  /**
+   * 创建可带参数的业务逻辑异常
+   *
    * @param code 异常编码
    * @param message 异常消息
    * @param params 参数
    * @return 包装异常
    */
   public static CodedException fail(String code, String message, Object... params) {
-    return fail(errorMessage(null, code, message), params);
+    return fail(errorMessage(Constants.DEFAULT_NODULE, code, message), params);
   }
 
   /**
@@ -141,7 +153,7 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException fault(String code, String message, Object... params) {
-    return fault(errorMessage(null, code, message), params);
+    return fault(errorMessage(Constants.DEFAULT_NODULE, code, message), params);
   }
 
   /**
@@ -154,6 +166,6 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException fault(Throwable e, String code, String message, Object... params) {
-    return fault(e, errorMessage(null, code, message), params);
+    return fault(e, errorMessage(Constants.DEFAULT_NODULE, code, message), params);
   }
 }
