@@ -27,11 +27,6 @@ public class Constants {
    */
   public static final String[] CONFIG_PATHS = {"classpath*:config.properties",
       "classpath*:/config/*.properties"};
-  /**
-   * 默认profile
-   */
-  public static final String DEFAULT_PROFILE = "default";
-
 
   /**
    * 默认模块

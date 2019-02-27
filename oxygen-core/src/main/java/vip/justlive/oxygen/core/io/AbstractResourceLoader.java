@@ -21,14 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.JarURLConnection;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +35,7 @@ import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.PathMatcher;
 import vip.justlive.oxygen.core.util.ResourceUtils;
+import vip.justlive.oxygen.core.util.ResourceUtils.JarFileInfo;
 
 /**
  * 抽象资源加载器
@@ -245,7 +242,7 @@ public abstract class AbstractResourceLoader {
    */
   protected List<SourceResource> findMatchPath(String location, boolean multi) throws IOException {
     List<SourceResource> all = new LinkedList<>();
-    String rootPath = this.getRootDir(location);
+    String rootPath = matcher.getRootDir(location);
     String subPattern = location.substring(rootPath.length());
     List<SourceResource> rootResources;
     if (multi) {
@@ -283,40 +280,12 @@ public abstract class AbstractResourceLoader {
   protected List<SourceResource> findJarMatchPath(SourceResource resource, URL rootUrl,
       String subPattern) throws IOException {
     List<SourceResource> all = new LinkedList<>();
-    URLConnection con = rootUrl.openConnection();
-    JarFile jarFile;
-    String jarFileUrl;
-    String rootEntryPath;
-
-    if (con instanceof JarURLConnection) {
-      JarURLConnection jarCon = (JarURLConnection) con;
-      jarFile = jarCon.getJarFile();
-      jarFileUrl = jarCon.getJarFileURL().toExternalForm();
-      JarEntry jarEntry = jarCon.getJarEntry();
-      rootEntryPath = (jarEntry != null ? jarEntry.getName() : "");
-    } else {
-      String urlFile = rootUrl.getFile();
-      int separatorLength = Constants.WAR_URL_SEPARATOR.length();
-      int separatorIndex = urlFile.indexOf(Constants.WAR_URL_SEPARATOR);
-      if (separatorIndex == -1) {
-        separatorIndex = urlFile.indexOf(Constants.JAR_URL_SEPARATOR);
-        separatorLength = Constants.JAR_URL_SEPARATOR.length();
-      }
-      if (separatorIndex != -1) {
-        jarFileUrl = urlFile.substring(0, separatorIndex);
-        rootEntryPath = urlFile.substring(separatorIndex + separatorLength);
-        jarFile = this.getJarFile(jarFileUrl);
-      } else {
-        jarFile = new JarFile(urlFile);
-        jarFileUrl = urlFile;
-        rootEntryPath = "";
-      }
-    }
-
+    JarFileInfo jarFileInfo = ResourceUtils.getJarFileInfo(rootUrl);
     try {
-      this.look(resource, subPattern, all, jarFile, jarFileUrl, rootEntryPath);
+      this.look(resource, subPattern, all, jarFileInfo.jarFile, jarFileInfo.jarFileUrl,
+          jarFileInfo.rootEntryPath);
     } finally {
-      jarFile.close();
+      jarFileInfo.jarFile.close();
     }
     return all;
   }
@@ -353,27 +322,6 @@ public abstract class AbstractResourceLoader {
   }
 
   /**
-   * 获取jar文件
-   *
-   * @param jarFileUrl jar文件路径
-   * @return jar文件
-   * @throws IOException io异常
-   */
-  protected JarFile getJarFile(String jarFileUrl) throws IOException {
-    if (jarFileUrl.startsWith(FILE_PREFIX)) {
-      try {
-        return new JarFile(ResourceUtils.toURI(jarFileUrl).getSchemeSpecificPart());
-      } catch (URISyntaxException ex) {
-        // 失败可能是因为url不正确，去除协议尝试
-        return new JarFile(jarFileUrl.substring(FILE_PREFIX.length()));
-      }
-    } else {
-      return new JarFile(jarFileUrl);
-    }
-  }
-
-
-  /**
    * 获取资源下匹配的文件
    *
    * @param resource 源
@@ -385,81 +333,11 @@ public abstract class AbstractResourceLoader {
       throws IOException {
     List<SourceResource> list = new LinkedList<>();
     File rootDir = resource.getFile().getAbsoluteFile();
-    Set<File> matchedFiles = findMatchedFiles(rootDir, subPattern);
+    Set<File> matchedFiles = matcher.findMatchedFiles(rootDir, subPattern);
     for (File file : matchedFiles) {
       list.add(new FileSystemResource(file));
     }
     return list;
-  }
-
-  /**
-   * 获取目录下匹配的文件
-   *
-   * @param rootDir 根目录
-   * @param subPattern 匹配串
-   * @return 文件列表
-   */
-  protected Set<File> findMatchedFiles(File rootDir, String subPattern) {
-    Set<File> files = new LinkedHashSet<>();
-    if (!rootDir.exists() || !rootDir.isDirectory() || !rootDir.canRead()) {
-      if (log.isWarnEnabled()) {
-        log.warn("dir [{}] cannot execute search operation", rootDir.getPath());
-      }
-      return files;
-    }
-    String fullPattern = rootDir.getAbsolutePath()
-        .replace(File.separator, Constants.PATH_SEPARATOR);
-    if (!subPattern.startsWith(Constants.PATH_SEPARATOR)) {
-      fullPattern += Constants.PATH_SEPARATOR;
-    }
-    fullPattern += subPattern.replace(File.separator, Constants.PATH_SEPARATOR);
-    this.searchMatchedFiles(fullPattern, rootDir, files);
-    return files;
-  }
-
-  /**
-   * 递归查询匹配的文件
-   *
-   * @param fullPattern 全匹配串
-   * @param dir 目录
-   * @param files 文件集合
-   */
-  protected void searchMatchedFiles(String fullPattern, File dir, Set<File> files) {
-    if (log.isDebugEnabled()) {
-      log.debug("search files under dir [{}]", dir);
-    }
-    File[] dirContents = dir.listFiles();
-    for (File content : dirContents) {
-      String currentPath = content.getAbsolutePath()
-          .replace(File.separator, Constants.PATH_SEPARATOR);
-      if (content.isDirectory()) {
-        if (!content.canRead() && log.isDebugEnabled()) {
-          log.debug("dir [{}] has no read permission, skip");
-        } else {
-          this.searchMatchedFiles(fullPattern, content, files);
-        }
-      } else if (this.matcher.match(fullPattern, currentPath)) {
-        files.add(content);
-      }
-    }
-  }
-
-  /**
-   * 获取不含通配符的根路径
-   *
-   * @param location 路径
-   * @return 根路径
-   */
-  protected String getRootDir(String location) {
-    int prefixEnd = location.indexOf(Constants.COLON) + 1;
-    int rootDirEnd = location.length();
-    while (rootDirEnd > prefixEnd && matcher.isPattern(location.substring(prefixEnd, rootDirEnd))) {
-      rootDirEnd = location.lastIndexOf(Constants.PATH_SEPARATOR, rootDirEnd - 2) + 1;
-    }
-    if (rootDirEnd == 0) {
-      rootDirEnd = prefixEnd;
-    }
-    return location.substring(0, rootDirEnd);
   }
 
 }

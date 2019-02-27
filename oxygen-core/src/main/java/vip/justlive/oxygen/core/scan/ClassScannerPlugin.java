@@ -15,26 +15,24 @@ package vip.justlive.oxygen.core.scan;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
+import java.util.concurrent.ConcurrentHashMap;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.ClassUtils;
 
 /**
- * 类扫描器
+ * 类扫描插件
  *
  * @author wubo
  */
 public class ClassScannerPlugin implements Plugin {
 
-  private static final Map<String, Reflections> REFS = new HashMap<>(4);
+  private static final Set<Class<?>> CLASSES = new HashSet<>();
+  private static final Map<Class<? extends Annotation>, ClassStore> CACHE = new ConcurrentHashMap<>();
 
   /**
    * 根据注解获取类
@@ -43,7 +41,16 @@ public class ClassScannerPlugin implements Plugin {
    * @return classes
    */
   public static Set<Class<?>> getTypesAnnotatedWith(final Class<? extends Annotation> annotation) {
-    return REFS.get(Constants.DEFAULT_PROFILE).getTypesAnnotatedWith(annotation);
+    ClassStore store = CACHE.computeIfAbsent(annotation, k -> new ClassStore());
+    if (store.classes == null) {
+      store.classes = new HashSet<>();
+      for (Class<?> clazz : CLASSES) {
+        if (clazz.isAnnotationPresent(annotation)) {
+          store.classes.add(clazz);
+        }
+      }
+    }
+    return store.classes;
   }
 
   /**
@@ -53,7 +60,14 @@ public class ClassScannerPlugin implements Plugin {
    * @return methods
    */
   public static Set<Method> getMethodsAnnotatedWith(final Class<? extends Annotation> annotation) {
-    return REFS.get(Constants.DEFAULT_PROFILE).getMethodsAnnotatedWith(annotation);
+    ClassStore store = CACHE.computeIfAbsent(annotation, k -> new ClassStore());
+    if (store.methods == null) {
+      store.methods = new HashSet<>();
+      for (Class<?> clazz : CLASSES) {
+        store.methods.addAll(ClassUtils.getMethodsAnnotatedWith(clazz, annotation));
+      }
+    }
+    return store.methods;
   }
 
   @Override
@@ -64,19 +78,22 @@ public class ClassScannerPlugin implements Plugin {
   @Override
   public void start() {
     CoreConf config = ConfigFactory.load(CoreConf.class);
-    Reflections ref;
-    if (config.getClassScan() == null || config.getClassScan().length() == 0) {
-      ref = new Reflections("vip.justlive", new SubTypesScanner(), new TypeAnnotationsScanner(),
-          new MethodAnnotationsScanner());
-    } else {
-      ref = new Reflections("vip.justlive", config.getClassScan().split(Constants.COMMA),
-          new SubTypesScanner(), new TypeAnnotationsScanner(), new MethodAnnotationsScanner());
-    }
-    REFS.put(Constants.DEFAULT_PROFILE, ref);
+    ClassScanner scanner = new DefaultClassScanner();
+    CLASSES.addAll(scanner.scan(config.getClassScan()));
   }
 
   @Override
   public void stop() {
-    REFS.clear();
+    CLASSES.clear();
+    CACHE.clear();
+  }
+
+  /**
+   * class store
+   */
+  static class ClassStore {
+
+    Set<Class<?>> classes;
+    Set<Method> methods;
   }
 }

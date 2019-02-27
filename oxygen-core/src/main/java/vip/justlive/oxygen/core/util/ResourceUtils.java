@@ -13,9 +13,16 @@
  */
 package vip.justlive.oxygen.core.util;
 
+import static vip.justlive.oxygen.core.constant.Constants.FILE_PREFIX;
+
+import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import vip.justlive.oxygen.core.constant.Constants;
 
 /**
@@ -96,5 +103,75 @@ public class ResourceUtils {
       usePath = usePath.substring(Constants.ROOT_PATH.length());
     }
     return usePath;
+  }
+
+  /**
+   * 获取jar文件
+   *
+   * @param jarFileUrl jar文件路径
+   * @return jar文件
+   * @throws IOException io异常
+   */
+  public static JarFile getJarFile(String jarFileUrl) throws IOException {
+    if (jarFileUrl.startsWith(FILE_PREFIX)) {
+      try {
+        return new JarFile(ResourceUtils.toURI(jarFileUrl).getSchemeSpecificPart());
+      } catch (URISyntaxException ex) {
+        // 失败可能是因为url不正确，去除协议尝试
+        return new JarFile(jarFileUrl.substring(FILE_PREFIX.length()));
+      }
+    } else {
+      return new JarFile(jarFileUrl);
+    }
+  }
+
+  /**
+   * @param url url
+   * @return
+   * @throws IOException
+   */
+  public static JarFileInfo getJarFileInfo(URL url) throws IOException {
+    URLConnection con = url.openConnection();
+    JarFile jarFile;
+    String jarFileUrl;
+    String rootEntryPath;
+    if (con instanceof JarURLConnection) {
+      JarURLConnection jarCon = (JarURLConnection) con;
+      jarFile = jarCon.getJarFile();
+      jarFileUrl = jarCon.getJarFileURL().toExternalForm();
+      JarEntry jarEntry = jarCon.getJarEntry();
+      rootEntryPath = (jarEntry != null ? jarEntry.getName() : Constants.EMPTY);
+    } else {
+      String urlFile = url.getFile();
+      int separatorLength = Constants.WAR_URL_SEPARATOR.length();
+      int separatorIndex = urlFile.indexOf(Constants.WAR_URL_SEPARATOR);
+      if (separatorIndex == -1) {
+        separatorIndex = urlFile.indexOf(Constants.JAR_URL_SEPARATOR);
+        separatorLength = Constants.JAR_URL_SEPARATOR.length();
+      }
+      if (separatorIndex != -1) {
+        jarFileUrl = urlFile.substring(0, separatorIndex);
+        rootEntryPath = urlFile.substring(separatorIndex + separatorLength);
+        jarFile = getJarFile(jarFileUrl);
+      } else {
+        jarFile = new JarFile(urlFile);
+        jarFileUrl = urlFile;
+        rootEntryPath = Constants.EMPTY;
+      }
+    }
+    return new JarFileInfo(jarFile, jarFileUrl, rootEntryPath);
+  }
+
+  public static class JarFileInfo {
+
+    public final JarFile jarFile;
+    public final String jarFileUrl;
+    public final String rootEntryPath;
+
+    public JarFileInfo(JarFile jarFile, String jarFileUrl, String rootEntryPath) {
+      this.jarFile = jarFile;
+      this.jarFileUrl = jarFileUrl;
+      this.rootEntryPath = rootEntryPath;
+    }
   }
 }

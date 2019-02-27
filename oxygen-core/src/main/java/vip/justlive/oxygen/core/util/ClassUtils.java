@@ -14,9 +14,12 @@
 package vip.justlive.oxygen.core.util;
 
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import vip.justlive.oxygen.core.constant.Constants;
@@ -283,4 +286,21 @@ public class ClassUtils {
     return actualClass;
   }
 
+  /**
+   * 获取类下被注解的方法
+   *
+   * @param clazz 类
+   * @param annotation 注解
+   * @return methods
+   */
+  public static Set<Method> getMethodsAnnotatedWith(Class<?> clazz,
+      Class<? extends Annotation> annotation) {
+    Set<Method> methods = new HashSet<>();
+    for (Method method : clazz.getDeclaredMethods()) {
+      if (method.isAnnotationPresent(annotation)) {
+        methods.add(method);
+      }
+    }
+    return methods;
+  }
 }

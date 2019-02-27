@@ -13,23 +13,30 @@
  */
 package vip.justlive.oxygen.core.util;
 
+import java.io.File;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
+import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * 路径匹配
  *
  * @author wubo
  */
+@Slf4j
 public class PathMatcher {
 
-  static final char ANY = '*';
-  static final String ANY_REGEX = ".*";
-  static final char ONLY_ONE = '?';
-  static final String ONLY_NOE_REGEX = ".";
-  static final String NOT_SEPARATOR_REGEX = "[^/]*";
-
-  final WeakHashMap<String, Pattern> patterns = new WeakHashMap<>(32);
+  private static final char ANY = '*';
+  private static final String ANY_REGEX = ".*";
+  private static final String DB_ANY_REGEX = "[/]?";
+  private static final char ONLY_ONE = '?';
+  private static final String ONLY_NOE_REGEX = ".";
+  private static final char SLASH = '/';
+  private static final String NOT_SEPARATOR_REGEX = "[^/]*";
+  private static final WeakHashMap<String, Pattern> PATTERNS = new WeakHashMap<>(32);
 
   /**
    * 是否是通配符
@@ -50,10 +57,10 @@ public class PathMatcher {
    */
   public boolean match(String pattern, String path) {
     if (this.isPattern(pattern)) {
-      Pattern p = patterns.get(pattern);
+      Pattern p = PATTERNS.get(pattern);
       if (p == null) {
         p = parsePattern(pattern);
-        patterns.put(pattern, p);
+        PATTERNS.put(pattern, p);
         return p.matcher(path).matches();
       }
       return p.matcher(path).matches();
@@ -72,27 +79,116 @@ public class PathMatcher {
     int len = chars.length;
     StringBuilder sb = new StringBuilder();
     boolean pre = false;
+    boolean dbPre = false;
     for (int i = 0; i < len; i++) {
-      if (chars[i] == ANY) {
-        if (pre) {
-          // 第二次遇到*，替换成.*
-          sb.append(ANY_REGEX);
-        } else if (i + 1 == len) {
-          // 单星是最后一个字符，则直接将*转成[^/]*
-          sb.append(NOT_SEPARATOR_REGEX);
-        } else {
-          pre = true;
-        }
-      } else {
-        if (pre) {
-          sb.append(NOT_SEPARATOR_REGEX);
-          pre = false;
-        }
-        // 遇到？替换成. 否则不变
-        sb.append(chars[i] == ONLY_ONE ? ONLY_NOE_REGEX : chars[i]);
-      }
+      boolean[] dbp = parse(pre, dbPre, chars, i, sb);
+      pre = dbp[0];
+      dbPre = dbp[1];
     }
     return Pattern.compile(sb.toString());
+  }
+
+  private boolean[] parse(boolean pre, boolean dbPre, char[] chars, int i, StringBuilder sb) {
+    if (chars[i] == ANY) {
+      if (pre) {
+        // 第二次遇到*，替换成.*
+        sb.append(ANY_REGEX);
+        dbPre = true;
+      } else if (i + 1 == chars.length) {
+        // 单星是最后一个字符，则直接将*转成[^/]*
+        sb.append(NOT_SEPARATOR_REGEX);
+      } else {
+        pre = true;
+      }
+    } else {
+      if (dbPre && chars[i] == SLASH) {
+        sb.append(DB_ANY_REGEX);
+      } else if (!dbPre && pre) {
+        sb.append(NOT_SEPARATOR_REGEX);
+      }
+      if (chars[i] == ONLY_ONE) {
+        // 遇到？替换成. 否则不变
+        sb.append(ONLY_NOE_REGEX);
+      } else if (!dbPre || chars[i] != SLASH) {
+        sb.append(chars[i]);
+      }
+      pre = false;
+      dbPre = false;
+    }
+    return new boolean[]{pre, dbPre};
+  }
+
+  /**
+   * 获取不含通配符的根路径
+   *
+   * @param location 路径
+   * @return 根路径
+   */
+  public String getRootDir(String location) {
+    int prefixEnd = location.indexOf(Constants.COLON) + 1;
+    int rootDirEnd = location.length();
+    while (rootDirEnd > prefixEnd && isPattern(location.substring(prefixEnd, rootDirEnd))) {
+      rootDirEnd = location.lastIndexOf(Constants.PATH_SEPARATOR, rootDirEnd - 2) + 1;
+    }
+    if (rootDirEnd == 0) {
+      rootDirEnd = prefixEnd;
+    }
+    return location.substring(0, rootDirEnd);
+  }
+
+  /**
+   * 获取目录下匹配的文件
+   *
+   * @param rootDir 根目录
+   * @param subPattern 匹配串
+   * @return 文件列表
+   */
+  public Set<File> findMatchedFiles(File rootDir, String subPattern) {
+    Set<File> files = new LinkedHashSet<>();
+    if (!rootDir.exists() || !rootDir.isDirectory() || !rootDir.canRead()) {
+      if (log.isWarnEnabled()) {
+        log.warn("dir [{}] cannot execute search operation", rootDir.getPath());
+      }
+      return files;
+    }
+    String fullPattern = rootDir.getAbsolutePath()
+        .replace(File.separator, Constants.PATH_SEPARATOR);
+    if (!subPattern.startsWith(Constants.PATH_SEPARATOR)) {
+      fullPattern += Constants.PATH_SEPARATOR;
+    }
+    fullPattern += subPattern.replace(File.separator, Constants.PATH_SEPARATOR);
+    this.searchMatchedFiles(fullPattern, rootDir, files);
+    return files;
+  }
+
+  /**
+   * 递归查询匹配的文件
+   *
+   * @param fullPattern 全匹配串
+   * @param dir 目录
+   * @param files 文件集合
+   */
+  private void searchMatchedFiles(String fullPattern, File dir, Set<File> files) {
+    if (log.isDebugEnabled()) {
+      log.debug("search files under dir [{}]", dir);
+    }
+    File[] dirContents = dir.listFiles();
+    if (dirContents == null) {
+      return;
+    }
+    for (File content : dirContents) {
+      String currentPath = content.getAbsolutePath()
+          .replace(File.separator, Constants.PATH_SEPARATOR);
+      if (content.isDirectory()) {
+        if (!content.canRead() && log.isDebugEnabled()) {
+          log.debug("dir [{}] has no read permission, skip");
+        } else {
+          this.searchMatchedFiles(fullPattern, content, files);
+        }
+      } else if (this.match(fullPattern, currentPath)) {
+        files.add(content);
+      }
+    }
   }
 
 }

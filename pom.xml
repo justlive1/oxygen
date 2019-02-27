@@ -6,7 +6,7 @@
 
   <groupId>vip.justlive</groupId>
   <artifactId>oxygen</artifactId>
-  <version>1.2.1</version>
+  <version>1.3.0</version>
   <modules>
     <module>oxygen-core</module>
     <module>oxygen-jdbc</module>
@@ -27,7 +27,6 @@
     <ehcache.version>2.10.5</ehcache.version>
     <junit.version>4.12</junit.version>
     <lombok.version>1.18.4</lombok.version>
-    <org.reflections>0.9.11</org.reflections>
     <slf4j.version>1.7.25</slf4j.version>
 
     <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -125,34 +124,27 @@
 
       <!-- self -->
       <dependency>
-        <groupId>vip.justlive</groupId>
+        <groupId>${project.groupId}</groupId>
         <artifactId>oxygen-core</artifactId>
         <version>${project.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>vip.justlive</groupId>
+        <groupId>${project.groupId}</groupId>
         <artifactId>oxygen-jdbc</artifactId>
         <version>${project.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>vip.justlive</groupId>
+        <groupId>${project.groupId}</groupId>
         <artifactId>oxygen-web</artifactId>
         <version>${project.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>vip.justlive</groupId>
+        <groupId>${project.groupId}</groupId>
         <artifactId>oxygen-web-tomcat</artifactId>
         <version>${project.version}</version>
-      </dependency>
-
-
-      <dependency>
-        <groupId>org.reflections</groupId>
-        <artifactId>reflections</artifactId>
-        <version>${org.reflections}</version>
       </dependency>
 
       <dependency>

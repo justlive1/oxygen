@@ -31,8 +31,8 @@ public class CoreConf {
   /**
    * 类扫描路径属性
    */
-  @Value("${main.class.scan:}")
-  private String classScan;
+  @Value("${main.class.scan:vip.justlive}")
+  private String[] classScan;
 
   /**
    * 缓存实现类
