@@ -2,679 +2,594 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/vip.justlive/oxygen/badge.svg)](https://maven-badges.herokuapp.com/maven-central/vip.justlive/oxygen/)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-light framework
+
+轻量级Java框架
 
 
-## Documentation
 
-a light framework base on Java
+## 介绍
 
-oxygen-core
-- aop base on cglib
-- provide cache manager
-- config manager, support `${attrs.key:defaultValue}`
-- crypto
-- exception manager, i18n friendly
-- ioc
-- scheduled job
+一个轻量级Java框架
 
-```
-├─ src/main
-  │─ java/.../core  //oxygen-core 
-  │  │- aop //aop module
-  │  │- cache //cache module
-  │  │- config  //config module
-  │  │- constant  //constant
-  │  │- convert  //type convert module
-  │  │- crypto  //crypto module
-  │  │- domain  //domain module
-  │  │- exception  //exception module
-  │  │- i18n  //i18n
-  │  │- io  //io module
-  │  │- ioc  //ioc module
-  │  │- job  //scheduled job module
-  │  │- scan  //class scan module
-  │  │- util  //util module
-  │  │- Bootstrap.java  //the class to start framework
-  │  └- Plugin.java   //the interface of plugin
-  └─ resources/META-INF/services
-     └- ...core.Plugin  //Plugin service configuration file
+- oxygen-core
+  - 配置管理，支持${attrs.key:defaultValue}表达式获取配置
+  - 加解密管理，提供加解密服务内置基础加密实现，例如SHA-1、SHA-256、MD5
+  - 异常管理，提供异常包装，统一异常编码，便于国际化
+  - i18n国际化
+  - 资源文件加载，提供file,jar,classpath等文件加载
+  - 类扫描器
+  - 部分工具类
+  - retry重试
+
+- oxygen-ioc
+  - 基于构造器的轻量级依赖注入
+
+- oxygen-aop
+  - 基于cglib实现的切面
+  - 轻巧简单，可单独使用
+  - 可使用注解`Aspect`或直接实现`Interceptor`编写切面
+
+- oxygen-cache
+  - 内置Ehcache和LocalCache缓存
+  - 提供基于注解`Cacheable`的方法缓存
+
+- oxygen-job
+  - 提供基于注解`Scheduled`的定时任务
+
+- oxygen-jdbc
+  - 小巧简单的jdbc实现，纯jdk实现，无第三方jar
+  - 支持多数据源
+  - 基于sql进行crud，不提供类似Hibernate的链式方法（原因：sql作为数据库领域的DSL，已经很自然优雅，Less is more）
+
+- oxygen-web
+  - 轻量级web框架支持注解声明和函数式编程
+  - 支持Servlet3.0 `ServletContainerInitializer` 自动加载，省略web.xml
+  - 支持i18n动态切换
+  - 提供`WebHook`进行请求拦截处理
+  - 支持自定义全局异常处理
   
-```
-
-oxygen-jdbc
-- simple only base on jdk
-- support multi-datasource
-- base on `sql` (sql is the DSL of database. It is very natural and elegant. Less is more)
-
-```
-├─ src/main
-  │─ java/.../jdbc  //oxygen-jdbc
-  │  │- config  //datasource config 
-  │  │- handler  //data handler
-  │  │- interceptor  //jdbc execute interceptor
-  │  │- record  //base crud
-  │  │- Jdbc.java  //the class used to operate database
-  │  │- JdbcException.java  //jdbc excption
-  │  └- JdbcPlugin.java   //jdbc plugin
-  └─ resources/META-INF/services
-     │- ...handler.ColumnHandler //columnHandler service configuration file
-     └- ...core.Plugin  //add jdbcPlugin
-  
-```
-
-oxygen-web
-* use`ServletContainerInitializer` to auto startup
-* no require the file `web.xml`
-* use `@Router` to mark a router class
-* use `@Mapping` to mark a request handler method
-* use `@Param,@HeaderParam,@CookieParam,@PathParam` to mark the parameter where to fetch, `@Param` is default
-* supported simple types , `Map<String,Object>` and object class user defined
-* supported return json , view and anything handled by yourself
-
-```
-├─ src/main
-  │─ java/.../web 
-  │  │- handler // parameter hander
-  │  │- http // http parse
-  │  │- i18n  //i18n aop
-  │  │- mapping  // url mapping and paratemer mapping
-  │  │- router  // an example
-  │  │- server  // embedded server
-  │  │- view  // view resolver
-  │  │- DefaultWebAppInitializer.java  // default web app initializer 
-  │  │- DispatcherServlet.java  // dispathcer
-  │  │- WebAppInitializer.java  // interface of web app initializer
-  │  │- WebContainerInitializer.java  // support of web container initializer
-  │  │- WebConf.java  // web config properties
-  │  └- WebPlugin.java  // web plugin
-  └─ resources/META-INF/services
-      │- ...ServletContainerIntializer // servlet3.0
-      │- ...core.Plugin  // add web plugin
-      │- ...ParamHandler // add paramhander services
-      │- ...RequestParse // add request parser services 
-      └- ...ViewResolver // add view resolver services
-```
 
 
-## Features
+## 特性
 
-* light and simple to use
-* use `ServiceLoader` to load plugins and easy to extend
+* 轻量级，使用简单
+* 支持插件扩展
+* 函数式编程
+* 流式风格
 
-## Install
 
-Add dependencies to your pom.xml:
-```
-<!-- core, include ioc, aop, config manager, crypto encoder, exceptions, scheduled job, cache and so on-->
-<dependency>
-    <groupId>vip.justlive</groupId>
-    <artifactId>oxygen-core</artifactId>
-    <version>${oxygen.version}</version>
-</dependency>
+## 快速开始
 
-<!-- jdbc, can be used alone -->
-<dependency>
-    <groupId>vip.justlive</groupId>
-    <artifactId>oxygen-jdbc</artifactId>
-    <version>${oxygen.version}</version>
-</dependency>
+创建`Maven`项目
 
-<!-- web -->
-<dependency>
-    <groupId>vip.justlive</groupId>
-    <artifactId>oxygen-web</artifactId>
-    <version>${oxygen.version}</version>
-</dependency>
-
-<!-- web with embedded tomcat-->
+```xml
+<!-- 使用内嵌tomcat启动 -->
 <dependency>
     <groupId>vip.justlive</groupId>
     <artifactId>oxygen-web-tomcat</artifactId>
     <version>${oxygen.version}</version>
 </dependency>
-
 ```
 
-## Quick start
-
-### Common Response
-
-we use `Resp` as response
+或`Gradle`
 
 ```
-// success response with code 00000
-Resp.success(Object obj);
-
-// error response with default code 99999
-Resp.error(String msg);
-
-// error response with custom code
-Resp.error(String code, String msg);
+compile 'vip.justlive:oxygen-web-tomcat:$oxygenVersion'
 ```
 
-### Exceptions
+> 不需要`webapp`项目框架，支持Servlet3.0
 
-we use `Exceptions` to throw a runtime exception
+编写 `main` 函数写一个 `Hello World`
 
-```
-// create instance of ErrorCode
-ErrorCode err = Exceptions.errorCode(String module, String code);
-ErrorCode err = Exceptions.errorMessage(String module, String code, String message);
-
-// throw an unchecked exception wrapped
-throw Exceptions.wrap(Throwable e);
-throw Exceptions.wrap(Throwable e, String code, String message);
-throw Exceptions.wrap(Throwable e, ErrorCode errorCode, Object... arguments);
-
-// throw a business exception with none stack trace
-throw Exceptions.fail(ErrorCode errCode, Object... params);
-throw Exceptions.fail(String code, String message, Object... params);
-
-// throw a fault with stack trace
-throw Exceptions.fault(ErrorCode errCode, Object... params);
-throw Exceptions.fault(String code, String message, Object... params);
-throw Exceptions.fault(Throwable e, ErrorCode errCode, Object... params);
-throw Exceptions.fault(Throwable e, String code, String message, Object... params)
-
-```
-
-
-### Retry
-
-retry, support sync and async
-
-```
-RetryBuilder.newBuilder()
-  // time limit
-  .withTimeLimit(10, TimeUnit.MILLISECONDS)
-  // retry if throw exception
-  .retryIfException()
-  // set max attempt numbers
-  .withMaxAttempt(3)
-  // block use sleep
-  .withSleepBlock(100)
-  // build sync retryer
-  .build()
-  // execute
-  .call(Math::random);
-  
-RetryBuilder.newBuilder()
-    // retry if throw ArithmeticException 
-    .retryIfException(ArithmeticException.class)
-    // retry if result < 0.5
-    .retryIfResult(r -> r < 0.5)
-    // set max delay time
-    .withMaxDelay(1000)
-    // block use wait
-    .withWaitBlock(100)
-    // build sync retryer
-    .build()
-    // execute
-    .call(Math::random);
-
-RetryBuilder.newBuilder()
-    // retry by yourslef
-    .retryIf(attmapt -> attmapt.hasException())
-    // listern of retry
-    .onRetry(System.out::println)
-    // listern of final fail
-    .onFinalFail(System.out::println)
-    // listern of success
-    .onSuccess(System.out::println)
-    // set user async executor
-    .withAsyncExecutor(scheduleService)
-    // build async retryer
-    .buildAsync()
-    // execute
-    .callAsync(Math::random);
-```
-
-### IOC 
-
-you can use IOC container with annotation
-
-```
-// add scan packages property in config file
-main.class.scan=com.xxx.xxx,com.aaa.bbb
-
-// use @Configuration and @Bean
-@Configuration
-public class Conf {
- 
-  @Bean
-  Inter noDepBean() {
-    return new NoDepBean();
-  }
-}
-
-// use @Bean and @Inject
-@Bean("depBean")
-public class DepBean implements Inter {
-
-  private final NoDepBean noDepBean;
-
-  @Inject
-  public DepBean(NoDepBean noDepBean) {
-    this.noDepBean = noDepBean;
-  }
-  
-  ...
-}
-
-// get bean at runtime
-Inter inter = BeanStore.getBean("depBean", Inter.class);
-
-```
-
-### AOP
-
-we can use aop with annotations
-
-```
-// define aop method
-@Before(annotation = Log.class)
-public void log(Invocation invocation) {
-  ...
-}
-
-// target method
-@Log
-public void print() {
-  ...
-}  
-```
-
-
-### Scheduled Job
-
-`@Scheduled` that marks a method to be scheduled.
-
-Exactly one of the onApplicationStart(), cron(), fixedDelay(), or fixedRate() attributes must be specified.
-
-```
-// Creates and executes a periodic action that becomes enabled first after the given initial delay, 
-// and subsequently with the given delay between the termination of one execution and the commencement of the next.
-@Scheduled(fixedDelay = "500")
-public void run1() {
-  ...
-}
-
-// Creates and executes a periodic action that becomes enabled first after the given initial delay, 
-// and subsequently with the given period
-@Scheduled(fixedRate = "600")
-public void run2() {
-  ...
-}
-
-// Schedule the specified cron task and run in async mode when application started 
-@Scheduled(cron = "0/5 * * * * ?", onApplicationStart = true, async = true)
-public void run3() {
-  ...
-}
-```
-
-
-### Cache
-
-There are two ways to use the cache
-- `JCache.cache()` Get the cache and then call the api
-- `@Cacheable` Use annotation to add cache on method
-
-```
-// use cache api 
-Cache cache = JCache.cache(cacheName);
-T value = cache.get(key, clazz);
-cache.set(key, value, duration, timeUnit);
-...
-
-// use annotation
-@Cacheable
-public Object method() {
-  ...
-}
-
-@Cacheable(key = "args[0]", duration = 10, timeUnit = TimeUnit.MINUTES)
-public Object method(Object arg0, Object arg1) {
-  ...
-}
-
-```
-
-
-### i18n
-
-use `Lang` to get i18n message
-```
-// file path for i18n
-i18n.path=classpath:message/*.properties
-// i18n default language
-i18n.default.language=zh
-// i18n default country
-i18n.default.country=CN
-
-// set thread locale
-Lang.setThreadLocale(new Locale("en", "US"))
-// reset thread locale
-Lang.clearThreadLocale()
-// get message for current thread locale
-Lang.getMessage("key")
-// get message for locale
-Lang.getMessage("key", new Locale("en", "US")
-Lang.getMessage("key", "en", "US")
-
-```
-
-
-### Jdbc
-
-#### basic
-
-- multi-datasource
-- crud using `Jdbc` 
-- handler ResultSet by yourself using `ResultHandler<T>`
-- start and close transaction
-
-```
-// use it alone
-...
-// add primary datasource
-Jdbc.addPrimaryDataSource(DataSource dataSource)
-// add mutli datasource
-Jdbc.addDataSource(String name, DataSource dataSource)
-
-// change used dataSource in current thread
-Jdbc.use(dataSourceName)
-// reset used dataSource in current thread
-Jdbc.clear()
-
-// crud
-T Jdbc.query(String sql, Class<T> clazz, Object... params)
-List<T> Jdbc.queryForList(String sql, Class<T> clazz, Object... params)
-Map<String, Object> Jdbc.queryForMap(String sql, Object... params)
-List<Map<String, Object>> Jdbc.queryForMapList(String sql, Object... params)
-// you can handler resultset by yourself
-T Jdbc.query(String sql, ResultSetHandler<T> handler, Object... params)
-
-int Jdbc.update(String sql, Object... params)
-
-// start primary datasource transaction
-Jdbc.startTx()
-// start named datasource transaction
-Jdbc.startTx(String dataSourceName)
-
-// close primary datasource transaction
-Jdbc.closeTx()
-// close named datasource transaction
-Jdbc.closeTx(String dataSourceName)
-
-
-
-// roback
-Jdbc.rollbackTx()
-// roback 
-Jdbc.rollbackTx(String dataSourceName)
-
-// base crud
-Option opt = new Option()
-...
-Record.insert(opt)
-Record.findById(Option.class, 1)
-Record.find(opt)
-Record.update(opt)
-Record.deleteById(Option.class, 1)
-Record.delete(opt);
-
-// batch
-// open batch
-Batch.use()
-// add PrepareStatemnet
-.addBatch("insert into system (key, value) values (?,?)", 1, 3)
-.addBatch("insert into system (key, value) values (?,?)", Arrays.asList(4, 4))
-// add Statemnet
-.addBatch("insert into system (key,value) values(1,2)")
-// commit batch
-.commit();
-// record batch insert
-Record.insertBatch(list);
-
-// use oxygen-core, only need to write configuration file
-// multi datasource names
-datasource.multi=a
-// primary datasource
-datasource.logSql=true
-datasource.driverClassName=org.h2.Driver
-datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
-datasource.username=sa
-datasource.password=sa
-
-// datasource named by a
-datasource.a.driverClassName=org.h2.Driver
-datasource.a.url=jdbc:h2:mem:a;DB_CLOSE_DELAY=-1
-datasource.a.username=sa
-datasource.a.password=sa
-
-```
-
-
-#### handler column yourself
-
-- implement `ColumnHandler`
-- add `META-INF/services/vip.justlive.oxygen.jdbc.handler.ColumnHandler` file and add the class name
-
-```
-public class MyColumnHandler implements ColumnHandler {
-
-  @Override
-  public boolean supported(Class<?> type) {
-    ...
-  }
-
-  @Override
-  public Object fetch(ResultSet rs, int index) throws SQLException {
-    ...
-  }
-}
-
-// add or update META-INF/services/vip.justlive.oxygen.jdbc.handler.ColumnHandler file and add class name
-xxx.xxx.MyColumnHandler
-
-```
-
-#### add jdbc interceptor
-
-- implement `JdbcInterceptor` 
-- add interceptor using `Jdbc.addJdbcInterceptor` 
-
-```
-// embed print sql interceptor
-@Slf4j
-public class LogSqlJdbcInterceptor implements JdbcInterceptor {
-
-  @Override
-  public void before(String sql, List<Object> params) {
-    if (log.isDebugEnabled()) {
-      log.debug("execute sql: {} -> params: {}", sql, params);
-    }
-  }
-}
-
-// add interceptor
-Jdbc.addJdbcInterceptor(JdbcInterceptor interceptor)
-
-```
-
-
-### web
-
-#### 基础使用
-- use `@Router @Mapping @Param...` to mark router class, request handle method and parameter
-- use `View` to render or redirect views，return json when the return type is not `void` or `View`
-- use `Request.current(),Response.current()` to get request or response in one thread
-
-```
-// use @Router
-@Router("/common")
-public class CommonRouter {
-
-  // mark request path and request method, default is all
-  @Mapping(value = "/localDate",method = HttpMethod.GET)
-  public Resp localDate() {
-    return Resp.success(
-            LocalDate.now().plusDays(offset).atStartOfDay(ZoneOffset.systemDefault()).toInstant()
-                .toEpochMilli());
-  }
-
-  // view render
-  @Mapping("/index")
-  public View index() {
-    View view = new View();
-    view.setPath("/index.jsp");
-    return view;
-  }
-  
-  // view redirect
-  @Mapping("/view")
-  public View index() {
-    View view = new View();
-    view.setPath("/index");
-    view.setRedirect(true);
-    return view;
-  }
-  
-  // handle by yourself, the example is download
-  @Mapping("download")
-  public void download(HttpServletResponse resp) throws IOException {
-    resp.setCharacterEncoding("utf-8");
-    resp.setContentType("application/octet-stream;charset=utf-8");
-    resp.setHeader("Content-disposition", "attachment;filename=xx.txt");
-    Files.copy(new File("xxx.txt"), resp.getOutputStream());
-  }
-}
-
-// get Request Response
-Request.current()
-Response.current()
-
-
-// redirect page for 404 error
-web.error.404.page=
-// handler by yourself for 404 error
-web.error.404.handler=
-// redirect page for 500 error
-web.error.500.page=
-// handler by yourself for 404 error
-web.error.500.handler=
-
-```
-
-
-#### add your ViewResolver
-- implement`ViewResolver`
-- use`ServiceLoader` or `WebPlugin.addViewResolver` to add
-
-```
-// an example in system
-public class DefaultViewResolver implements ViewResolver {
-
-  @Override
-  public boolean supported(Object data) {
-    // redirect
-    if (data != null && data.getClass() == View.class && ((View) data).isRedirect()) {
-      return true;
-    }
-    // null or not view, return json
-    return data == null || data.getClass() != View.class;
-  }
-
-  @Override
-  public void resolveView(HttpServletRequest request, HttpServletResponse response, Object data) {
-    try {
-      if (data != null && data.getClass() == View.class) {
-        View view = (View) data;
-        String redirectUrl = view.getPath();
-        if (!redirectUrl.startsWith(Constants.HTTP_PREFIX) && !redirectUrl
-            .startsWith(Constants.HTTPS_PREFIX)) {
-          redirectUrl = request.getContextPath() + view.getPath();
-        }
-        response.sendRedirect(redirectUrl);
-      } else {
-        response.getWriter().print(JSON.toJSONString(data));
-      }
-    } catch (IOException e) {
-      throw Exceptions.wrap(e);
-    }
-  }
-}
-```
-
-#### add your WebAppInitializer
-only need implement`WebAppInitializer` and the system can auto load
-
-```
-public class MyWebAppInitializer implements WebAppInitializer {
-  @Override
-  public void onStartup(ServletContext context) {
-    ...
-  }
-  @Override
-  public int order() {
-    ...
-  }
-}
-```
-
-
-#### i18n
-embedded `I18nAop` to change locale by request 
-
-```
-// file path for i18n
-i18n.path=classpath:message/*.properties
-// i18n default language
-i18n.default.language=zh
-// i18n default country
-i18n.default.country=CN
-// param key of request to set locale
-i18n.param.key=locale
-// key of session to save locale 
-i18n.session.key=I18N_SESSION_LOCALE
-
-// eg
-// default locale
-http://localhost:8080/page.html
-// set locale zh_CN
-http://localhost:8080/page1.html?locale=zh_CN
-// in a same session, locale is zh_CN
-http://localhost:8080/page2.html
-```
-
-#### run with embedded server
-- depend `oxygen-web-tomcat`
-- run application using `Server.start`
-
-```
-<!-- web wiht embeded tomcat -->
-<dependency>
-    <groupId>vip.justlive</groupId>
-    <artifactId>oxygen-web-tomcat</artifactId>
-    <version>${oxygen.version}</version>
-</dependency>
-
-
+```java
 public static void main(String[] args) {
-  // start server
-  Server.start();
-  ...
-  // stop server
-  Server.stop();
+  Router.router().path("/").handler(ctx -> ctx.response().write("hello world"));
+  Server.server().listen(8080);
 }
 ```
 
+用浏览器打开 http://localhost:8080 这样就可以看到 `hello world` 了！
+
+## 内容详解
+- [**`注册路由`**](#注册路由)
+  - [**`硬编码方式`**](#硬编码方式)
+  - [**`注解方式`**](#注解方式)
+- [**`获取请求参数`**](#获取请求参数)
+  - [**`表单参数或json请求参数`**](#表单参数或json请求参数)
+  - [**`restful参数`**](#restful参数)
+  - [**`header参数`**](#header参数)
+  - [**`cookie参数`**](#cookie参数)
+  - [**`参数转对象`**](#参数转对象)
+- [**`静态资源`**](#静态资源)
+- [**`上传文件`**](#上传文件)
+- [**`结果渲染`**](#结果渲染)
+  - [**`渲染json`**](#渲染json)
+  - [**`渲染文本`**](#渲染文本)
+  - [**`渲染html`**](#渲染html)
+  - [**`渲染模板`**](#渲染模板)
+  - [**`重定向`**](#重定向)
+  - [**`写入cookie`**](#写入cookie)
+  - [**`添加header`**](#添加header)
+- [**`拦截器`**](#拦截器)
+- [**`异常处理`**](#异常处理)
+- [**`部署项目`**](#部署项目)
+  - [**`修改端口`**](#修改端口)
+  - [**`运行项目`**](#运行项目)
+      
+### 注册路由
+#### 硬编码方式
+```java
+Router.router().path("/").handler(ctx -> ctx.response().write("hello world"));
+Router.router().path("/get").method(HttpMethod.GET).handler(get);
+Router.router().path("/post").method(HttpMethod.POST).handler(post);
+```
+
+#### 注解方式
+```java
+@Router("/book")
+public class BookRouter {
+  
+  // 视图
+  @Mapping("/")
+  public ViewResult index() {
+    return Result.view("/book.html");
+  }
+  
+  // json
+  @Mapping(value = "/ajax", method = {HttpMethod.POST})
+  public Book find(RoutingContext ctx) {
+    // ...
+    return new Book();
+  }
+}
+```
+
+### 获取请求参数
+#### 表单参数或json请求参数
+
+项目将json请求参数与表单参数合并，使用相同的方法或注解获取
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  String id = ctx.request().getParam("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/ajax", method = {HttpMethod.POST})
+public Book find(@Param Long id, @Param("tp") String type) {
+  // ...
+  return new Book();
+}
+```
+
+#### restful参数
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/{id}").handler(ctx -> {
+  String id = ctx.request().getPathVariable("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/{id}", method = {HttpMethod.POST})
+public void ajax(@PathParam("id") Long id) {
+  // ...
+}
+```
+
+#### header参数
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  String id = ctx.request().getHeader("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/", method = {HttpMethod.POST})
+public void ajax(@HeaderParam("id") Long id) {
+  // ...
+}
+```
+
+#### cookie参数
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  String id = ctx.request().getCookie("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/", method = {HttpMethod.POST})
+public void ajax(@CookieParam("id") Long id) {
+  // ...
+}
+```
+
+#### 参数转对象
+
+**实体类**
+```java
+@Data
+public class Book {
+  private String name;
+  private String author;
+}
+```
+
+**使用RoutingContext转换**
+```java
+Router.router().path("/").handler(ctx -> {
+  // 表单或json请求参数绑定
+  Book book = ctx.bindParam(Book.class);
+  // cookie参数绑定
+  book = ctx.bindCookie(Book.class);
+  // header参数绑定
+  book = ctx.bindHeader(Book.class);
+  // restful参数绑定
+  book = ctx.bindPathVariables(Book.class);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/", method = {HttpMethod.POST})
+public void ajax(@Param Book b1, @CookieParam Book b2, @HeaderParam Book b3, @PathParam Book b4) {
+  // ...
+}
+```
+
+### 静态资源
+
+内置默认将`classpath`下`/public,/static`作为静态资源目录，支持`webjars`，映射到`/public`
+
+自定义静态资源可使用下面代码
+```java
+Router.staticRoute().prefix("/lib").location("classpath:lib");
+```
+也可以通过配置文件指定
+```properties
+web.static.prefix=/public
+web.static.path=/public,/static,classpath:/META-INF/resources/webjars
+```
+
+### 上传文件
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  MultipartItem file = ctx.request().getMultipartItem("file");
+  // ...
+});
+```
+**使用注解获取**
+```java
+@Mapping("/")
+public void upload(MultipartItem image, @MultipartParam("file1") MultipartItem file) {
+  // 不使用注解则使用方法参数名作为请求参数名称
+  // 使用注解指定请求参数名称
+}
+```
+
+### 结果渲染
+
+#### 渲染json
+```java
+// 使用RoutingContext返回
+Router.router().path("/").handler(ctx -> {
+  ctx.response().json(new Book("Java", "xxx"));
+});
+
+// 注解式
+@Mapping("/")
+public Book find() {
+  // 直接返回对象，框架默认处理成json
+  return new Book("Java", "xxx");
+}
+```
+
+#### 渲染文本
+```java
+// 使用RoutingContext返回
+Router.router().path("/").handler(ctx -> {
+  ctx.response().text("hello world");
+});
+```
+
+#### 渲染html
+```java
+// 使用RoutingContext返回
+Router.router().path("/").handler(ctx -> {
+  ctx.response().html("<html><body><span>hello world</span></body></html>");
+});
+```
+
+#### 渲染模板
+内置支持了`jsp`和`thymeleaf`模板，默认对应`resources`下的`WEB-INF`和`templates`目录
+```properties
+# 可通过下面配置进行更改模板目录
+web.view.jsp.prefix=WEB-INF
+web.view.thymeleaf.prefix=/templates
+```
+模板使用
+```java
+// 使用RoutingContext
+Router.router().path("/").handler(ctx -> {
+  ctx.response().template("index.html");
+});
+
+Router.router().path("/").handler(ctx -> {
+  Map<String, Object> attrs = new HashMap<>();
+  // ...
+  ctx.response().template("index.html", attrs);
+});
+
+// 注解式
+@Mapping("/")
+public Result index() {
+  return Result.view("index.html");
+}
+
+@Mapping("/")
+public Result index() {
+  Map<String, Object> attrs = new HashMap<>();
+  // ...
+  return Result.view("index.html").addAttributes(attrs);
+}
+```
+
+#### 重定向
+
+```java
+Router.router().path("/").handler(ctx -> {
+  ctx.response().redirect("https://github.com/justlive1");
+});
+
+@Mapping("/a")
+public Result index() {
+  // 内部地址 相对于根目录: /b
+  // return Result.redirect("/b"); 
+  // 内部地址 相对于当前路径: /a/b
+  // return Result.redirect("b");
+  // 协议地址
+  return Result.redirect("https://github.com/justlive1");
+}
+```
+
+#### 写入cookie
+
+```java
+@Mapping("/")
+public void index(RoutingContext ctx) {
+  ctx.response().setCookie("hello", "world");
+  ctx.response().setCookie("java", "script", 100);
+  ctx.response().setCookie("uid", "xxx", ".justlive.vip", "/", 3600, true);
+}
+```
+
+#### 添加header
+
+```java
+@Mapping("/")
+public void index(RoutingContext ctx) {
+  ctx.response().setHeader("hello", "world");
+}
+```
+
+### 拦截器
+
+`WebHook`是拦截器接口，可以实现执行前、执行后和结束拦截处理
+
+```java
+@Slf4j
+@Bean
+public class LogWebHook implements WebHook {
+  @Override
+  public boolean before(RoutingContext ctx) {
+    log.info("before");
+    return true;
+  }
+  @Override
+  public void after(RoutingContext ctx) {
+    log.info("after");
+  }
+  @Override
+  public void finished(RoutingContext ctx) {
+    log.info("finished");
+  }
+}
+```
+
+### 异常处理
+
+框架默认提供了一个异常处理器，如需自定义处理异常，可以像下面这样使用
+
+```java
+@Bean
+public class CustomExceptionHandler extends ExceptionHandlerImpl {
+
+  @Override
+  public void handle(RoutingContext ctx, Exception e, int status) {
+    if (e instanceof CustomException) {
+      // do something
+    } else {
+      super.handle(ctx, e, status);
+    }
+  }
+}
+```
+
+### 部署项目
+
+#### 修改端口
+
+**编码指定**
+```java
+Server.server().listen(8080);
+```
+**配置文件**
+```properties
+server.port=8081
+```
+
+#### 运行项目
+
+**使用内嵌容器启动**
+
+启动类
+```java
+public class Application {
+  public static void main(String[] args) {
+    Server.server().listen();
+  }
+}
+```
+通用打包方式
+- `${mainClass}`为上面的启动类
+- 会生成`lib`目录存放依赖`jar`
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <configuration>
+        <source>${maven.compiler.source}</source>
+        <target>${maven.compiler.target}</target>
+        <encoding>UTF-8</encoding>
+      </configuration>
+    </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-jar-plugin</artifactId>
+      <configuration>
+        <archive>
+          <manifest>
+            <addClasspath>true</addClasspath>
+            <classpathPrefix>lib/</classpathPrefix>
+            <mainClass>${mainClass}</mainClass>
+          </manifest>
+        </archive>
+      </configuration>
+    </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
+      <executions>
+        <execution>
+          <id>copy</id>
+          <phase>package</phase>
+          <goals>
+            <goal>copy-dependencies</goal>
+          </goals>
+          <configuration>
+            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+```
+
+打成`fat-jar`:
+- 使用springboot打包插件
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-maven-plugin</artifactId>
+      <version>1.3.8.RELEASE</version>
+      <executions>
+        <execution>
+          <phase>package</phase>
+          <goals>
+            <goal>repackage</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+```
+
+**使用外部容器（jetty、tomcat等）**
+
+无需web.xml配置，打包成`war`放入容器即可，实现机制可查看`WebContainerInitializer`
+
+```xml
+<!-- 解决默认打war包报错 webxml attribute is required -->
+<properties>
+  <failOnMissingWebXml>false</failOnMissingWebXml>
+</properties>
+```
+
+### 外部化配置
+
+框架可以通过使用配置文件进行修改默认属性
+```properties
+##### 基础配置
+# 配置覆盖地址，用户外部配置覆盖项目配置 例 file:/config/*.properties,classpath*:/config/*.properties,xx.properties
+config.override.path=
+# 类扫描路径属性
+main.class.scan=vip.justlive
+# 临时文件根目录
+main.temp.dir=.oxygen
+# 缓存实现类，自定义缓存时使用
+cache.impl.class=
 
 
-## Contact information
+##### web 
+# embedded 启动端口
+server.port=8080
+# context path
+server.contextPath=
+# 默认静态资源请求前缀
+web.static.prefix=/public
+# 默认静态资源目录
+web.static.path=/public,/static,classpath:/META-INF/resources/webjars
+# 静态资源缓存时间
+web.static.cache=3600
+# jsp路径前缀
+web.view.jsp.prefix=WEB-INF
+# thymeleaf 路径前缀
+web.view.thymeleaf.prefix=/templates
+# 是否开启模板缓存
+web.view.cache.enabled=true
+
+
+##### 定时任务job
+# job线程名称格式
+job.thread.name.format=jobs-%d
+# job核心线程池大小
+job.core.pool.size=10
+
+
+##### i18n国际化
+# i18n配置文件地址
+i18n.path=classpath:message/*.properties
+# i18n默认语言
+i18n.default.language=zh
+# i18n默认国家
+i18n.default.country=CN
+# i18n参数key
+i18n.param.key=locale
+# i18n Session key
+i18n.session.key=I18N_SESSION_LOCALE
+```
+
+## 联系信息
 
 E-mail: qq11419041@163.com
 
-QQ: 950216299
+QQ群: 950216299

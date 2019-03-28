@@ -149,12 +149,7 @@ public class ConfigFactory {
    * @return 配置类
    */
   public static <T> T load(Class<T> clazz, String prefix) {
-    Map<String, Object> map = FACTORY.get(clazz);
-    if (map == null) {
-      map = new ConcurrentHashMap<>(4, 1f);
-      FACTORY.putIfAbsent(clazz, map);
-    }
-    map = FACTORY.get(clazz);
+    Map<String, Object> map = FACTORY.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>(4, 1f));
     if (map.containsKey(prefix)) {
       return clazz.cast(map.get(prefix));
     }

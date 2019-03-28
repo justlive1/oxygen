@@ -41,6 +41,18 @@ public class Exceptions {
     return new CodedException(e, null);
   }
 
+
+  /**
+   * 抛出unchecked异常
+   *
+   * @param e 异常
+   * @param message 异常消息
+   * @return 包装异常
+   */
+  public static CodedException wrap(Throwable e, String message) {
+    return new CodedException(e, errorMessage(message));
+  }
+
   /**
    * 抛出unchecked异常
    *
@@ -66,14 +78,24 @@ public class Exceptions {
   }
 
   /**
-   * 创建ErrorCode
+   * 创建带错误提示信息的ErrorCode
    *
-   * @param module 模块
-   * @param code 编码
+   * @param message 消息
    * @return 异常编码包装
    */
-  public static ErrorCode errorCode(String module, String code) {
-    return new ErrorCode(module, code);
+  public static ErrorCode errorMessage(String message) {
+    return errorMessage(Constants.DEFAULT_FAIL_CODE, message);
+  }
+
+  /**
+   * 创建带错误提示信息的ErrorCode
+   *
+   * @param code 编码
+   * @param message 消息
+   * @return 异常编码包装
+   */
+  public static ErrorCode errorMessage(String code, String message) {
+    return errorMessage(Constants.DEFAULT_NODULE, code, message);
   }
 
   /**
@@ -86,17 +108,6 @@ public class Exceptions {
    */
   public static ErrorCode errorMessage(String module, String code, String message) {
     return new ErrorCode(module, code, message);
-  }
-
-  /**
-   * 创建可带参数的业务逻辑异常
-   *
-   * @param errCode 异常编码包装
-   * @param params 参数
-   * @return 包装异常
-   */
-  public static CodedException fail(ErrorCode errCode, Object... params) {
-    return new NoStackException(errCode, params);
   }
 
   /**
@@ -118,7 +129,53 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException fail(String code, String message, Object... params) {
-    return fail(errorMessage(Constants.DEFAULT_NODULE, code, message), params);
+    return fail(errorMessage(code, message), params);
+  }
+
+  /**
+   * 创建可带参数的业务逻辑异常
+   *
+   * @param errCode 异常编码包装
+   * @param params 参数
+   * @return 包装异常
+   */
+  public static CodedException fail(ErrorCode errCode, Object... params) {
+    return new NoStackException(errCode, params);
+  }
+
+  /**
+   * 创建可带参数的故障异常
+   *
+   * @param message 异常消息
+   * @return 包装异常
+   */
+  public static CodedException fault(String message) {
+    return fault(errorMessage(message));
+  }
+
+  /**
+   * 创建可带参数的故障异常
+   *
+   * @param code 异常编码
+   * @param message 异常消息
+   * @param params 参数
+   * @return 包装异常
+   */
+  public static CodedException fault(String code, String message, Object... params) {
+    return fault(errorMessage(code, message), params);
+  }
+
+  /**
+   * 创建可带参数的故障异常
+   *
+   * @param e 异常
+   * @param code 异常编码
+   * @param message 异常消息
+   * @param params 参数
+   * @return 包装异常
+   */
+  public static CodedException fault(Throwable e, String code, String message, Object... params) {
+    return fault(e, errorMessage(code, message), params);
   }
 
   /**
@@ -142,30 +199,5 @@ public class Exceptions {
    */
   public static CodedException fault(Throwable e, ErrorCode errCode, Object... params) {
     return new CodedException(e, errCode, params);
-  }
-
-  /**
-   * 创建可带参数的故障异常
-   *
-   * @param code 异常编码
-   * @param message 异常消息
-   * @param params 参数
-   * @return 包装异常
-   */
-  public static CodedException fault(String code, String message, Object... params) {
-    return fault(errorMessage(Constants.DEFAULT_NODULE, code, message), params);
-  }
-
-  /**
-   * 创建可带参数的故障异常
-   *
-   * @param e 异常
-   * @param code 异常编码
-   * @param message 异常消息
-   * @param params 参数
-   * @return 包装异常
-   */
-  public static CodedException fault(Throwable e, String code, String message, Object... params) {
-    return fault(e, errorMessage(Constants.DEFAULT_NODULE, code, message), params);
   }
 }

@@ -13,7 +13,3 @@
 #
 vip.justlive.oxygen.core.scan.ClassScannerPlugin
 vip.justlive.oxygen.core.i18n.Lang
-vip.justlive.oxygen.core.ioc.IocPlugin
-vip.justlive.oxygen.core.aop.AopPlugin
-vip.justlive.oxygen.core.job.JobPlugin
-vip.justlive.oxygen.core.cache.CachePlugin

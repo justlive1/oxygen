@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.core.util;
 
-import static vip.justlive.oxygen.core.constant.Constants.DEFAULT_FAIL_CODE;
 import static vip.justlive.oxygen.core.constant.Constants.REGEX_BLANK_SPACE;
 import static vip.justlive.oxygen.core.constant.Constants.REGEX_CHINESE;
 import static vip.justlive.oxygen.core.constant.Constants.REGEX_DIGIT;
@@ -28,6 +27,7 @@ import static vip.justlive.oxygen.core.exception.Exceptions.errorMessage;
 import static vip.justlive.oxygen.core.exception.Exceptions.fail;
 
 import java.util.regex.Pattern;
+import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.ErrorCode;
 import vip.justlive.oxygen.core.exception.Exceptions;
@@ -37,12 +37,8 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  *
  * @author wubo
  */
+@UtilityClass
 public class Checks {
-
-  public static final String MODULE_VALID = "VALID";
-
-  private Checks() {
-  }
 
   /**
    * 非空检查
@@ -73,7 +69,7 @@ public class Checks {
   }
 
   public static void email(String email, String msg) {
-    email(email, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
+    email(email, errorMessage(msg));
   }
 
   public static void email(String email, ErrorCode errCode, Object... params) {
@@ -92,7 +88,7 @@ public class Checks {
   }
 
   public static void idCard(String idCard, String msg) {
-    idCard(idCard, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
+    idCard(idCard, errorMessage(msg));
   }
 
   public static void idCard(String idCard, ErrorCode errCode, Object... params) {
@@ -111,7 +107,7 @@ public class Checks {
   }
 
   public static void idCard2nd(String idCard, String msg) {
-    idCard(idCard, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
+    idCard(idCard, errorMessage(msg));
   }
 
   public static void idCard2nd(String idCard, ErrorCode errCode, Object... params) {
@@ -134,7 +130,7 @@ public class Checks {
   }
 
   public static void mobile(String mobile, String msg) {
-    mobile(mobile, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
+    mobile(mobile, errorMessage(msg));
   }
 
   public static void mobile(String mobile, ErrorCode errCode, Object... params) {
@@ -162,7 +158,7 @@ public class Checks {
   }
 
   public static void phone(String phone, String msg) {
-    phone(phone, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
+    phone(phone, errorMessage(msg));
   }
 
   public static void phone(String phone, ErrorCode errCode, Object... params) {
@@ -181,7 +177,7 @@ public class Checks {
   }
 
   public static void digit(String digit, String msg) {
-    digit(digit, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
+    digit(digit, errorMessage(msg));
   }
 
   public static void digit(String digit, ErrorCode errCode, Object... params) {
@@ -218,7 +214,7 @@ public class Checks {
   }
 
   public static void decimals(String decimals, Integer decimal, String msg) {
-    decimals(decimals, decimal, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
+    decimals(decimals, decimal, errorMessage(msg));
   }
 
   public static void decimals(String decimals, Integer decimal, ErrorCode errCode,
@@ -247,7 +243,7 @@ public class Checks {
   }
 
   public static void blankSpace(String blankSpace, String msg) {
-    blankSpace(blankSpace, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
+    blankSpace(blankSpace, errorMessage(msg));
   }
 
   public static void blankSpace(String blankSpace, ErrorCode errCode, Object... params) {
@@ -266,7 +262,7 @@ public class Checks {
   }
 
   public static void chinese(String chinese, String msg) {
-    chinese(chinese, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
+    chinese(chinese, errorMessage(msg));
   }
 
   public static void chinese(String chinese, ErrorCode errCode, Object... params) {
@@ -291,7 +287,7 @@ public class Checks {
   }
 
   public static void ip(String ip, String msg) {
-    ip(ip, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
+    ip(ip, errorMessage(msg));
   }
 
   public static void ip(String ip, ErrorCode errCode, Object... params) {
@@ -310,6 +306,6 @@ public class Checks {
   }
 
   public void postcode(String postcode, String msg) {
-    postcode(postcode, errorMessage(MODULE_VALID, DEFAULT_FAIL_CODE, msg));
+    postcode(postcode, errorMessage(msg));
   }
 }

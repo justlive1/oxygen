@@ -1,27 +1,29 @@
 /*
- * Copyright (C) 2018 justlive1
+ *  Copyright (C) 2019 justlive1
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License
+ *  is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ *  or implied. See the License for the specific language governing permissions and limitations under
+ *  the License.
  */
 package vip.justlive.oxygen.core.util;
 
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
@@ -30,10 +32,8 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  *
  * @author wubo
  */
+@UtilityClass
 public class ClassUtils {
-
-  ClassUtils() {
-  }
 
   private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER_TYPE;
   private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE_TYPE;
@@ -56,11 +56,8 @@ public class ClassUtils {
     WRAPPER_TO_PRIMITIVE_TYPE = Collections.unmodifiableMap(wrapToPrim);
   }
 
-  private static void add(
-      Map<Class<?>, Class<?>> forward,
-      Map<Class<?>, Class<?>> backward,
-      Class<?> key,
-      Class<?> value) {
+  private static void add(Map<Class<?>, Class<?>> forward, Map<Class<?>, Class<?>> backward,
+      Class<?> key, Class<?> value) {
     forward.put(key, value);
     backward.put(value, key);
   }
@@ -296,11 +293,56 @@ public class ClassUtils {
   public static Set<Method> getMethodsAnnotatedWith(Class<?> clazz,
       Class<? extends Annotation> annotation) {
     Set<Method> methods = new HashSet<>();
-    for (Method method : clazz.getDeclaredMethods()) {
+    for (Method method : getCglibActualClass(clazz).getDeclaredMethods()) {
       if (method.isAnnotationPresent(annotation)) {
         methods.add(method);
       }
     }
     return methods;
+  }
+
+  /**
+   * 获取构造参数类型
+   *
+   * @param clazz 类
+   * @param args 参数
+   * @return class[]
+   */
+  public static Class<?>[] getConstructorArgsTypes(Class<?> clazz, Object... args) {
+    for (Constructor<?> constructor : clazz.getConstructors()) {
+      if (constructor.getParameterCount() != args.length) {
+        continue;
+      }
+      Class<?>[] paramsTypes = constructor.getParameterTypes();
+      boolean matched = true;
+      for (int i = 0; i < args.length; i++) {
+        if (!paramsTypes[i].isAssignableFrom(args[i].getClass())) {
+          matched = false;
+          break;
+        }
+      }
+      if (matched) {
+        return paramsTypes;
+      }
+    }
+    return new Class<?>[args.length];
+  }
+
+  /**
+   * 获取被注解的构造方法
+   *
+   * @param clazz 类
+   * @param annotation 注解
+   * @return Constructor
+   */
+  public static Constructor<?> getConstructorAnnotatedWith(Class<?> clazz,
+      Class<? extends Annotation> annotation) {
+    Constructor<?>[] constructors = clazz.getConstructors();
+    for (Constructor<?> constructor : constructors) {
+      if (constructor.isAnnotationPresent(annotation)) {
+        return constructor;
+      }
+    }
+    return null;
   }
 }

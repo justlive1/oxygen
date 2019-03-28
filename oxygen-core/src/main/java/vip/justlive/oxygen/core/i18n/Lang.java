@@ -63,8 +63,8 @@ public class Lang extends AbstractResourceLoader implements Plugin {
    */
   public void load(String... locations) {
     List<SourceResource> res = this.parse(locations);
-    this.resources.addAll(res);
     for (SourceResource resource : res) {
+      this.resources.add(resource);
       String[] arr = resource.path().split(Constants.UNDERSCORE);
       try {
         if (arr.length == 1) {

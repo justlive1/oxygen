@@ -106,6 +106,10 @@ public class Constants {
    */
   public static final String AND = "&";
   /**
+   * 斜线
+   */
+  public static final String SLASH = "/";
+  /**
    * 连字符
    */
   public static final String HYPHEN = "-";
@@ -113,6 +117,22 @@ public class Constants {
    * 下划线
    */
   public static final String UNDERSCORE = "_";
+  /**
+   * #
+   */
+  public static final String OCTOTHORP = "#";
+  /**
+   * 八进制前缀
+   */
+  public static final String OCTONARY_PREFIX = "0";
+  /**
+   * 十六进制前缀
+   */
+  public static final String HEX_PREFIX_0 = "0x";
+  /**
+   * 十六进制前缀
+   */
+  public static final String HEX_PREFIX_1 = "0X";
   /**
    * 数组类名前缀: "[]"
    */
@@ -144,7 +164,7 @@ public class Constants {
   /**
    * 根目录
    */
-  public static final String ROOT_PATH = "/";
+  public static final String ROOT_PATH = SLASH;
   /**
    * URL协议-文件
    */
@@ -172,7 +192,7 @@ public class Constants {
   /**
    * path分隔符
    */
-  public static final String PATH_SEPARATOR = ROOT_PATH;
+  public static final String PATH_SEPARATOR = SLASH;
   /**
    * war路径分隔符
    */
@@ -222,10 +242,6 @@ public class Constants {
    * /WEB-INF
    */
   public static final String WEB_INF_PATH = "/WEB-INF";
-  /**
-   * WEB-INF/web.xml
-   */
-  public static final String WEB_INF_WEB_XML = "WEB-INF/web.xml";
   /**
    * /WEB-INF/lib/
    */

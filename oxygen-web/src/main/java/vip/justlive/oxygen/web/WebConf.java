@@ -37,22 +37,16 @@ public class WebConf {
   private String contextPath;
 
   /**
-   * docBase
-   */
-  @Value("${server.docBase:src/main/webapp}")
-  private String docBase;
-
-  /**
    * 默认静态资源请求前缀
    */
-  @Value("${web.static.default.prefix:/public}")
-  private String defaultStaticPrefix;
+  @Value("${web.static.prefix:/public}")
+  private String staticPrefix;
 
   /**
    * 默认静态资源目录
    */
-  @Value("${web.static.default.path:/public,/static,classpath:/META-INF/resources/webjars}")
-  private String[] defaultStaticPaths;
+  @Value("${web.static.path:/public,/static,classpath:/META-INF/resources/webjars}")
+  private String[] staticPaths;
 
   /**
    * 静态资源缓存时间
@@ -63,7 +57,7 @@ public class WebConf {
   /**
    * web jsp路径前缀
    */
-  @Value("${web.view.jsp.prefix:/WEB-INF/}")
+  @Value("${web.view.jsp.prefix:WEB-INF}")
   private String jspPrefix;
 
   /**
@@ -77,29 +71,5 @@ public class WebConf {
    */
   @Value("${web.view.cache.enabled:true}")
   private boolean viewCacheEnabled;
-
-  /**
-   * 404错误页面
-   */
-  @Value("${web.error.404.page:}")
-  private String error404Page;
-
-  /**
-   * 404错误处理类
-   */
-  @Value("${web.error.404.handler:}")
-  private String error404Handler;
-
-  /**
-   * 500错误页面
-   */
-  @Value("${web.error.500.page:}")
-  private String error500Page;
-
-  /**
-   * 500错误处理类
-   */
-  @Value("${web.error.500.handler:}")
-  private String error500Handler;
 
 }

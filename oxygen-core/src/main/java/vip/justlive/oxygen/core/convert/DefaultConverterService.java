@@ -15,7 +15,6 @@ package vip.justlive.oxygen.core.convert;
 
 import java.lang.reflect.Array;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import vip.justlive.oxygen.core.util.Checks;
 
@@ -76,11 +75,7 @@ public class DefaultConverterService implements ConverterService, ConverterRegis
 
   @Override
   public ConverterRegistry addConverterFactory(ConverterFactory<?, ?> factory) {
-    Checks.notNull(factory);
-    List<Converter<Object, Object>> list = factory.converters();
-    for (Converter<?, ?> converter : list) {
-      addConverter(converter);
-    }
+    Checks.notNull(factory).converters().forEach(this::addConverter);
     return this;
   }
 

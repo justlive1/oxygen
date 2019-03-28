@@ -22,7 +22,11 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.WebResourceRoot.ResourceSetType;
 import org.apache.catalina.webresources.StandardRoot;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
+import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.web.WebConf;
 
 /**
  * fat-jar加载classpath下的WEB-INF
@@ -30,6 +34,8 @@ import vip.justlive.oxygen.core.constant.Constants;
  * @author wubo
  */
 public class FatJarWebXmlListener implements LifecycleListener {
+
+  private final Log log = LogFactory.getLog(FatJarWebXmlListener.class);
 
   @Override
   public void lifecycleEvent(LifecycleEvent event) {
@@ -42,17 +48,25 @@ public class FatJarWebXmlListener implements LifecycleListener {
       }
 
       // 使用embedded tomcat时 WEB-INF放在了classpath下
-      URL resource = context.getParentClassLoader().getResource(Constants.WEB_INF);
-      if (resource != null) {
-        String webXmlUrlString = resource.toString();
-        try {
-          URL root = new URL(
-              webXmlUrlString.substring(0, webXmlUrlString.length() - Constants.WEB_INF.length()));
-          resources.createWebResourceSet(ResourceSetType.RESOURCE_JAR, Constants.WEB_INF_PATH, root,
-              Constants.WEB_INF_PATH);
-        } catch (MalformedURLException e) {
-          // ignore
-        }
+      createWebResource(context, resources, Constants.WEB_INF);
+      String customPath = ConfigFactory.load(WebConf.class).getJspPrefix();
+      if (!customPath.startsWith(Constants.WEB_INF)) {
+        createWebResource(context, resources, customPath);
+      }
+    }
+  }
+
+  private void createWebResource(Context context, WebResourceRoot resources, String path) {
+    log.info(String.format("create web resources for [%s]", path));
+    URL resource = context.getParentClassLoader().getResource(path);
+    if (resource != null) {
+      String webXmlUrlString = resource.toString();
+      try {
+        URL root = new URL(webXmlUrlString.substring(0, webXmlUrlString.length() - path.length()));
+        String webPath = Constants.ROOT_PATH + path;
+        resources.createWebResourceSet(ResourceSetType.RESOURCE_JAR, webPath, root, webPath);
+      } catch (MalformedURLException e) {
+        // ignore
       }
     }
   }

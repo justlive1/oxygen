@@ -13,18 +13,10 @@
  */
 package vip.justlive.oxygen.core.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
@@ -34,13 +26,8 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  * @author wubo
  */
 @Slf4j
+@UtilityClass
 public class ReflectUtils {
-
-  public static final String MODULE_VALID = "REFLECT";
-  public static final String INVAID_CLASS = "10000";
-
-  private ReflectUtils() {
-  }
 
   /**
    * 获取class
@@ -68,8 +55,9 @@ public class ReflectUtils {
     }
 
     if (clazz == null) {
-      throw Exceptions.fail(INVAID_CLASS, "Failed to load driver class " + className
-          + " in either of DataSourceUtils class loader or Thread context classloader");
+      throw Exceptions.fail(String.format(
+          "Failed to load driver class %s in either of DataSourceUtils class loader or Thread context classloader",
+          className));
     }
 
     return clazz;
@@ -85,11 +73,10 @@ public class ReflectUtils {
   @SuppressWarnings("unchecked")
   public static <T> T fromName(String className) {
     Class<?> clazz = forName(className);
-
     try {
       return (T) newInstance(clazz);
     } catch (Exception e) {
-      throw Exceptions.wrap(e, INVAID_CLASS, "Failed to instantiate class " + className);
+      throw Exceptions.wrap(e, String.format("Failed to instantiate class %s", className));
     }
 
   }
@@ -171,69 +158,6 @@ public class ReflectUtils {
   }
 
   /**
-   * 把传入对象的非空对象的值赋给持久化对象
-   *
-   * @param persistentObject 持久化对象
-   * @param newObject 传入的对象
-   * @throws IllegalAccessException 访问非法异常
-   * @throws IllegalArgumentException 非法逻辑异常
-   */
-  public static void replaceNullProperty(Object persistentObject, Object newObject)
-      throws IllegalAccessException {
-    Class<?> clazz = persistentObject.getClass();
-    Field[] fields = getAllDeclaredFields(clazz);
-    for (int i = 0; i < fields.length; i++) {
-      if (!fields[i].isAccessible()) {
-        fields[i].setAccessible(true);
-      }
-      Object fieldContent = fields[i].get(newObject);
-      if (fieldContent != null && !Modifier.isFinal(fields[i].getModifiers())) {
-        fields[i].set(persistentObject, fieldContent);
-      }
-    }
-  }
-
-  /**
-   * class中是否存在指定的方法
-   *
-   * @param clazz CLASS类型
-   * @param methodName 方法名
-   * @return boolean 否存在指定的方法中
-   */
-  public static boolean isContainMethod(Class<?> clazz, String methodName) {
-    Method[] methods = clazz.getMethods();
-    for (int i = 0; i < methods.length; i++) {
-      if (methods[i].getName().equals(methodName)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * clone一个Object使用序列号的形式
-   *
-   * @param src 需要序列化的对象
-   * @return 拷贝对象
-   */
-  public static Object byteClone(Object src) {
-
-    try {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      ObjectOutputStream out = new ObjectOutputStream(baos);
-      out.writeObject(src);
-      out.close();
-      ByteArrayInputStream bin = new ByteArrayInputStream(baos.toByteArray());
-      ObjectInputStream in = new ObjectInputStream(bin);
-      Object clone = in.readObject();
-      in.close();
-      return clone;
-    } catch (Exception ex) {
-      throw Exceptions.wrap(ex);
-    }
-  }
-
-  /**
    * 实例化一个类型为clazz的对象。
    *
    * @param <T> 实例化对象类型
@@ -282,24 +206,8 @@ public class ReflectUtils {
       return clazz.newInstance();
     } catch (Exception e) {
       throw Exceptions
-          .wrap(e, INVAID_CLASS, "Can NOT instance new object for class [" + clazz + "]");
+          .wrap(e, String.format("can not instance new object for class [%s]", clazz));
     }
-  }
-
-  public static Field[] getInheritanceDeclaredFields(Class<?> clazz) {
-    Collection<Field> fds = new ArrayList<>();
-    Class<?> local = clazz;
-    while (true) {
-      if (local.isPrimitive() || local == Object.class) {
-        break;
-      }
-      Collections.addAll(fds, local.getDeclaredFields());
-      local = local.getSuperclass();
-    }
-    Field[] ret = new Field[fds.size()];
-    fds.toArray(ret);
-    fds.clear();
-    return ret;
   }
 
 }

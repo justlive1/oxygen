@@ -13,9 +13,9 @@
  */
 package vip.justlive.oxygen.web.server;
 
-import java.util.ServiceLoader;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Bootstrap;
+import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 
 /**
  * server 启动类
@@ -25,37 +25,47 @@ import vip.justlive.oxygen.core.Bootstrap;
 @Slf4j
 public class Server {
 
-  private static WebServer webServer;
+  private WebServer webServer;
 
-  Server() {
-  }
+  private volatile boolean ready = false;
 
-  static {
-    ServiceLoader<WebServer> loader = ServiceLoader.load(WebServer.class);
-    if (loader.iterator().hasNext()) {
-      webServer = loader.iterator().next();
-    }
-    Bootstrap.initConfig();
+  /**
+   * web server
+   *
+   * @return webServer
+   */
+  public static Server server() {
+    Server server = new Server();
+    server.webServer = ServiceLoaderUtils.loadSerivce(WebServer.class);
+    return server;
   }
 
   /**
-   * 启动web server
+   * 监听端口并启动服务
    */
-  public static void start() {
-    if (webServer == null) {
-      throw new IllegalStateException("No WebServer provided");
-    }
-    log.info("start web server ...");
-    webServer.start();
-    log.info("started web server on port [{}] !", webServer.getPort());
+  public void listen() {
+    listen(-1);
   }
 
   /**
-   * 关闭web server
+   * 监听端口并启动服务
+   *
+   * @param port 端口
    */
-  public static void stop() {
-    log.info("stop web server ...");
-    if (webServer != null) {
+  public void listen(int port) {
+    if (!ready) {
+      ready = true;
+      Bootstrap.initConfig();
+      webServer.listen(port);
+    }
+  }
+
+  /**
+   * 关闭服务
+   */
+  public void stop() {
+    if (ready) {
+      ready = false;
       webServer.stop();
     }
   }

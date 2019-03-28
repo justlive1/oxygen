@@ -17,12 +17,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 
 /**
  * 引导类
@@ -138,10 +138,7 @@ public final class Bootstrap {
    * 添加系统插件类
    */
   private static void addSystemPlugin() {
-    ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class);
-    for (Plugin plugin : loader) {
-      PLUGINS.add(plugin);
-    }
+    PLUGINS.addAll(ServiceLoaderUtils.loadServices(Plugin.class));
   }
 
   /**
@@ -149,9 +146,7 @@ public final class Bootstrap {
    */
   private static void initPlugins() {
     Collections.sort(PLUGINS);
-    for (Plugin plugin : PLUGINS) {
-      plugin.start();
-    }
+    PLUGINS.forEach(Plugin::start);
   }
 
   /**
@@ -166,9 +161,7 @@ public final class Bootstrap {
    */
   private static void doClose() {
     log.info("closing bootstrap ...");
-    for (Plugin plugin : PLUGINS) {
-      plugin.stop();
-    }
+    PLUGINS.forEach(Plugin::stop);
     STATE.set(false);
     log.info("bootstrap closed ! bye bye");
   }

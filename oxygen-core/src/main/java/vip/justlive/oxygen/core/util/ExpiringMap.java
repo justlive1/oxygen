@@ -31,6 +31,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -74,30 +75,37 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   /**
    * 最大数量
    */
+  @Getter
   private int maxSize;
   /**
    * 有效期
    */
+  @Getter
   private long duration;
   /**
    * 有效期单位
    */
+  @Getter
   private TimeUnit timeUnit;
   /**
    * 失效策略
    */
+  @Getter
   private ExpiringPolicy expiringPolicy;
   /**
    * 失效清除策略
    */
+  @Getter
   private CleanPolicy cleanPolicy;
   /**
    * 定时清理延迟
    */
+  @Getter
   private int scheduleDelay;
   /**
    * 累积阈值
    */
+  @Getter
   private int accumulateThreshold;
   /**
    * 实际数据
@@ -339,7 +347,24 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   public V putIfAbsent(K key, V value) {
     ExpiringValue<V> wrapValue = new ExpiringValue<>(value);
     ExpiringValue<V> preVal = data.putIfAbsent(key, wrapValue);
-    if (preVal == null || preVal.expireAt < System.currentTimeMillis()) {
+    if (preVal == null) {
+      return null;
+    }
+    if (preVal.expireAt < System.currentTimeMillis()) {
+      data.put(key, wrapValue);
+      return null;
+    }
+    return preVal.value;
+  }
+
+  public V putIfAbsent(K key, V value, long duration, TimeUnit timeUnit) {
+    ExpiringValue<V> wrapValue = new ExpiringValue<>(value, duration, timeUnit);
+    ExpiringValue<V> preVal = data.putIfAbsent(key, wrapValue);
+    if (preVal == null) {
+      return null;
+    }
+    if (preVal.expireAt < System.currentTimeMillis()) {
+      data.put(key, wrapValue);
       return null;
     }
     return preVal.value;

@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.core.domain;
 
-import lombok.Data;
 import vip.justlive.oxygen.core.constant.Constants;
 
 /**
@@ -21,23 +20,7 @@ import vip.justlive.oxygen.core.constant.Constants;
  *
  * @author wubo
  */
-@Data
-public class Resp {
-
-  /**
-   * 返回结果编码
-   */
-  private String code;
-
-  /**
-   * 结果描述信息
-   */
-  private String message;
-
-  /**
-   * 返回数据
-   */
-  private Object data;
+public class Resp extends RespData<Object> {
 
   /**
    * 成功返回
@@ -56,8 +39,7 @@ public class Resp {
    */
   public static Resp success(Object data) {
     Resp resp = new Resp();
-    resp.setData(data);
-    resp.setCode(Constants.SUCCESS_CODE);
+    resp.setData(data).setCode(Constants.SUCCESS_CODE);
     return resp;
   }
 
@@ -80,8 +62,7 @@ public class Resp {
    */
   public static Resp error(String code, String message) {
     Resp resp = new Resp();
-    resp.setCode(code);
-    resp.setMessage(message);
+    resp.setCode(code).setMessage(message);
     return resp;
   }
 
@@ -91,6 +72,6 @@ public class Resp {
    * @return 是否成功
    */
   public boolean isSuccess() {
-    return Constants.SUCCESS_CODE.equals(code);
+    return Constants.SUCCESS_CODE.equals(getCode());
   }
 }

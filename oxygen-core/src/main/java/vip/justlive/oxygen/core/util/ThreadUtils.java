@@ -21,22 +21,18 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import lombok.experimental.UtilityClass;
 
 /**
  * 线程工具类
  *
  * @author wubo
  */
+@UtilityClass
 public class ThreadUtils {
 
-  private static final ThreadLocal<Map<String, Object>> LOCAL =
-      ThreadLocal.withInitial(ConcurrentHashMap::new);
-
-  private static final ThreadPoolExecutor INNER_EXECUTOR =
-      newThreadPool(5, 10, 20, 1000, "retry-%d");
-
-  ThreadUtils() {
-  }
+  private static final ThreadLocal<Map<String, Object>> LOCAL = ThreadLocal
+      .withInitial(ConcurrentHashMap::new);
 
   /**
    * 线程存储键值
@@ -134,8 +130,18 @@ public class ThreadUtils {
    * @param millis 毫秒值
    */
   public static void sleep(long millis) {
+    sleep(millis, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * 线程sleep等待
+   *
+   * @param time 时间
+   * @param unit 单位
+   */
+  public static void sleep(long time, TimeUnit unit) {
     try {
-      Thread.sleep(millis);
+      unit.sleep(time);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }

@@ -22,8 +22,10 @@ public interface WebServer {
 
   /**
    * 启动
+   *
+   * @param port 端口号
    */
-  void start();
+  void listen(int port);
 
   /**
    * 停止

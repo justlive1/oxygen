@@ -12,4 +12,4 @@
 # the License.
 #
 
-vip.justlive.oxygen.web.WebContainerInitializer
+vip.justlive.oxygen.web.servlet.WebContainerInitializer

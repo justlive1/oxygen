@@ -28,6 +28,7 @@ import vip.justlive.oxygen.web.server.WebServer;
 public class TomcatWebServer implements WebServer {
 
   private Tomcat tomcat;
+  private int port;
 
   private void checkDir(File... dirs) {
     if (dirs == null) {
@@ -58,7 +59,7 @@ public class TomcatWebServer implements WebServer {
     ctx.setJarScanner(new FatJarScanner());
     ctx.setParentClassLoader(getClass().getClassLoader());
     ctx.addLifecycleListener(new FatJarWebXmlListener());
-    tomcat.setPort(webConf.getPort());
+    tomcat.setPort(port);
 
     TomcatConf tomcatConf = ConfigFactory.load(TomcatConf.class);
     configConnector(tomcat.getConnector(), tomcatConf);
@@ -100,7 +101,8 @@ public class TomcatWebServer implements WebServer {
   }
 
   @Override
-  public synchronized void start() {
+  public synchronized void listen(int port) {
+    this.port = port > 0 ? port : ConfigFactory.load(WebConf.class).getPort();
     initServer();
     try {
       tomcat.start();

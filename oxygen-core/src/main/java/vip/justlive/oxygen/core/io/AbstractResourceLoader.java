@@ -17,7 +17,6 @@ import static vip.justlive.oxygen.core.constant.Constants.ALL_CLASSPATH_PREFIX;
 import static vip.justlive.oxygen.core.constant.Constants.CLASSPATH_PREFIX;
 import static vip.justlive.oxygen.core.constant.Constants.FILE_PREFIX;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import lombok.extern.slf4j.Slf4j;
@@ -149,9 +147,7 @@ public abstract class AbstractResourceLoader {
     List<SourceResource> list = new LinkedList<>();
     for (String location : locations) {
       try {
-        if (log.isDebugEnabled()) {
-          log.debug("parsing resource for [{}]", location);
-        }
+        log.info("parsing resource for [{}]", location);
         if (location.startsWith(ALL_CLASSPATH_PREFIX)) {
           list.addAll(
               this.resolveAllClassPathResource(location.substring(ALL_CLASSPATH_PREFIX.length())));
@@ -163,9 +159,7 @@ public abstract class AbstractResourceLoader {
           list.addAll(this.resolveClassPathResource(location));
         }
       } catch (IOException e) {
-        if (log.isDebugEnabled()) {
-          log.debug("location [{}] cannot find resource", location, e);
-        }
+        log.warn("location [{}] cannot find resource", location, e);
         if (!ignoreNotFound) {
           throw Exceptions.wrap(e);
         }
@@ -332,11 +326,8 @@ public abstract class AbstractResourceLoader {
   protected List<SourceResource> findFileMatchPath(SourceResource resource, String subPattern)
       throws IOException {
     List<SourceResource> list = new LinkedList<>();
-    File rootDir = resource.getFile().getAbsoluteFile();
-    Set<File> matchedFiles = matcher.findMatchedFiles(rootDir, subPattern);
-    for (File file : matchedFiles) {
-      list.add(new FileSystemResource(file));
-    }
+    matcher.findMatchedFiles(resource.getFile().getAbsoluteFile(), subPattern)
+        .forEach(file -> list.add(new FileSystemResource(file)));
     return list;
   }
 

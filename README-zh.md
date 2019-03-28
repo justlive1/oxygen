@@ -11,660 +11,582 @@
 
 一个轻量级Java框架
 
-oxygen-core 核心部分
-- 基于cglib的aop实现
-- 提供缓存管理和基于注解的缓存，内置LocalCache和Ehcache实现，可扩展
-- 配置管理，支持${attrs.key:defaultValue}表达式获取配置
-- 加解密管理，提供加解密服务内置基础加密实现，例如SHA-1、SHA-256、MD5
-- 异常管理，提供异常包装，统一异常编码，便于国际化
-- 提供基于构造器注入的ioc(原因：依赖链清晰，并可任意切换ioc实现)
-- 定时任务服务，内置提供了基于注解的定时任务服务
+- oxygen-core
+  - 配置管理，支持${attrs.key:defaultValue}表达式获取配置
+  - 加解密管理，提供加解密服务内置基础加密实现，例如SHA-1、SHA-256、MD5
+  - 异常管理，提供异常包装，统一异常编码，便于国际化
+  - i18n国际化
+  - 资源文件加载，提供file,jar,classpath等文件加载
+  - 类扫描器
+  - 部分工具类
+  - retry重试
 
-```
-├─ src/main
-  │─ java/.../core  //oxygen-core代码目录
-  │  │- aop //aop实现目录
-  │  │- cache //缓存实现目录
-  │  │- config  //配置实现目录
-  │  │- constant  //常量目录
-  │  │- convert  //类型转换实现目录
-  │  │- crypto  //密码加密目录
-  │  │- domain  //基础实体目录
-  │  │- exception  //异常管理目录
-  │  │- i18n  //i18n
-  │  │- io  //io读写目录
-  │  │- ioc  //ioc实现目录
-  │  │- job  //定时任务实现目录
-  │  │- scan  //类扫描实现目录
-  │  │- util  //工具类目录
-  │  │- Bootstrap.java  //框架启动引导类
-  │  └- Plugin.java   //插件接口
-  └─ resources/META-INF/services
-     └- ...core.Plugin  //Plugin服务实现配置文件
+- oxygen-ioc
+  - 基于构造器的轻量级依赖注入
+
+- oxygen-aop
+  - 基于cglib实现的切面
+  - 轻巧简单，可单独使用
+  - 可使用注解`Aspect`或直接实现`Interceptor`编写切面
+
+- oxygen-cache
+  - 内置Ehcache和LocalCache缓存
+  - 提供基于注解`Cacheable`的方法缓存
+
+- oxygen-job
+  - 提供基于注解`Scheduled`的定时任务
+
+- oxygen-jdbc
+  - 小巧简单的jdbc实现，纯jdk实现，无第三方jar
+  - 支持多数据源
+  - 基于sql进行crud，不提供类似Hibernate的链式方法（原因：sql作为数据库领域的DSL，已经很自然优雅，Less is more）
+
+- oxygen-web
+  - 轻量级web框架支持注解声明和函数式编程
+  - 支持Servlet3.0 `ServletContainerInitializer` 自动加载，省略web.xml
+  - 支持i18n动态切换
+  - 提供`WebHook`进行请求拦截处理
+  - 支持自定义全局异常处理
   
-```
-
-oxygen-jdbc jdbc实现
-- 小巧简单的jdbc实现，纯jdk实现，无第三方jar
-- 支持多数据源
-- 基于sql进行crud，不提供类似Hibernate的链式方法（原因：sql作为数据库领域的DSL，已经很自然优雅，Less is more）
-
-```
-├─ src/main
-  │─ java/.../jdbc  //oxygen-jdbc代码目录
-  │  │- config  //配置数据源目录
-  │  │- handler  //处理器目录，包括结果集处理 行处理 列处理
-  │  │- interceptor  //拦截器目录，拦截sql执行前后及异常
-  │  │- record  //基础crud
-  │  │- Jdbc.java  //Jdbc核心操作类，提供crud操作
-  │  │- JdbcException.java  //jdbc异常封装
-  │  └- JdbcPlugin.java   //jdbc插件，与oxygen-core配套使用
-  └─ resources/META-INF/services
-     │- ...handler.ColumnHandler //列处理服务配置文件
-     └- ...core.Plugin  //增加jdbcPlugin服务实现，与oxygen-core配套使用
-  
-```
-
-
-oxygen-web
-* 项目使用了Servlet3.0的`ServletContainerInitializer`接口
-* 在servlet中可自动加载，不需要在web.xml中配置
-* 使用`@Router`标记路由文件
-* 使用`@Mapping`标记请求路径处理方法
-* 参数绑定的取值域使用`@Param,@HeaderParam,@CookieParam,@PathParam`指定，默认为`@Param`
-* 参数绑定支持简单类型 + Map<String,Object> + 用户实体类
-* 支持返回Json、视图或自定义实现(文件下载等)
-
-```
-├─ src/main
-  │─ java/.../web  //oxygen-web代码目录
-  │  │- handler //参数绑定处理
-  │  │- http //http请求解析
-  │  │- i18n  //i18n切面
-  │  │- mapping  //url映射，参数映射相关注解和实体
-  │  │- router  //一个示例路由（获取服务器时间）
-  │  │- server  //内置server接口和启动类
-  │  │- view  //视图解析
-  │  │- DefaultWebAppInitializer.java  //默认初始化实现
-  │  │- DispatcherServlet.java  //路由分发器
-  │  │- WebAppInitializer.java  //web自动初始化接口，提供给用户自定义使用
-  │  │- WebContainerInitializer.java  //容器自动初始化
-  │  │- WebConf.java  //web配置
-  │  └- WebPlugin.java  //web插件
-  └─ resources/META-INF/services
-      │- ...ServletContainerIntializer //servlet3.0规范
-      │- ...core.Plugin  //增加web插件
-      │- ...ParamHandler //参数处理服务
-      │- ...RequestParse //请求解析服务
-      └- ...ViewResolver //视图解析服务
-```
 
 
 ## 特性
 
-* 轻量级，注释完善，使用简单
-* 使用ServiceLoader加载插件，易于扩展
+* 轻量级，使用简单
+* 支持插件扩展
+* 函数式编程
+* 流式风格
 
 
-## 安装
+## 快速开始
 
-添加依赖到你的 pom.xml:
-```
-<!-- 核心包 包含aop ioc 异常处理 缓存 定时任务等 -->
-<dependency>
-    <groupId>vip.justlive</groupId>
-    <artifactId>oxygen-core</artifactId>
-    <version>${oxygen.version}</version>
-</dependency>
+创建`Maven`项目
 
-<!-- jdbc实现 可单独使用 -->
-<dependency>
-    <groupId>vip.justlive</groupId>
-    <artifactId>oxygen-jdbc</artifactId>
-    <version>${oxygen.version}</version>
-</dependency>
-
-<!-- web实现 已依赖了core -->
-<dependency>
-    <groupId>vip.justlive</groupId>
-    <artifactId>oxygen-web</artifactId>
-    <version>${oxygen.version}</version>
-</dependency>
-
-<!-- 已依赖了web 并提供了embeded tomcat -->
+```xml
+<!-- 使用内嵌tomcat启动 -->
 <dependency>
     <groupId>vip.justlive</groupId>
     <artifactId>oxygen-web-tomcat</artifactId>
     <version>${oxygen.version}</version>
 </dependency>
-
 ```
 
-## 快速开始
-
-### 基础返回
-
-使用 `Resp` 作为返回
+或`Gradle`
 
 ```
-// 成功返回 code 00000
-Resp.success(Object obj);
+compile 'vip.justlive:oxygen-web-tomcat:$oxygenVersion'
+```
 
-// 错误返回 默认code 99999
-Resp.error(String msg);
+> 不需要`webapp`项目框架，支持Servlet3.0
 
-// 错误返回 自定义code
-Resp.error(String code, String msg);
+编写 `main` 函数写一个 `Hello World`
+
+```java
+public static void main(String[] args) {
+  Router.router().path("/").handler(ctx -> ctx.response().write("hello world"));
+  Server.server().listen(8080);
+}
+```
+
+用浏览器打开 http://localhost:8080 这样就可以看到 `hello world` 了！
+
+## 内容详解
+- [**`注册路由`**](#注册路由)
+  - [**`硬编码方式`**](#硬编码方式)
+  - [**`注解方式`**](#注解方式)
+- [**`获取请求参数`**](#获取请求参数)
+  - [**`表单参数或json请求参数`**](#表单参数或json请求参数)
+  - [**`restful参数`**](#restful参数)
+  - [**`header参数`**](#header参数)
+  - [**`cookie参数`**](#cookie参数)
+  - [**`参数转对象`**](#参数转对象)
+- [**`静态资源`**](#静态资源)
+- [**`上传文件`**](#上传文件)
+- [**`结果渲染`**](#结果渲染)
+  - [**`渲染json`**](#渲染json)
+  - [**`渲染文本`**](#渲染文本)
+  - [**`渲染html`**](#渲染html)
+  - [**`渲染模板`**](#渲染模板)
+  - [**`重定向`**](#重定向)
+  - [**`写入cookie`**](#写入cookie)
+  - [**`添加header`**](#添加header)
+- [**`拦截器`**](#拦截器)
+- [**`异常处理`**](#异常处理)
+- [**`部署项目`**](#部署项目)
+  - [**`修改端口`**](#修改端口)
+  - [**`运行项目`**](#运行项目)
+      
+### 注册路由
+#### 硬编码方式
+```java
+Router.router().path("/").handler(ctx -> ctx.response().write("hello world"));
+Router.router().path("/get").method(HttpMethod.GET).handler(get);
+Router.router().path("/post").method(HttpMethod.POST).handler(post);
+```
+
+#### 注解方式
+```java
+@Router("/book")
+public class BookRouter {
+  
+  // 视图
+  @Mapping("/")
+  public ViewResult index() {
+    return Result.view("/book.html");
+  }
+  
+  // json
+  @Mapping(value = "/ajax", method = {HttpMethod.POST})
+  public Book find(RoutingContext ctx) {
+    // ...
+    return new Book();
+  }
+}
+```
+
+### 获取请求参数
+#### 表单参数或json请求参数
+
+项目将json请求参数与表单参数合并，使用相同的方法或注解获取
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  String id = ctx.request().getParam("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/ajax", method = {HttpMethod.POST})
+public Book find(@Param Long id, @Param("tp") String type) {
+  // ...
+  return new Book();
+}
+```
+
+#### restful参数
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/{id}").handler(ctx -> {
+  String id = ctx.request().getPathVariable("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/{id}", method = {HttpMethod.POST})
+public void ajax(@PathParam("id") Long id) {
+  // ...
+}
+```
+
+#### header参数
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  String id = ctx.request().getHeader("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/", method = {HttpMethod.POST})
+public void ajax(@HeaderParam("id") Long id) {
+  // ...
+}
+```
+
+#### cookie参数
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  String id = ctx.request().getCookie("id");
+  ctx.response().write(id);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/", method = {HttpMethod.POST})
+public void ajax(@CookieParam("id") Long id) {
+  // ...
+}
+```
+
+#### 参数转对象
+
+**实体类**
+```java
+@Data
+public class Book {
+  private String name;
+  private String author;
+}
+```
+
+**使用RoutingContext转换**
+```java
+Router.router().path("/").handler(ctx -> {
+  // 表单或json请求参数绑定
+  Book book = ctx.bindParam(Book.class);
+  // cookie参数绑定
+  book = ctx.bindCookie(Book.class);
+  // header参数绑定
+  book = ctx.bindHeader(Book.class);
+  // restful参数绑定
+  book = ctx.bindPathVariables(Book.class);
+});
+```
+**使用注解获取**
+```java
+@Mapping(value = "/", method = {HttpMethod.POST})
+public void ajax(@Param Book b1, @CookieParam Book b2, @HeaderParam Book b3, @PathParam Book b4) {
+  // ...
+}
+```
+
+### 静态资源
+
+内置默认将`classpath`下`/public,/static`作为静态资源目录，支持`webjars`，映射到`/public`
+
+自定义静态资源可使用下面代码
+```java
+Router.staticRoute().prefix("/lib").location("classpath:lib");
+```
+也可以通过配置文件指定
+```properties
+web.static.prefix=/public
+web.static.path=/public,/static,classpath:/META-INF/resources/webjars
+```
+
+### 上传文件
+
+**使用RoutingContext获取**
+```java
+Router.router().path("/").handler(ctx -> {
+  MultipartItem file = ctx.request().getMultipartItem("file");
+  // ...
+});
+```
+**使用注解获取**
+```java
+@Mapping("/")
+public void upload(MultipartItem image, @MultipartParam("file1") MultipartItem file) {
+  // 不使用注解则使用方法参数名作为请求参数名称
+  // 使用注解指定请求参数名称
+}
+```
+
+### 结果渲染
+
+#### 渲染json
+```java
+// 使用RoutingContext返回
+Router.router().path("/").handler(ctx -> {
+  ctx.response().json(new Book("Java", "xxx"));
+});
+
+// 注解式
+@Mapping("/")
+public Book find() {
+  // 直接返回对象，框架默认处理成json
+  return new Book("Java", "xxx");
+}
+```
+
+#### 渲染文本
+```java
+// 使用RoutingContext返回
+Router.router().path("/").handler(ctx -> {
+  ctx.response().text("hello world");
+});
+```
+
+#### 渲染html
+```java
+// 使用RoutingContext返回
+Router.router().path("/").handler(ctx -> {
+  ctx.response().html("<html><body><span>hello world</span></body></html>");
+});
+```
+
+#### 渲染模板
+内置支持了`jsp`和`thymeleaf`模板，默认对应`resources`下的`WEB-INF`和`templates`目录
+```properties
+# 可通过下面配置进行更改模板目录
+web.view.jsp.prefix=WEB-INF
+web.view.thymeleaf.prefix=/templates
+```
+模板使用
+```java
+// 使用RoutingContext
+Router.router().path("/").handler(ctx -> {
+  ctx.response().template("index.html");
+});
+
+Router.router().path("/").handler(ctx -> {
+  Map<String, Object> attrs = new HashMap<>();
+  // ...
+  ctx.response().template("index.html", attrs);
+});
+
+// 注解式
+@Mapping("/")
+public Result index() {
+  return Result.view("index.html");
+}
+
+@Mapping("/")
+public Result index() {
+  Map<String, Object> attrs = new HashMap<>();
+  // ...
+  return Result.view("index.html").addAttributes(attrs);
+}
+```
+
+#### 重定向
+
+```java
+Router.router().path("/").handler(ctx -> {
+  ctx.response().redirect("https://github.com/justlive1");
+});
+
+@Mapping("/a")
+public Result index() {
+  // 内部地址 相对于根目录: /b
+  // return Result.redirect("/b"); 
+  // 内部地址 相对于当前路径: /a/b
+  // return Result.redirect("b");
+  // 协议地址
+  return Result.redirect("https://github.com/justlive1");
+}
+```
+
+#### 写入cookie
+
+```java
+@Mapping("/")
+public void index(RoutingContext ctx) {
+  ctx.response().setCookie("hello", "world");
+  ctx.response().setCookie("java", "script", 100);
+  ctx.response().setCookie("uid", "xxx", ".justlive.vip", "/", 3600, true);
+}
+```
+
+#### 添加header
+
+```java
+@Mapping("/")
+public void index(RoutingContext ctx) {
+  ctx.response().setHeader("hello", "world");
+}
+```
+
+### 拦截器
+
+`WebHook`是拦截器接口，可以实现执行前、执行后和结束拦截处理
+
+```java
+@Slf4j
+@Bean
+public class LogWebHook implements WebHook {
+  @Override
+  public boolean before(RoutingContext ctx) {
+    log.info("before");
+    return true;
+  }
+  @Override
+  public void after(RoutingContext ctx) {
+    log.info("after");
+  }
+  @Override
+  public void finished(RoutingContext ctx) {
+    log.info("finished");
+  }
+}
 ```
 
 ### 异常处理
 
-使用 `Exceptions` 抛出异常
+框架默认提供了一个异常处理器，如需自定义处理异常，可以像下面这样使用
 
-```
-// 创建 ErrorCode
-ErrorCode err = Exceptions.errorCode(String module, String code);
-ErrorCode err = Exceptions.errorMessage(String module, String code, String message);
+```java
+@Bean
+public class CustomExceptionHandler extends ExceptionHandlerImpl {
 
-// 抛出unchecked异常
-throw Exceptions.wrap(Throwable e);
-throw Exceptions.wrap(Throwable e, String code, String message);
-throw Exceptions.wrap(Throwable e, ErrorCode errorCode, Object... arguments);
-
-// 抛出业务异常 不含堆栈信息
-throw Exceptions.fail(ErrorCode errCode, Object... params);
-throw Exceptions.fail(String code, String message, Object... params);
-
-// 抛出故障异常 包含堆栈信息
-throw Exceptions.fault(ErrorCode errCode, Object... params);
-throw Exceptions.fault(String code, String message, Object... params);
-throw Exceptions.fault(Throwable e, ErrorCode errCode, Object... params);
-throw Exceptions.fault(Throwable e, String code, String message, Object... params)
-
-```
-
-### Retry
-
-重试，支持同步/异步
-
-```
-RetryBuilder.newBuilder()
-  // 超时限制
-  .withTimeLimit(10, TimeUnit.MILLISECONDS)
-  // 抛出异常就重试 
-  .retryIfException()
-  // 最大尝试次数
-  .withMaxAttempt(3)
-  // 使用sleep进行阻塞
-  .withSleepBlock(100)
-  // 构造同步重试器
-  .build()
-  // 执行逻辑
-  .call(Math::random);
-  
-RetryBuilder.newBuilder()
-    // 抛出ArithmeticException异常就重试 
-    .retryIfException(ArithmeticException.class)
-    // 结果小于0.5就重试
-    .retryIfResult(r -> r < 0.5)
-    // 最大延时时间
-    .withMaxDelay(1000)
-    // 使用wait进行阻塞
-    .withWaitBlock(100)
-    // 构造同步重试器
-    .build()
-    // 执行逻辑
-    .call(Math::random);
-
-RetryBuilder.newBuilder()
-    // 自定义重试判断
-    .retryIf(attmapt -> attmapt.hasException())
-    // 重试监听
-    .onRetry(System.out::println)
-    // 最终失败监听
-    .onFinalFail(System.out::println)
-    // 成功监听
-    .onSuccess(System.out::println)
-    // 设置用户线程池
-    .withAsyncExecutor(scheduleService)
-    // 构造异步重试器
-    .buildAsync()
-    // 执行异步逻辑
-    .callAsync(Math::random);
-```
-
-### IOC 
-
-通过注解使用IOC容器
-
-```
-// 在配置文件中添加扫包路径
-main.class.scan=com.xxx.xxx,com.aaa.bbb
-
-// 使用 @Configuration 和 @Bean
-@Configuration
-public class Conf {
- 
-  @Bean
-  Inter noDepBean() {
-    return new NoDepBean();
+  @Override
+  public void handle(RoutingContext ctx, Exception e, int status) {
+    if (e instanceof CustomException) {
+      // do something
+    } else {
+      super.handle(ctx, e, status);
+    }
   }
 }
+```
 
-// 使用 @Bean 和 @Inject
-@Bean("depBean")
-public class DepBean implements Inter {
+### 部署项目
 
-  private final NoDepBean noDepBean;
+#### 修改端口
 
-  @Inject
-  public DepBean(NoDepBean noDepBean) {
-    this.noDepBean = noDepBean;
+**编码指定**
+```java
+Server.server().listen(8080);
+```
+**配置文件**
+```properties
+server.port=8081
+```
+
+#### 运行项目
+
+**使用内嵌容器启动**
+
+启动类
+```java
+public class Application {
+  public static void main(String[] args) {
+    Server.server().listen();
   }
-  
-  ...
-}
-
-// 运行时获取bean
-Inter inter = BeanStore.getBean("depBean", Inter.class);
-
-```
-
-### AOP
-
-通过注解使用AOP
-
-```
-// 定义使用了Log注解的方法aop处理
-@Before(annotation = Log.class)
-public void log(Invocation invocation) {
-  ...
-}
-
-// 目标方法添加注解
-@Log
-public void print() {
-  ...
-}  
-```
-
-### 定时任务
-
-使用注解 `@Scheduled` 标记一个方法需要作为定时任务
-
-onApplicationStart(), cron(), fixedDelay(), or fixedRate() 必须配置其中一个
-
-```
-// 固定延迟任务 任务结束时间-下一个开始时间间隔固定
-@Scheduled(fixedDelay = "500")
-public void run1() {
-  ...
-}
-
-// 固定周期任务 任务开始时间-下一个开始时间固定
-@Scheduled(fixedRate = "600")
-public void run2() {
-  ...
-}
-
-// cron任务，并且程序启动后异步执行一次
-@Scheduled(cron = "0/5 * * * * ?", onApplicationStart = true, async = true)
-public void run3() {
-  ...
 }
 ```
-
-### 缓存
-
-使用缓存有两种方式：
-- `JCache.cache()` 获取缓存然后调用api
-- 使用 `@Cacheable` 注解给方法添加缓存
-
+通用打包方式
+- `${mainClass}`为上面的启动类
+- 会生成`lib`目录存放依赖`jar`
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <configuration>
+        <source>${maven.compiler.source}</source>
+        <target>${maven.compiler.target}</target>
+        <encoding>UTF-8</encoding>
+      </configuration>
+    </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-jar-plugin</artifactId>
+      <configuration>
+        <archive>
+          <manifest>
+            <addClasspath>true</addClasspath>
+            <classpathPrefix>lib/</classpathPrefix>
+            <mainClass>${mainClass}</mainClass>
+          </manifest>
+        </archive>
+      </configuration>
+    </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
+      <executions>
+        <execution>
+          <id>copy</id>
+          <phase>package</phase>
+          <goals>
+            <goal>copy-dependencies</goal>
+          </goals>
+          <configuration>
+            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+          </configuration>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
 ```
-// 使用缓存api 
-Cache cache = JCache.cache(cacheName);
-T value = cache.get(key, clazz);
-cache.set(key, value, duration, timeUnit);
-...
 
-// 使用注解
-@Cacheable
-public Object method() {
-  ...
-}
-
-@Cacheable(key = "args[0]", duration = 10, timeUnit = TimeUnit.MINUTES)
-public Object method(Object arg0, Object arg1) {
-  ...
-}
-
+打成`fat-jar`:
+- 使用springboot打包插件
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-maven-plugin</artifactId>
+      <version>1.3.8.RELEASE</version>
+      <executions>
+        <execution>
+          <phase>package</phase>
+          <goals>
+            <goal>repackage</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
 ```
 
+**使用外部容器（jetty、tomcat等）**
 
-### 国际化
+无需web.xml配置，打包成`war`放入容器即可，实现机制可查看`WebContainerInitializer`
 
-使用 `Lang` 获取国际化信息
+```xml
+<!-- 解决默认打war包报错 webxml attribute is required -->
+<properties>
+  <failOnMissingWebXml>false</failOnMissingWebXml>
+</properties>
 ```
-// 配置国际化文件路径
+
+### 外部化配置
+
+框架可以通过使用配置文件进行修改默认属性
+```properties
+##### 基础配置
+# 配置覆盖地址，用户外部配置覆盖项目配置 例 file:/config/*.properties,classpath*:/config/*.properties,xx.properties
+config.override.path=
+# 类扫描路径属性
+main.class.scan=vip.justlive
+# 临时文件根目录
+main.temp.dir=.oxygen
+# 缓存实现类，自定义缓存时使用
+cache.impl.class=
+
+
+##### web 
+# embedded 启动端口
+server.port=8080
+# context path
+server.contextPath=
+# 默认静态资源请求前缀
+web.static.prefix=/public
+# 默认静态资源目录
+web.static.path=/public,/static,classpath:/META-INF/resources/webjars
+# 静态资源缓存时间
+web.static.cache=3600
+# jsp路径前缀
+web.view.jsp.prefix=WEB-INF
+# thymeleaf 路径前缀
+web.view.thymeleaf.prefix=/templates
+# 是否开启模板缓存
+web.view.cache.enabled=true
+
+
+##### 定时任务job
+# job线程名称格式
+job.thread.name.format=jobs-%d
+# job核心线程池大小
+job.core.pool.size=10
+
+
+##### i18n国际化
+# i18n配置文件地址
 i18n.path=classpath:message/*.properties
-// i18n默认国家
+# i18n默认语言
 i18n.default.language=zh
-// i18n默认国家
+# i18n默认国家
 i18n.default.country=CN
-
-// 设置当前线程国际化
-Lang.setThreadLocale(new Locale("en", "US"))
-// 还原当前线程国际化
-Lang.clearThreadLocale()
-// 获取默认locale的国际化信息
-Lang.getMessage("key")
-// 获取指定locale的国际化信息
-Lang.getMessage("key", new Locale("en", "US")
-Lang.getMessage("key", "en", "US")
-
-```
-
-### Jdbc
-
-#### 基础使用
-
-- 可配置多数据源
-- 使用Jdbc进行crud
-- 使用ResultSetHandler<T> 进行自定义类型转换处理
-- 开启关闭事务
-
-```
-// 单独使用 需要自己创建并添加数据源
-...
-// 添加主数据源
-Jdbc.addPrimaryDataSource(DataSource dataSource)
-// 添加多数据源
-Jdbc.addDataSource(String name, DataSource dataSource)
-
-// 切换当前线程的数据源
-Jdbc.use(dataSourceName)
-// 还原当前线程的数据源
-Jdbc.clear()
-
-// crud
-T Jdbc.query(String sql, Class<T> clazz, Object... params)
-List<T> Jdbc.queryForList(String sql, Class<T> clazz, Object... params)
-Map<String, Object> Jdbc.queryForMap(String sql, Object... params)
-List<Map<String, Object>> Jdbc.queryForMapList(String sql, Object... params)
-// 可自定义返回处理
-T Jdbc.query(String sql, ResultSetHandler<T> handler, Object... params)
-
-int Jdbc.update(String sql, Object... params)
-
-// 开启主数据源的事务
-Jdbc.startTx()
-// 开启指定数据源的事务
-Jdbc.startTx(String dataSourceName)
-
-// 关闭主数据源的事务
-Jdbc.closeTx()
-// 关闭指定数据源的事务
-Jdbc.closeTx(String dataSourceName)
-
-
-// 回滚事务
-Jdbc.rollbackTx()
-// 回滚指定数据源的事务
-Jdbc.rollbackTx(String dataSourceName)
-
-// 基础crud
-Option opt = new Option()
-...
-Record.insert(opt)
-Record.findById(Option.class, 1)
-Record.find(opt)
-Record.update(opt)
-Record.deleteById(Option.class, 1)
-Record.delete(opt);
-
-// 批处理
-// 开启批处理
-Batch.use()
-// 添加预处理sql
-.addBatch("insert into system (key, value) values (?,?)", 1, 3)
-.addBatch("insert into system (key, value) values (?,?)", Arrays.asList(4, 4))
-// 添加直接处理sql
-.addBatch("insert into system (key,value) values(1,2)")
-// 提交批处理
-.commit();
-// 批量插入
-Record.insertBatch(list);
-
-// 配合oxygen-core使用, 只需在配置文件中配置数据源即可自动装载
-// 多数据源名称
-datasource.multi=a
-// 主数据源
-datasource.logSql=true
-datasource.driverClassName=org.h2.Driver
-datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
-datasource.username=sa
-datasource.password=sa
-
-// 数据源a
-datasource.a.driverClassName=org.h2.Driver
-datasource.a.url=jdbc:h2:mem:a;DB_CLOSE_DELAY=-1
-datasource.a.username=sa
-datasource.a.password=sa
-
-```
-
-#### 自定义列类型转换
-
-- 实现 `ColumnHandler` 接口进行自定义处理
-- 增加 `META-INF/services/vip.justlive.oxygen.jdbc.handler.ColumnHandler` 文件，添加实现类的类名
-
-```
-public class MyColumnHandler implements ColumnHandler {
-
-  @Override
-  public boolean supported(Class<?> type) {
-    ...
-  }
-
-  @Override
-  public Object fetch(ResultSet rs, int index) throws SQLException {
-    ...
-  }
-}
-
-// 新增或修改 META-INF/services/vip.justlive.oxygen.jdbc.handler.ColumnHandler 添加自定义类名
-xxx.xxx.MyColumnHandler
-
-```
-
-#### 增加jdbc拦截
-
-- 实现 `JdbcInterceptor` 接口
-- 调用 `Jdbc.addJdbcInterceptor` 添加拦截
-
-```
-// 内置的sql打印拦截
-@Slf4j
-public class LogSqlJdbcInterceptor implements JdbcInterceptor {
-
-  @Override
-  public void before(String sql, List<Object> params) {
-    if (log.isDebugEnabled()) {
-      log.debug("execute sql: {} -> params: {}", sql, params);
-    }
-  }
-}
-
-// 添加拦截器
-Jdbc.addJdbcInterceptor(JdbcInterceptor interceptor)
-
-```
-
-### web
-
-#### 基础使用
-- 使用`@Router @Mapping @Param...`等注解进行定义路由类和请求方法以及绑定参数
-- 使用`View`进行视图跳转，非`void,View`的返回值默认使用json处理
-- 线程内使用`Request.current(),Response.current()`获取请求和返回
-
-```
-// 使用 @Router标记路由
-@Router("/common")
-public class CommonRouter {
-
-  // 标记请求路径和请求方式，默认支持所有请求 当返回值不是void且非View则为返回json
-  @Mapping(value = "/localDate",method = HttpMethod.GET)
-  public Resp localDate() {
-    return Resp.success(
-            LocalDate.now().plusDays(offset).atStartOfDay(ZoneOffset.systemDefault()).toInstant()
-                .toEpochMilli());
-  }
-
-  // 页面渲染 需要返回View
-  @Mapping("/index")
-  public View index() {
-    View view = new View();
-    view.setPath("/index.jsp");
-    return view;
-  }
-  
-  // 重定向
-  @Mapping("/view")
-  public View index() {
-    View view = new View();
-    // 相对路径为容器内跳转 使用http://xxx则绝对跳转
-    view.setPath("/index");
-    view.setRedirect(true);
-    return view;
-  }
-  
-  // 文件下载
-  @Mapping("download")
-  public void download(HttpServletResponse resp) throws IOException {
-    resp.setCharacterEncoding("utf-8");
-    resp.setContentType("application/octet-stream;charset=utf-8");
-    resp.setHeader("Content-disposition", "attachment;filename=xx.txt");
-    Files.copy(new File("xxx.txt"), resp.getOutputStream());
-  }
-}
-
-// 获取当前线程的Request Response
-Request.current()
-Response.current()
-
-// 配置404错误页面跳转
-web.error.404.page=
-// 配置404自定义处理
-web.error.404.handler=
-// 配置500错误页面跳转
-web.error.500.page=
-// 配置500自定义处理
-web.error.500.handler=
-
-```
-
-
-#### 自定义视图解析
-- 实现`ViewResolver`接口
-- 通过`ServiceLoader`或`WebPlugin.addViewResolver`的方式进行添加自定义视图解析
-
-```
-// 内置的重定向和json解析器
-public class DefaultViewResolver implements ViewResolver {
-
-  @Override
-  public boolean supported(Object data) {
-    // 重定向
-    if (data != null && data.getClass() == View.class && ((View) data).isRedirect()) {
-      return true;
-    }
-    // null 或者 非view 返回json
-    return data == null || data.getClass() != View.class;
-  }
-
-  @Override
-  public void resolveView(HttpServletRequest request, HttpServletResponse response, Object data) {
-    try {
-      if (data != null && data.getClass() == View.class) {
-        View view = (View) data;
-        String redirectUrl = view.getPath();
-        if (!redirectUrl.startsWith(Constants.HTTP_PREFIX) && !redirectUrl
-            .startsWith(Constants.HTTPS_PREFIX)) {
-          redirectUrl = request.getContextPath() + view.getPath();
-        }
-        response.sendRedirect(redirectUrl);
-      } else {
-        response.getWriter().print(JSON.toJSONString(data));
-      }
-    } catch (IOException e) {
-      throw Exceptions.wrap(e);
-    }
-  }
-}
-```
-
-#### 添加web启动执行类
-只需实现`WebAppInitializer`接口，容器会自动加载
-
-```
-public class MyWebAppInitializer implements WebAppInitializer {
-  @Override
-  public void onStartup(ServletContext context) {
-    ...
-  }
-  @Override
-  public int order() {
-    ...
-  }
-}
-```
-
-#### 国际化
-内置提供了切面`I18nAop`用于动态切换语言
-
-```
-// 配置国际化文件路径
-i18n.path=classpath:message/*.properties
-// i18n默认国家
-i18n.default.language=zh
-// i18n默认国家
-i18n.default.country=CN
-// 设置locale的请求入参
+# i18n参数key
 i18n.param.key=locale
-// session 保存的key
+# i18n Session key
 i18n.session.key=I18N_SESSION_LOCALE
-
-// 动态切换例子
-// 默认locale
-http://localhost:8080/page.html
-// 指定locale为zh_CN
-http://localhost:8080/page1.html?locale=zh_CN
-// 相同session下 locale为设置的zh_CN
-http://localhost:8080/page2.html
 ```
-
-#### 使用内置容器启动
-- 依赖 `oxygen-web-tomcat`
-- 在main中使用 `Server.start`启动
-
-```
-<!-- 已依赖了web 并提供了embeded tomcat -->
-<dependency>
-    <groupId>vip.justlive</groupId>
-    <artifactId>oxygen-web-tomcat</artifactId>
-    <version>${oxygen.version}</version>
-</dependency>
-
-
-public static void main(String[] args) {
-  // 启动容器
-  Server.start();
-  ...
-  // 关闭容器
-  Server.stop();
-}
-```
-
 
 ## 联系信息
 

@@ -20,12 +20,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import lombok.experimental.UtilityClass;
+import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * 数字工具类
  *
  * @author wubo
  */
+@UtilityClass
 public class NumberUtils {
 
   /**
@@ -58,9 +61,6 @@ public class NumberUtils {
     FUNCTIONS.put(Double.class, Double::valueOf);
     FUNCTIONS.put(BigDecimal.class, NumberUtils::stringToBigDecimal);
     FUNCTIONS.put(Number.class, NumberUtils::stringToBigDecimal);
-  }
-
-  private NumberUtils() {
   }
 
   /**
@@ -96,9 +96,9 @@ public class NumberUtils {
    * @return true 是十六进制
    */
   public static boolean isHexNumber(String value) {
-    int index = (value.startsWith("-") ? 1 : 0);
-    return (value.startsWith("0x", index) || value.startsWith("0X", index) || value
-        .startsWith("#", index));
+    int index = (value.startsWith(Constants.HYPHEN) ? 1 : 0);
+    return (value.startsWith(Constants.HEX_PREFIX_0, index) || value
+        .startsWith(Constants.HEX_PREFIX_1, index) || value.startsWith(Constants.OCTOTHORP, index));
   }
 
   /**
@@ -113,19 +113,20 @@ public class NumberUtils {
     boolean negative = false;
 
     // 处理正负
-    if (value.startsWith("-")) {
+    if (value.startsWith(Constants.HYPHEN)) {
       negative = true;
       index++;
     }
 
     // 判断进制
-    if (value.startsWith("0x", index) || value.startsWith("0X", index)) {
+    if (value.startsWith(Constants.HEX_PREFIX_0, index) || value
+        .startsWith(Constants.HEX_PREFIX_1, index)) {
       index += 2;
       radix = 16;
-    } else if (value.startsWith("#", index)) {
+    } else if (value.startsWith(Constants.OCTOTHORP, index)) {
       index++;
       radix = 16;
-    } else if (value.startsWith("0", index) && value.length() > 1 + index) {
+    } else if (value.startsWith(Constants.OCTONARY_PREFIX, index) && value.length() > 1 + index) {
       index++;
       radix = 8;
     }

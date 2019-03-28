@@ -17,9 +17,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import vip.justlive.oxygen.core.domain.Resp;
-import vip.justlive.oxygen.web.mapping.Mapping;
-import vip.justlive.oxygen.web.mapping.Param;
-import vip.justlive.oxygen.web.mapping.Router;
+import vip.justlive.oxygen.web.annotation.Mapping;
+import vip.justlive.oxygen.web.annotation.Param;
+import vip.justlive.oxygen.web.annotation.Router;
 
 /**
  * 基础请求 router

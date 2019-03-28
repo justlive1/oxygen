@@ -22,11 +22,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
+import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.jdbc.JdbcException;
 
 /**
@@ -38,15 +36,8 @@ public class BasicRowHandler implements RowHandler {
 
   private static final BasicRowHandler INSTANCE = new BasicRowHandler();
   private static final int PROPERTY_NOT_FOUND = -1;
-  private static final List<ColumnHandler> COLUMN_HANDLERS = new LinkedList<>();
-
-  static {
-    ServiceLoader<ColumnHandler> loader = ServiceLoader.load(ColumnHandler.class);
-    Iterator<ColumnHandler> it = loader.iterator();
-    while (it.hasNext()) {
-      COLUMN_HANDLERS.add(it.next());
-    }
-  }
+  private static final List<ColumnHandler> COLUMN_HANDLERS = ServiceLoaderUtils
+      .loadServices(ColumnHandler.class);
 
   /**
    * 获取单例
