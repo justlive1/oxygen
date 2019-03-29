@@ -250,6 +250,10 @@ public class Constants {
    * /WEB-INF/classes
    */
   public static final String WEB_INF_CLASSES = "/WEB-INF/classes";
+  /**
+   * session cookie key
+   */
+  public static final String SESSION_COOKIE_KEY = "OX_SESSION";
 
   // http
 

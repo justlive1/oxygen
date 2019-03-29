@@ -35,6 +35,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  */
 public class CronExpression implements Serializable {
 
+  private static final long serialVersionUID = 1L;
   private static final Map<String, String> MONTH_MAP = new HashMap<>(12, 1);
   private static final Map<String, String> WEEK_MAP = new HashMap<>(7, 1);
   private static final String MONTH_VALUES = "JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOV,DEC,FOO";
@@ -146,16 +147,15 @@ public class CronExpression implements Serializable {
     int updateMonth = findNext(this.months, month, calendar, Calendar.MONTH, Calendar.YEAR, resets);
     if (month != updateMonth) {
       if (calendar.get(Calendar.YEAR) - dot > MAX_DEEP) {
-        throw new IllegalArgumentException("Invalid cron expression \"" + this.expression +
-            "\" led to runaway search for next trigger");
+        throw new IllegalArgumentException("Invalid cron expression \"" + this.expression
+            + "\" led to runaway search for next trigger");
       }
       doNext(calendar, dot);
     }
   }
 
   private int findNextDay(Calendar calendar, BitSet daysOfMonth, int dayOfMonth, BitSet daysOfWeek,
-      int dayOfWeek,
-      List<Integer> resets) {
+      int dayOfWeek, List<Integer> resets) {
 
     int count = 0;
     int max = 366;

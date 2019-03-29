@@ -32,3 +32,4 @@ vip.justlive.oxygen.web.http.JsonRequestParse
 vip.justlive.oxygen.web.http.CookieRequestParse
 vip.justlive.oxygen.web.http.PathRequestParse
 vip.justlive.oxygen.web.http.MultipartRequestParse
+vip.justlive.oxygen.web.http.SessionRequestParse

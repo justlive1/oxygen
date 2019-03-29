@@ -29,6 +29,8 @@ import vip.justlive.oxygen.web.annotation.Router;
 import vip.justlive.oxygen.web.exception.ExceptionHandler;
 import vip.justlive.oxygen.web.exception.ExceptionHandlerImpl;
 import vip.justlive.oxygen.web.http.HttpMethod;
+import vip.justlive.oxygen.web.http.SessionManager;
+import vip.justlive.oxygen.web.http.SessionStore;
 import vip.justlive.oxygen.web.router.AnnotationRouteHandler;
 import vip.justlive.oxygen.web.router.Route;
 import vip.justlive.oxygen.web.servlet.DispatcherServlet;
@@ -41,6 +43,8 @@ import vip.justlive.oxygen.web.servlet.DispatcherServlet;
 @Slf4j
 public class WebPlugin implements Plugin {
 
+  public static final SessionManager SESSION_MANAGER = new SessionManager();
+
   @Override
   public int order() {
     return Integer.MIN_VALUE + 60;
@@ -51,6 +55,7 @@ public class WebPlugin implements Plugin {
     loadStaticRoute();
     loadAnnotationRouter();
     loadErrorHandler();
+    loadSessionManager();
     DispatcherServlet.load();
     vip.justlive.oxygen.web.router.Router.build();
   }
@@ -125,5 +130,13 @@ public class WebPlugin implements Plugin {
         log.debug("loaded default error handler {}", handler);
       }
     }
+  }
+
+  private void loadSessionManager() {
+    SessionStore sessionStore = IocPlugin.beanStore().getBean(SessionStore.class);
+    if (sessionStore != null) {
+      SESSION_MANAGER.setStore(sessionStore);
+    }
+    SESSION_MANAGER.setExpired(ConfigFactory.load(WebConf.class).getSessionExpired());
   }
 }

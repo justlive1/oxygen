@@ -28,6 +28,7 @@ import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.ioc.IocPlugin;
+import vip.justlive.oxygen.web.WebPlugin;
 import vip.justlive.oxygen.web.exception.ExceptionHandler;
 import vip.justlive.oxygen.web.hook.I18nWebHook;
 import vip.justlive.oxygen.web.hook.WebHook;
@@ -108,13 +109,14 @@ public class DispatcherServlet extends HttpServlet {
         return;
       }
       handler.handle(ctx);
+      copyResponse(request, response, resp);
       handleResult(ctx, response.getResult());
       invokeAfter(ctx);
     } catch (Exception e) {
       handlerError(ctx, e);
     } finally {
       invokeFinished(ctx);
-      copyResponse(response, resp);
+      copyStream(response, resp);
       Request.clear();
       Response.clear();
     }
@@ -150,13 +152,19 @@ public class DispatcherServlet extends HttpServlet {
     return true;
   }
 
-  private void copyResponse(Response response, HttpServletResponse resp) {
+  private void copyResponse(Request request, Response response, HttpServletResponse resp) {
     if (response.getContentType() != null) {
       resp.setContentType(response.getContentType());
     }
     resp.setStatus(response.getStatus());
     resp.setCharacterEncoding(response.getEncoding());
     response.getHeaders().forEach(resp::addHeader);
+
+    if (request.getCookie(Constants.SESSION_COOKIE_KEY) == null) {
+      response.setCookie(Constants.SESSION_COOKIE_KEY, request.getSession().getId());
+    }
+    WebPlugin.SESSION_MANAGER.restoreSession(request.getSession());
+
     for (Cookie cookie : response.getCookies().values()) {
       javax.servlet.http.Cookie jCookie = new javax.servlet.http.Cookie(cookie.getName(),
           cookie.getValue());
@@ -170,6 +178,9 @@ public class DispatcherServlet extends HttpServlet {
       }
       resp.addCookie(jCookie);
     }
+  }
+
+  private void copyStream(Response response, HttpServletResponse resp) {
     if (response.getOut().size() > 0) {
       try {
         resp.getOutputStream().write(response.getOut().toByteArray());

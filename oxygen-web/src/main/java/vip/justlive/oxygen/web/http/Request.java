@@ -86,6 +86,10 @@ public class Request implements Serializable {
    */
   Multipart multipart;
   /**
+   * session
+   */
+  Session session;
+  /**
    * 是否https
    */
   boolean secure;
@@ -111,6 +115,7 @@ public class Request implements Serializable {
    * cookies
    */
   private Map<String, Cookie> cookies;
+
 
   Request(HttpServletRequest originalRequest) {
     this.originalRequest = originalRequest;

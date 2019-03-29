@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.web.http.HttpMethod;
 
@@ -29,7 +28,6 @@ import vip.justlive.oxygen.web.http.HttpMethod;
  *
  * @author wubo
  */
-@Slf4j
 @Data
 @Accessors(fluent = true)
 public class Route {

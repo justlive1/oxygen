@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.web.server;
 
-import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 
@@ -22,7 +21,6 @@ import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
  *
  * @author wubo
  */
-@Slf4j
 public class Server {
 
   private WebServer webServer;

@@ -37,6 +37,12 @@ public class WebConf {
   private String contextPath;
 
   /**
+   * session失效时间，单位秒
+   */
+  @Value("${web.session.expired:3600}")
+  private Long sessionExpired;
+
+  /**
    * 默认静态资源请求前缀
    */
   @Value("${web.static.prefix:/public}")

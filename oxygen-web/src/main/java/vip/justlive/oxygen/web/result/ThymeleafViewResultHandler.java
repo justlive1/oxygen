@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.web.result;
 
-import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.web.http.Request;
@@ -25,7 +24,6 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  *
  * @author wubo
  */
-@Slf4j
 public class ThymeleafViewResultHandler implements ResultHandler {
 
   private static final boolean THYMELEAF_SUPPORTED = ClassUtils

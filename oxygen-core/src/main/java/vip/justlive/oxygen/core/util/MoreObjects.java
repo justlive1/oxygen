@@ -1,15 +1,15 @@
 /*
- *  Copyright (C) 2019 justlive1
+ * Copyright (C) 2019 justlive1
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- *  in compliance with the License. You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software distributed under the License
- *  is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- *  or implied. See the License for the specific language governing permissions and limitations under
- *  the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package vip.justlive.oxygen.core.util;
 
@@ -28,26 +28,14 @@ public class MoreObjects {
    *
    * @param first first value
    * @param second second value
-   * @param others other values
    * @param <T> 泛型
    * @return nonNull
    */
-  public static <T> T firstOrNull(T first, T second, T... others) {
+  public static <T> T firstOrNull(T first, T second) {
     if (first != null) {
       return first;
     }
-    if (second != null) {
-      return second;
-    }
-    if (others == null || others.length == 0) {
-      return null;
-    }
-    for (T obj : others) {
-      if (obj != null) {
-        return obj;
-      }
-    }
-    return null;
+    return second;
   }
 
   /**
@@ -55,12 +43,11 @@ public class MoreObjects {
    *
    * @param first first value
    * @param second second value
-   * @param others other values
    * @param <T> 泛型
    * @return nonNull
    */
-  public static <T> T firstNonNull(T first, T second, T... others) {
-    T obj = firstOrNull(first, second, others);
+  public static <T> T firstNonNull(T first, T second) {
+    T obj = firstOrNull(first, second);
     if (obj != null) {
       return obj;
     }

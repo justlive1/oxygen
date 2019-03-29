@@ -110,6 +110,7 @@ public static void main(String[] args) {
   - [**`重定向`**](#重定向)
   - [**`写入cookie`**](#写入cookie)
   - [**`添加header`**](#添加header)
+  - [**`写入Session`**](#写入Session)
 - [**`拦截器`**](#拦截器)
 - [**`异常处理`**](#异常处理)
 - [**`部署项目`**](#部署项目)
@@ -385,6 +386,15 @@ public void index(RoutingContext ctx) {
 }
 ```
 
+#### 写入Session
+
+```java
+@Mapping("/")
+public void index(RoutingContext ctx) {
+  ctx.request().getSession().put("key", "value");
+}
+```
+
 ### 拦截器
 
 `WebHook`是拦截器接口，可以实现执行前、执行后和结束拦截处理
@@ -554,6 +564,8 @@ cache.impl.class=
 server.port=8080
 # context path
 server.contextPath=
+# session失效时间，单位秒
+web.session.expired=3600
 # 默认静态资源请求前缀
 web.static.prefix=/public
 # 默认静态资源目录

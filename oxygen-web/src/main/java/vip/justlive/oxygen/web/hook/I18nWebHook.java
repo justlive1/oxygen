@@ -14,7 +14,6 @@
 package vip.justlive.oxygen.web.hook;
 
 import java.util.Locale;
-import javax.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
@@ -37,11 +36,7 @@ public class I18nWebHook implements WebHook {
     CoreConf conf = ConfigFactory.load(CoreConf.class);
     String localeStr = request.getParam(conf.getI18nParamKey());
     if (localeStr == null || localeStr.length() == 0) {
-      HttpSession session = request.getOriginalRequest().getSession(false);
-      if (session == null) {
-        return true;
-      }
-      Locale locale = (Locale) session.getAttribute(conf.getI18nSessionKey());
+      Locale locale = (Locale) request.getSession().get(conf.getI18nSessionKey());
       if (locale != null) {
         Lang.setThreadLocale(locale);
       }
@@ -54,7 +49,7 @@ public class I18nWebHook implements WebHook {
         if (log.isDebugEnabled()) {
           log.debug("change locale from [{}] to [{}]", Lang.currentThreadLocale(), locale);
         }
-        request.getOriginalRequest().getSession().setAttribute(conf.getI18nSessionKey(), locale);
+        request.getSession().put(conf.getI18nSessionKey(), locale);
         Lang.setThreadLocale(locale);
       }
     }
