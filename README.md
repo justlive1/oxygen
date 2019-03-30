@@ -110,7 +110,7 @@ public static void main(String[] args) {
   - [**`重定向`**](#重定向)
   - [**`写入cookie`**](#写入cookie)
   - [**`添加header`**](#添加header)
-  - [**`写入Session`**](#写入Session)
+  - [**`写入session`**](#写入session)
 - [**`拦截器`**](#拦截器)
 - [**`异常处理`**](#异常处理)
 - [**`部署项目`**](#部署项目)
@@ -386,7 +386,7 @@ public void index(RoutingContext ctx) {
 }
 ```
 
-#### 写入Session
+#### 写入session
 
 ```java
 @Mapping("/")
@@ -449,6 +449,10 @@ Server.server().listen(8080);
 **配置文件**
 ```properties
 server.port=8081
+```
+**启动命令**
+```bash
+java -jar -Dserver.port=8090 app.jar
 ```
 
 #### 运行项目

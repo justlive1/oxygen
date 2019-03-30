@@ -450,6 +450,10 @@ Server.server().listen(8080);
 ```properties
 server.port=8081
 ```
+**启动命令**
+```bash
+java -jar -Dserver.port=8090 app.jar
+```
 
 #### 运行项目
 

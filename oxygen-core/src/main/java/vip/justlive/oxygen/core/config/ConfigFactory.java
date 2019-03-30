@@ -50,7 +50,7 @@ public class ConfigFactory {
   /**
    * 配置资源包装
    */
-  private static final PropertySource SOURCE_WRAPPER = () -> PROPS;
+  private static final PropertySource SOURCE_WRAPPER = ConfigFactory::props;
   /**
    * 用于生成临时编号
    */
@@ -268,4 +268,9 @@ public class ConfigFactory {
     return DefaultConverterService.sharedConverterService().convert(value, type);
   }
 
+  private static Properties props() {
+    Properties properties = new Properties(PROPS);
+    properties.putAll(System.getProperties());
+    return properties;
+  }
 }

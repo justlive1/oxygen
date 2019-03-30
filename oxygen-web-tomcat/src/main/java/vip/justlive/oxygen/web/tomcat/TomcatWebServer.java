@@ -102,7 +102,8 @@ public class TomcatWebServer implements WebServer {
 
   @Override
   public synchronized void listen(int port) {
-    this.port = port > 0 ? port : ConfigFactory.load(WebConf.class).getPort();
+    WebConf conf = ConfigFactory.load(WebConf.class);
+    this.port = conf.getPort() != null ? conf.getPort() : port;
     initServer();
     try {
       tomcat.start();
@@ -125,9 +126,6 @@ public class TomcatWebServer implements WebServer {
 
   @Override
   public int getPort() {
-    if (tomcat != null && tomcat.getConnector() != null) {
-      return tomcat.getConnector().getPort();
-    }
-    return 0;
+    return port;
   }
 }
