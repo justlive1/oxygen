@@ -90,8 +90,8 @@ public class JCache {
     if (config.getCacheImplClass() != null && config.getCacheImplClass().length() > 0) {
       try {
         Class<?> clazz = ClassUtils.forName(config.getCacheImplClass());
-        return (Cache) clazz.newInstance();
-      } catch (InstantiationException | IllegalAccessException e) {
+        return (Cache) clazz.getConstructor().newInstance();
+      } catch (Exception e) {
         throw Exceptions.wrap(e);
       }
     } else {

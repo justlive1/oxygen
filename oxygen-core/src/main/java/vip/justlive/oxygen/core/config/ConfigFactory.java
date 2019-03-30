@@ -212,8 +212,8 @@ public class ConfigFactory {
   protected static <T> T parse(Class<T> clazz, String prefix) {
     T obj;
     try {
-      obj = clazz.newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
+      obj = clazz.getConstructor().newInstance();
+    } catch (Exception e) {
       throw Exceptions.wrap(e);
     }
     Class<?> actualClass = ClassUtils.getCglibActualClass(clazz);

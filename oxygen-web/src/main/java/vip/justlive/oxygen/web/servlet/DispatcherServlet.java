@@ -160,7 +160,8 @@ public class DispatcherServlet extends HttpServlet {
     resp.setCharacterEncoding(response.getEncoding());
     response.getHeaders().forEach(resp::addHeader);
 
-    if (request.getCookie(Constants.SESSION_COOKIE_KEY) == null) {
+    if (!request.getSession().getId()
+        .equals(request.getCookieValue(Constants.SESSION_COOKIE_KEY))) {
       response.setCookie(Constants.SESSION_COOKIE_KEY, request.getSession().getId());
     }
     WebPlugin.SESSION_MANAGER.restoreSession(request.getSession());

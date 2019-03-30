@@ -43,10 +43,10 @@ public class WebContainerInitializer implements ServletContainerInitializer {
         for (Class<?> clazz : classes) {
           if (!clazz.isInterface() && !Modifier.isAbstract(clazz.getModifiers())
               && WebAppInitializer.class.isAssignableFrom(clazz)) {
-            initializers.add((WebAppInitializer) clazz.newInstance());
+            initializers.add((WebAppInitializer) clazz.getConstructor().newInstance());
           }
         }
-      } catch (InstantiationException | IllegalAccessException e) {
+      } catch (Exception e) {
         throw Exceptions.wrap(e);
       }
     }
