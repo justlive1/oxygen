@@ -98,7 +98,7 @@ public class DefaultClassScanner implements ClassScanner {
           .replace(CLASS_SUFFIX, Constants.EMPTY);
       try {
         classes.add(loader.loadClass(className));
-      } catch (ClassNotFoundException e) {
+      } catch (Throwable e) {
         log.warn("class [{}] cannot load ", className, e);
       }
     }
@@ -125,7 +125,7 @@ public class DefaultClassScanner implements ClassScanner {
               .replace(CLASS_SUFFIX, Constants.EMPTY);
           try {
             classes.add(loader.loadClass(className));
-          } catch (ClassNotFoundException e) {
+          } catch (Throwable e) {
             log.warn("class [{}] cannot load ", className, e);
           }
         }

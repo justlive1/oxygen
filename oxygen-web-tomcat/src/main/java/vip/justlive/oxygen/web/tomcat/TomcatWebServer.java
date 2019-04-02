@@ -107,6 +107,7 @@ public class TomcatWebServer implements WebServer {
     initServer();
     try {
       tomcat.start();
+      log.info("tomcat started and listened on port [{}]", this.port);
       startDaemonAwaitThread();
     } catch (LifecycleException e) {
       throw Exceptions.wrap(e);

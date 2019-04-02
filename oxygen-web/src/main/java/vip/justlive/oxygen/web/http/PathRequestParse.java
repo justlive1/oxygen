@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
+import vip.justlive.oxygen.web.router.Route;
 
 /**
  * path请求解析
@@ -28,7 +29,8 @@ public class PathRequestParse implements RequestParse {
 
   @Override
   public boolean supported(HttpServletRequest req) {
-    return !Request.current().getRoute().pathVars().isEmpty();
+    Route route = Request.current().getRoute();
+    return route != null && route.pathVars().isEmpty();
   }
 
   @Override

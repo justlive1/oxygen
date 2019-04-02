@@ -79,7 +79,7 @@ public class StaticRouteHandler implements RouteHandler {
   public void handle(RoutingContext ctx) {
     StaticSource source = findStaticResource(ctx.requestPath());
     if (source == null) {
-      throw new RuntimeException();
+      throw Exceptions.fail("not found");
     }
     if (log.isDebugEnabled()) {
       log.debug("handle static source [{}] for path [{}]", source.getPath(), ctx.requestPath());
