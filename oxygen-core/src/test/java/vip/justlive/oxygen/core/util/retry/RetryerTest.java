@@ -42,13 +42,13 @@ public class RetryerTest {
   @Test
   public void test02() {
     AtomicInteger ato = new AtomicInteger(0);
-    RetryBuilder.newBuilder().retryIfException(ArithmeticException.class).withMaxAttempt(4)
-        .build().call(() -> {
-      ato.incrementAndGet();
-      int i = 0;
-      System.out.println(10 / i);
-      return ato.get();
-    });
+    RetryBuilder.newBuilder().retryIfException(ArithmeticException.class).withMaxAttempt(4).build()
+        .call(() -> {
+          ato.incrementAndGet();
+          int i = 0;
+          System.out.println(10 / i);
+          return ato.get();
+        });
     Assert.assertEquals(4, ato.get());
   }
 
@@ -110,17 +110,16 @@ public class RetryerTest {
   public void test08() {
     AtomicInteger ato = new AtomicInteger(0);
     AtomicInteger fail = new AtomicInteger(0);
-    RetryBuilder.<Integer>newBuilder().withTimeLimit(10, TimeUnit.MILLISECONDS).retryIfException(
-        TimeoutException.class).withMaxAttempt(3).onFinalFail(r -> fail.incrementAndGet()).build()
-        .call(() -> {
-          ato.incrementAndGet();
-          ThreadUtils.sleep(20);
-          if (!Thread.currentThread().isInterrupted()) {
-            ato.incrementAndGet();
-          }
-          return 1;
-        });
-    Assert.assertEquals(3, ato.get());
+    RetryBuilder.<Integer>newBuilder().withTimeLimit(10, TimeUnit.MILLISECONDS)
+        .retryIfException(TimeoutException.class).withMaxAttempt(3)
+        .onFinalFail(r -> fail.incrementAndGet()).build().call(() -> {
+      ato.incrementAndGet();
+      ThreadUtils.sleep(20);
+      if (!Thread.currentThread().isInterrupted()) {
+        ato.incrementAndGet();
+      }
+      return 1;
+    });
     Assert.assertEquals(1, fail.get());
   }
 

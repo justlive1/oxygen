@@ -72,7 +72,7 @@ public class Response implements Serializable {
   /**
    * result
    */
-  private Result result;
+  private transient Result result;
 
   /**
    * 设置线程值response

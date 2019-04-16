@@ -90,8 +90,8 @@ public class ClassUtils {
   public static <T> Class<T> wrap(Class<T> type) {
     Checks.notNull(type);
     // cast is safe: long.class and Long.class are both of type Class<Long>
-    @SuppressWarnings("unchecked")
-    Class<T> wrapped = (Class<T>) PRIMITIVE_TO_WRAPPER_TYPE.get(type);
+    @SuppressWarnings("unchecked") Class<T> wrapped = (Class<T>) PRIMITIVE_TO_WRAPPER_TYPE
+        .get(type);
     return (wrapped == null) ? type : wrapped;
   }
 
@@ -105,8 +105,8 @@ public class ClassUtils {
   public static <T> Class<T> unwrap(Class<T> type) {
     Checks.notNull(type);
     // cast is safe: long.class and Long.class are both of type Class<Long>
-    @SuppressWarnings("unchecked")
-    Class<T> unwrapped = (Class<T>) WRAPPER_TO_PRIMITIVE_TYPE.get(type);
+    @SuppressWarnings("unchecked") Class<T> unwrapped = (Class<T>) WRAPPER_TO_PRIMITIVE_TYPE
+        .get(type);
     return (unwrapped == null) ? type : unwrapped;
   }
 
@@ -293,7 +293,11 @@ public class ClassUtils {
   public static Set<Method> getMethodsAnnotatedWith(Class<?> clazz,
       Class<? extends Annotation> annotation) {
     Set<Method> methods = new HashSet<>();
-    for (Method method : getCglibActualClass(clazz).getDeclaredMethods()) {
+    Class<?> actualClass = getCglibActualClass(clazz);
+    if (actualClass == null) {
+      return methods;
+    }
+    for (Method method : actualClass.getDeclaredMethods()) {
       if (method.isAnnotationPresent(annotation)) {
         methods.add(method);
       }

@@ -13,8 +13,8 @@
  */
 package vip.justlive.oxygen.web.http;
 
+import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,12 +24,14 @@ import lombok.Setter;
  * @author wubo
  */
 @Getter
-public class Session {
+public class Session implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private String id;
   @Setter
   private long expired;
-  private Map<String, Object> data = new HashMap<>(4);
+  private HashMap<String, Object> data = new HashMap<>(4);
   private transient boolean change;
   private transient SessionManager manager;
 

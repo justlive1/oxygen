@@ -82,14 +82,6 @@ public class SnowflakeIdWorker {
   private long lastTimestamp = -1L;
   private boolean isClock = false;
 
-  private static class InstanceHolder {
-
-    private InstanceHolder() {
-    }
-
-    static final SnowflakeIdWorker INSTANCE = new SnowflakeIdWorker(0, 0);
-  }
-
   /**
    * 基于Snowflake创建分布式ID生成器
    * <p>
@@ -112,10 +104,6 @@ public class SnowflakeIdWorker {
     this.dataCenterId = dataCenterId;
   }
 
-  public void setClock(boolean clock) {
-    isClock = clock;
-  }
-
   /**
    * 获取id 使用默认worker
    *
@@ -123,6 +111,10 @@ public class SnowflakeIdWorker {
    */
   public static long defaultNextId() {
     return InstanceHolder.INSTANCE.nextId();
+  }
+
+  public void setClock(boolean clock) {
+    isClock = clock;
   }
 
   /**
@@ -141,8 +133,9 @@ public class SnowflakeIdWorker {
           this.wait(offset << 1);
           timestamp = this.timeGen();
           if (timestamp < lastTimestamp) {
-            throw new IllegalStateException(String.format(
-                "Clock moved backwards.  Refusing to generate id for %d milliseconds", offset));
+            throw new IllegalStateException(String
+                .format("Clock moved backwards.  Refusing to generate id for %d milliseconds",
+                    offset));
           }
         } catch (Exception e) {
           throw Exceptions.wrap(e);
@@ -203,6 +196,14 @@ public class SnowflakeIdWorker {
     }
   }
 
+  private static class InstanceHolder {
+
+    static final SnowflakeIdWorker INSTANCE = new SnowflakeIdWorker(0, 0);
+
+    private InstanceHolder() {
+    }
+  }
+
   /**
    * 高并发场景下System.currentTimeMillis()的性能问题的优化
    * <p>
@@ -231,16 +232,12 @@ public class SnowflakeIdWorker {
       scheduleClockUpdating();
     }
 
-    private static class InstanceHolder {
-
-      private InstanceHolder() {
-      }
-
-      static final SystemClock INSTANCE = new SystemClock(1);
-    }
-
     private static SystemClock instance() {
       return InstanceHolder.INSTANCE;
+    }
+
+    static long now() {
+      return instance().currentTimeMillis();
     }
 
     private void scheduleClockUpdating() {
@@ -256,8 +253,12 @@ public class SnowflakeIdWorker {
       return now.get();
     }
 
-    static long now() {
-      return instance().currentTimeMillis();
+    private static class InstanceHolder {
+
+      static final SystemClock INSTANCE = new SystemClock(1);
+
+      private InstanceHolder() {
+      }
     }
 
   }

@@ -49,7 +49,7 @@ public class FatJarWebXmlListener implements LifecycleListener {
 
       // 使用embedded tomcat时 WEB-INF放在了classpath下
       createWebResource(context, resources, Constants.WEB_INF);
-      String customPath = ConfigFactory.load(WebConf.class).getJspPrefix();
+      String customPath = ConfigFactory.load(WebConf.class).getJspViewPrefix();
       if (!customPath.startsWith(Constants.WEB_INF)) {
         createWebResource(context, resources, customPath);
       }

@@ -27,10 +27,10 @@ import vip.justlive.oxygen.jdbc.config.DataSourceConf.TYPE;
  */
 public class HikariBuilder {
 
+  private static final boolean ENABLED = ClassUtils.isPresent("com.zaxxer.hikari.HikariDataSource");
+
   HikariBuilder() {
   }
-
-  private static final boolean ENABLED = ClassUtils.isPresent("com.zaxxer.hikari.HikariDataSource");
 
   /**
    * 是否可用

@@ -53,7 +53,7 @@ public class SessionManager {
    * @param session session
    */
   public void restoreSession(Session session) {
-    if (session.isChange()) {
+    if (session != null && session.isChange()) {
       store.put(session.getId(), session, session.getExpired());
     }
   }

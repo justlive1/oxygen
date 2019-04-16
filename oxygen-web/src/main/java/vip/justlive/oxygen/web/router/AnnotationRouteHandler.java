@@ -33,15 +33,15 @@ public class AnnotationRouteHandler implements RouteHandler {
 
   private static final List<ParamBinder> BINDERS;
 
-  private final Object router;
-  private final Method proxyMethod;
-  private final Method method;
-  private final DataBinder[] dataBinders;
-
   static {
     BINDERS = ServiceLoaderUtils.loadServices(ParamBinder.class);
     Collections.sort(BINDERS);
   }
+
+  private final Object router;
+  private final Method proxyMethod;
+  private final Method method;
+  private final DataBinder[] dataBinders;
 
   public AnnotationRouteHandler(Object router, Method proxyMethod, Method method) {
     this.router = router;

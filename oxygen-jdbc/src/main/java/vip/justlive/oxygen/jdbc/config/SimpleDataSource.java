@@ -64,13 +64,13 @@ public class SimpleDataSource implements DataSource {
   }
 
   @Override
-  public void setLoginTimeout(int seconds) {
-    DriverManager.setLoginTimeout(seconds);
+  public int getLoginTimeout() {
+    return DriverManager.getLoginTimeout();
   }
 
   @Override
-  public int getLoginTimeout() {
-    return DriverManager.getLoginTimeout();
+  public void setLoginTimeout(int seconds) {
+    DriverManager.setLoginTimeout(seconds);
   }
 
   @Override

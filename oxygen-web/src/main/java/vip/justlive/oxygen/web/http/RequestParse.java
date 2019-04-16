@@ -90,8 +90,8 @@ public interface RequestParse extends Order {
    * @return body
    */
   default String readBody(HttpServletRequest req) {
-    try (ByteArrayOutputStream os = new ByteArrayOutputStream();
-        InputStream is = req.getInputStream()) {
+    try (ByteArrayOutputStream os = new ByteArrayOutputStream(); InputStream is = req
+        .getInputStream()) {
       int b;
       while ((b = is.read()) != -1) {
         os.write(b);

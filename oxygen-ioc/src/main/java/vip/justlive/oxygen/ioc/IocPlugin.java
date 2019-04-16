@@ -105,16 +105,6 @@ public class IocPlugin implements Plugin {
     return true;
   }
 
-  @Override
-  public int order() {
-    return Integer.MIN_VALUE + 10;
-  }
-
-  @Override
-  public void start() {
-    ioc();
-  }
-
   private static Object dependencyInstance(Class<?> clazz, Constructor<?> constructor) {
     Parameter[] params = constructor.getParameters();
     Object[] args = new Object[params.length];
@@ -129,6 +119,16 @@ public class IocPlugin implements Plugin {
       }
     }
     return BEAN_PROXY.proxy(clazz, args);
+  }
+
+  @Override
+  public int order() {
+    return Integer.MIN_VALUE + 10;
+  }
+
+  @Override
+  public void start() {
+    ioc();
   }
 
   @Override

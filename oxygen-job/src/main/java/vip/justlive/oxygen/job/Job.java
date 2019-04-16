@@ -29,6 +29,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Job implements Runnable {
 
+  private final Object target;
+  private final Method method;
+  private final AtomicLong runCount = new AtomicLong();
+  private final AtomicLong nextPlannedExecution = new AtomicLong();
+  private TYPE type;
+  private Long fixedDelay;
+  private Long fixedRate;
+  private Long initialDelay;
+  private String cron;
+  private Boolean async;
+  private CronExpression cronExpression;
+  private Instant startAt;
+  public Job(Object target, Method method) {
+    this.target = target;
+    this.method = method;
+  }
+
   void scheduleCron() {
     if (cron != null && cronExpression != null) {
       Date now = new Date();
@@ -48,24 +65,6 @@ public class Job implements Runnable {
       JobPlugin.executorService
           .schedule(this, nextDate.getTime() - now.getTime(), TimeUnit.MILLISECONDS);
     }
-  }
-
-  private final Object target;
-  private final Method method;
-  private TYPE type;
-  private Long fixedDelay;
-  private Long fixedRate;
-  private Long initialDelay;
-  private String cron;
-  private Boolean async;
-  private CronExpression cronExpression;
-  private final AtomicLong runCount = new AtomicLong();
-  private final AtomicLong nextPlannedExecution = new AtomicLong();
-  private Instant startAt;
-
-  public Job(Object target, Method method) {
-    this.target = target;
-    this.method = method;
   }
 
   public Job configFixedDelay(long fixedDelay, long initialDelay) {
@@ -128,6 +127,25 @@ public class Job implements Runnable {
     scheduleCron();
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("Job: type=").append(type);
+    sb.append(", class=").append(target.getClass()).append(", method=").append(method.getName());
+    if (type == TYPE.CRON) {
+      sb.append(",cron=").append(cron);
+    } else if (type == TYPE.ON_APPLICATION_START) {
+      sb.append(",async=").append(async);
+    } else {
+      if (type == TYPE.FIXED_DELAY) {
+        sb.append(",fixedDelay=").append(fixedDelay);
+      } else if (type == TYPE.FIXED_RATE) {
+        sb.append(",fixedRate=").append(fixedRate);
+      }
+      sb.append(",initialDelay=").append(initialDelay);
+    }
+    return sb.toString();
+  }
+
   /**
    * job类型
    */
@@ -148,24 +166,5 @@ public class Job implements Runnable {
      * when application start
      */
     ON_APPLICATION_START
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("Job: type=").append(type);
-    sb.append(", class=").append(target.getClass()).append(", method=").append(method.getName());
-    if (type == TYPE.CRON) {
-      sb.append(",cron=").append(cron);
-    } else if (type == TYPE.ON_APPLICATION_START) {
-      sb.append(",async=").append(async);
-    } else {
-      if (type == TYPE.FIXED_DELAY) {
-        sb.append(",fixedDelay=").append(fixedDelay);
-      } else if (type == TYPE.FIXED_RATE) {
-        sb.append(",fixedRate=").append(fixedRate);
-      }
-      sb.append(",initialDelay=").append(initialDelay);
-    }
-    return sb.toString();
   }
 }

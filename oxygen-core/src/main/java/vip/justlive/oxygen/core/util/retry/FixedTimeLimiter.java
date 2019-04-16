@@ -32,8 +32,7 @@ public class FixedTimeLimiter<V> implements TimeLimiter<V> {
   private final TimeUnit timeUnit;
   private final ExecutorService executorService;
 
-  public FixedTimeLimiter(long timeout, TimeUnit timeUnit,
-      ExecutorService executorService) {
+  public FixedTimeLimiter(long timeout, TimeUnit timeUnit, ExecutorService executorService) {
     if (timeout <= 0) {
       throw new IllegalArgumentException(String.format("timeout must be positive:%s", timeout));
     }

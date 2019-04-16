@@ -71,9 +71,8 @@ public class FatJarContextConfig extends ContextConfig {
       String entryName = jar.getEntryName();
       while (entryName != null) {
         if (entryName.startsWith(Constants.META_INF_RESOURCES)) {
-          context.getResources()
-              .createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR,
-                  Constants.ROOT_PATH, url, Constants.META_INF_RESOURCES_PATH);
+          context.getResources().createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR,
+              Constants.ROOT_PATH, url, Constants.META_INF_RESOURCES_PATH);
           break;
         }
         jar.nextEntry();

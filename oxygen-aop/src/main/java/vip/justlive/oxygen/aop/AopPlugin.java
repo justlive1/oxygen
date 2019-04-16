@@ -32,7 +32,7 @@ public class AopPlugin implements Plugin {
 
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 20;
+    return Integer.MIN_VALUE + 100;
   }
 
   @Override

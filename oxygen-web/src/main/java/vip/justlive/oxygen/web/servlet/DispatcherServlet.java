@@ -37,6 +37,7 @@ import vip.justlive.oxygen.web.http.HttpMethod;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.RequestParse;
 import vip.justlive.oxygen.web.http.Response;
+import vip.justlive.oxygen.web.result.JspViewResultHandler;
 import vip.justlive.oxygen.web.result.Result;
 import vip.justlive.oxygen.web.result.ResultHandler;
 import vip.justlive.oxygen.web.router.Route;
@@ -110,13 +111,13 @@ public class DispatcherServlet extends HttpServlet {
         return;
       }
       handler.handle(ctx);
-      copyResponse(request, response, resp);
       handleResult(ctx, response.getResult());
       invokeAfter(ctx);
     } catch (Exception e) {
       handlerError(ctx, e);
     } finally {
       invokeFinished(ctx);
+      copyResponse(request, response, resp);
       copyStream(response, resp);
       Request.clear();
       Response.clear();
@@ -126,6 +127,9 @@ public class DispatcherServlet extends HttpServlet {
   private void handleResult(RoutingContext ctx, Result result) {
     for (ResultHandler handler : RESULT_HANDLERS) {
       if (handler.support(result)) {
+        if (handler instanceof JspViewResultHandler) {
+          copyResponse(ctx.request(), ctx.response(), ctx.response().getOriginalResponse());
+        }
         handler.apply(ctx, result);
         break;
       }
@@ -161,7 +165,7 @@ public class DispatcherServlet extends HttpServlet {
     resp.setCharacterEncoding(response.getEncoding());
     response.getHeaders().forEach(resp::addHeader);
 
-    if (!request.getSession().getId()
+    if (request.getSession() != null && !request.getSession().getId()
         .equals(request.getCookieValue(Constants.SESSION_COOKIE_KEY))) {
       response.setCookie(Constants.SESSION_COOKIE_KEY, request.getSession().getId());
     }

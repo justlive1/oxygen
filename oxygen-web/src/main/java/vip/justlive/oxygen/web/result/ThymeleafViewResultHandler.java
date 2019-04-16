@@ -13,8 +13,10 @@
  */
 package vip.justlive.oxygen.web.result;
 
+import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
@@ -28,16 +30,20 @@ public class ThymeleafViewResultHandler implements ResultHandler {
 
   private static final boolean THYMELEAF_SUPPORTED = ClassUtils
       .isPresent("org.thymeleaf.Thymeleaf");
-  private static final String SUFFIX = ".html";
 
+  private final String suffix;
   private ThymeleafResolver resolver;
+
+  public ThymeleafViewResultHandler() {
+    this.suffix = ConfigFactory.load(WebConf.class).getThymeleafViewSuffix();
+  }
 
   @Override
   public boolean support(Result result) {
     if (THYMELEAF_SUPPORTED && result != null && ViewResult.class
         .isAssignableFrom(result.getClass())) {
       ViewResult data = (ViewResult) result;
-      return data.getPath() != null && data.getPath().endsWith(SUFFIX);
+      return data.getPath() != null && data.getPath().endsWith(suffix);
     }
     return false;
   }

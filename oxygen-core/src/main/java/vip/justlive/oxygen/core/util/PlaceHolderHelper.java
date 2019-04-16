@@ -94,6 +94,18 @@ public class PlaceHolderHelper {
     return DEFAULT_HELPER;
   }
 
+  private static boolean substringMatch(CharSequence str, int index, CharSequence substring) {
+    if (index + substring.length() > str.length()) {
+      return false;
+    }
+    for (int i = 0; i < substring.length(); i++) {
+      if (str.charAt(index + i) != substring.charAt(i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /**
    * 替换所有占位格式 {@code ${name}}
    *
@@ -114,12 +126,13 @@ public class PlaceHolderHelper {
     while (startIndex != -1) {
       int endIndex = findPlaceholderEndIndex(result, startIndex);
       if (endIndex != -1) {
-        String placeholder =
-            result.substring(startIndex + this.placeholderPrefix.length(), endIndex);
+        String placeholder = result
+            .substring(startIndex + this.placeholderPrefix.length(), endIndex);
         String originalPlaceholder = placeholder;
         if (!visitedPlaceholders.add(originalPlaceholder)) {
-          throw new IllegalArgumentException("Circular placeholder reference '"
-              + originalPlaceholder + "' in property definitions");
+          throw new IllegalArgumentException(
+              "Circular placeholder reference '" + originalPlaceholder
+                  + "' in property definitions");
         }
         // 递归
         placeholder = parseStringValue(placeholder, properties, visitedPlaceholders);
@@ -133,8 +146,8 @@ public class PlaceHolderHelper {
           startIndex = result.indexOf(this.placeholderPrefix, startIndex + propVal.length());
         } else if (this.ignoreUnresolvablePlaceholders) {
           // 继续解析
-          startIndex =
-              result.indexOf(this.placeholderPrefix, endIndex + this.placeholderSuffix.length());
+          startIndex = result
+              .indexOf(this.placeholderPrefix, endIndex + this.placeholderSuffix.length());
         } else {
           throw new IllegalArgumentException(String
               .format("Could not resolve placeholder '%s' in value '%s'", placeholder, value));
@@ -181,18 +194,6 @@ public class PlaceHolderHelper {
       }
     }
     return -1;
-  }
-
-  private static boolean substringMatch(CharSequence str, int index, CharSequence substring) {
-    if (index + substring.length() > str.length()) {
-      return false;
-    }
-    for (int i = 0; i < substring.length(); i++) {
-      if (str.charAt(index + i) != substring.charAt(i)) {
-        return false;
-      }
-    }
-    return true;
   }
 
 }

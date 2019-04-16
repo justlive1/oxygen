@@ -15,3 +15,4 @@ vip.justlive.oxygen.web.result.JsonResultHandler
 vip.justlive.oxygen.web.result.RedirectResultHandler
 vip.justlive.oxygen.web.result.ThymeleafViewResultHandler
 vip.justlive.oxygen.web.result.JspViewResultHandler
+vip.justlive.oxygen.web.result.SimpleViewResultHandler

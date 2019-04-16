@@ -31,12 +31,10 @@ public abstract class BaseEncoder implements Encoder {
   public static final String PREFIX = "{";
   public static final String SUFFIX = "}";
   public static final String EMPTY = "";
-
+  private final SecureRandom random = new SecureRandom();
   protected int iterations = 1;
   protected boolean useSalt = false;
   protected int saltKeyLength = 8;
-
-  private final SecureRandom random = new SecureRandom();
 
   @Override
   public String encode(String source) {

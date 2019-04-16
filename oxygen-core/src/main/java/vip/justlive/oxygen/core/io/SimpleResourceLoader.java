@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import vip.justlive.oxygen.core.util.ClassUtils;
 
 /**
  * 简单资源加载器
@@ -29,6 +30,7 @@ public class SimpleResourceLoader extends AbstractResourceLoader implements Sour
 
   public SimpleResourceLoader(String path) {
     this.path = path;
+    this.loader = ClassUtils.getDefaultClassLoader();
     init();
   }
 

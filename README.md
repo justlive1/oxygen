@@ -63,10 +63,15 @@
 创建`Maven`项目
 
 ```xml
-<!-- 使用内嵌tomcat启动 -->
+<!-- tomcat,jetty,undertow -->
+<properties>
+  <oxygen.server>-tomcat</oxygen.server>
+</properties>
+
+<!-- 使用内嵌容器启动 -->
 <dependency>
     <groupId>vip.justlive</groupId>
-    <artifactId>oxygen-web-tomcat</artifactId>
+    <artifactId>oxygen-web${oxygen.server}</artifactId>
     <version>${oxygen.version}</version>
 </dependency>
 ```
@@ -580,6 +585,12 @@ web.static.cache=3600
 web.view.jsp.prefix=WEB-INF
 # thymeleaf 路径前缀
 web.view.thymeleaf.prefix=/templates
+# thymeleaf 视图后缀
+web.view.thymeleaf.suffix=.html
+# 内置简单视图处理 路径前缀
+web.view.simple.prefix=/templates
+# 内置简单视图处理 视图后缀
+web.view.simple.suffix=.htm
 # 是否开启模板缓存
 web.view.cache.enabled=true
 
@@ -602,6 +613,79 @@ i18n.default.country=CN
 i18n.param.key=locale
 # i18n Session key
 i18n.session.key=I18N_SESSION_LOCALE
+
+
+##### jetty
+# 虚拟主机
+server.jetty.virtualHosts=
+# 连接器在空闲状态持续该时间后（单位毫秒）关闭
+server.jetty.idleTimeout=30000
+# 温和的停止一个连接器前等待的时间（毫秒）
+server.jetty.stopTimeout=30000
+# 等待处理的连接队列大小
+server.jetty.acceptQueueSize=
+# 允许Server socket被重绑定，即使在TIME_WAIT状态
+server.jetty.reuseAddress=true
+# 是否启用servlet3.0特性
+server.jetty.configurationDiscovered=true
+# 最大表单数据大小
+server.jetty.maxFormContentSize=256 * 1024 * 1024
+# 最大表单键值对数量
+server.jetty.maxFormKeys=200
+
+
+##### tomcat
+# 最大请求队列数
+server.tomcat.acceptCount=100
+# 最大连接数
+server.tomcat.maxConnections=5000
+# 最大工作线程数
+server.tomcat.maxThreads=200
+# 最小线程数
+server.tomcat.minSpareThreads=10
+# 最大请求头数据大小
+server.tomcat.maxHttpHeaderSize=8 * 1024
+# 最大表单数据大小
+server.tomcat.maxHttpPostSize=2 * 1024 * 1024
+# 连接超时
+server.tomcat.connectionTimeout=20000
+# URI解码编码
+server.tomcat.uriEncoding=utf-8
+# 调用backgroundProcess延迟时间
+server.tomcat.backgroundProcessorDelay=10
+# 是否启用访问日志
+server.tomcat.accessLogEnabled=false
+# 访问日志是否开启缓冲
+server.tomcat.accessLogBuffered=true
+# 是否设置请求属性，ip、host、protocol、port
+server.tomcat.accessLogRequestAttributesEnabled=false
+# 每日日志格式
+server.tomcat.accessLogFileFormat=.yyyy-MM-dd
+# 日志格式
+server.tomcat.accessLogPattern=common
+
+
+
+##### undertow
+# 主机名
+server.undertow.host=0.0.0.0
+# io线程数
+server.undertow.ioThreads=
+# worker线程数
+server.undertow.workerThreads=
+# 是否开启gzip压缩
+server.undertow.gzipEnabled=false
+# gzip处理优先级
+server.undertow.gzipPriority=100
+# 压缩级别，默认值 -1。 可配置 1 到 9。 1 拥有最快压缩速度，9 拥有最高压缩率
+server.undertow.gzipLevel=-1
+# 触发压缩的最小内容长度
+server.undertow.gzipMinLength=1024
+# url是否允许特殊字符
+server.undertow.allowUnescapedCharactersInUrl=true
+# 是否开启http2
+server.undertow.http2enabled=false
+
 ```
 
 ## 联系信息

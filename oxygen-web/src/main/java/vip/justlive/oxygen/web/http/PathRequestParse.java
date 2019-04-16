@@ -30,7 +30,7 @@ public class PathRequestParse implements RequestParse {
   @Override
   public boolean supported(HttpServletRequest req) {
     Route route = Request.current().getRoute();
-    return route != null && route.pathVars().isEmpty();
+    return route != null && !route.pathVars().isEmpty();
   }
 
   @Override

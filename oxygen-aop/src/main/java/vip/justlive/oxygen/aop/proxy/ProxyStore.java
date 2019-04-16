@@ -83,11 +83,10 @@ public class ProxyStore {
 
   private static void handleMethod(Method method) {
     INTERCEPTORS.forEach((k, v) -> v.forEach(interceptor -> {
-          if (interceptor.match(method)) {
-            addInterceptor(k, method, interceptor);
-          }
-        })
-    );
+      if (interceptor.match(method)) {
+        addInterceptor(k, method, interceptor);
+      }
+    }));
   }
 
 

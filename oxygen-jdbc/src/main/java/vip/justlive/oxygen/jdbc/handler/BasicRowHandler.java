@@ -102,7 +102,8 @@ public class BasicRowHandler implements RowHandler {
   }
 
   private <T> T fillBeanProperty(ResultSet rs, Class<T> type, PropertyDescriptor[] props,
-      int[] propertyArray) throws Exception {
+      int[] propertyArray)
+      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, SQLException {
     T bean = type.getConstructor().newInstance();
     for (int i = 1; i < propertyArray.length; i++) {
       if (propertyArray[i] == PROPERTY_NOT_FOUND) {

@@ -26,15 +26,6 @@ import java.util.concurrent.TimeUnit;
 public interface TimeLimiter<V> {
 
   /**
-   * 执行
-   *
-   * @param callable Callable
-   * @return result
-   * @throws Exception any exception from this invocation
-   */
-  V call(Callable<V> callable) throws Exception;
-
-  /**
    * 无限制
    *
    * @param <V> 泛型
@@ -57,4 +48,13 @@ public interface TimeLimiter<V> {
       ExecutorService executorService) {
     return new FixedTimeLimiter<>(timeout, timeUnit, executorService);
   }
+
+  /**
+   * 执行
+   *
+   * @param callable Callable
+   * @return result
+   * @throws Exception any exception from this invocation
+   */
+  V call(Callable<V> callable) throws Exception;
 }

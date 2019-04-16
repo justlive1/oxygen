@@ -64,13 +64,31 @@ public class WebConf {
    * web jsp路径前缀
    */
   @Value("${web.view.jsp.prefix:WEB-INF}")
-  private String jspPrefix;
+  private String jspViewPrefix;
 
   /**
    * thymeleaf 路径前缀
    */
   @Value("${web.view.thymeleaf.prefix:/templates}")
-  private String thymeleafPrefix;
+  private String thymeleafViewPrefix;
+
+  /**
+   * thymeleaf 视图后缀
+   */
+  @Value("${web.view.thymeleaf.suffix:.html}")
+  private String thymeleafViewSuffix;
+
+  /**
+   * simple 路径前缀
+   */
+  @Value("${web.view.simple.prefix:/templates}")
+  private String simpleViewPrefix;
+
+  /**
+   * simple 视图后缀
+   */
+  @Value("${web.view.simple.suffix:.htm}")
+  private String simpleViewSuffix;
 
   /**
    * view cache

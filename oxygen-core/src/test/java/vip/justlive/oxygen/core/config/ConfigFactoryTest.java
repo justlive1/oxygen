@@ -10,16 +10,6 @@ import org.junit.Test;
  */
 public class ConfigFactoryTest {
 
-  @Data
-  @ValueConfig("fc")
-  static class Prop {
-
-    @Value("${fc.name}")
-    private String name;
-
-    private Integer age;
-  }
-
   @Before
   public void before() {
     ConfigFactory.clear();
@@ -48,6 +38,16 @@ public class ConfigFactoryTest {
 
     Assert.assertNotNull(prop);
     Assert.assertEquals(new Integer(19), prop.getAge());
+  }
+
+  @Data
+  @ValueConfig("fc")
+  static class Prop {
+
+    @Value("${fc.name}")
+    private String name;
+
+    private Integer age;
   }
 
 }

@@ -22,15 +22,13 @@ import vip.justlive.oxygen.ioc.annotation.Inject;
 public class DepBean implements Inter {
 
   private final NoDepBean noDepBean;
+  @Value("${val.a:xxx}")
+  private String val;
 
   @Inject
   public DepBean(NoDepBean noDepBean) {
     this.noDepBean = noDepBean;
   }
-
-  @Value("${val.a:xxx}")
-  private String val;
-
 
   @Override
   public void print() {

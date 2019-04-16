@@ -105,8 +105,7 @@ public class ThreadUtils {
    * @param nameFormat 线程名称format
    * @return 任务池
    */
-  public static ScheduledExecutorService newScheduledExecutor(int corePoolSize,
-      String nameFormat) {
+  public static ScheduledExecutorService newScheduledExecutor(int corePoolSize, String nameFormat) {
     return newScheduledExecutor(corePoolSize, nameFormat, new ThreadPoolExecutor.AbortPolicy());
   }
 

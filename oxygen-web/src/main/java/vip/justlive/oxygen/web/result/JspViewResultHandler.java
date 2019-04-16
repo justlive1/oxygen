@@ -32,7 +32,7 @@ public class JspViewResultHandler implements ResultHandler {
   private final String jspPrefix;
 
   public JspViewResultHandler() {
-    jspPrefix = ConfigFactory.load(WebConf.class).getJspPrefix();
+    jspPrefix = ConfigFactory.load(WebConf.class).getJspViewPrefix();
   }
 
   @Override

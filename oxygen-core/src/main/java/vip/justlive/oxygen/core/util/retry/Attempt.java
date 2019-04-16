@@ -44,6 +44,18 @@ public class Attempt<T> {
    */
   private Exception exception;
 
+  public Attempt(long attemptNumber, T result, long millsAfterFirstAttempt) {
+    this.attemptNumber = attemptNumber;
+    this.result = result;
+    this.millsAfterFirstAttempt = millsAfterFirstAttempt;
+  }
+
+  public Attempt(long attemptNumber, Exception exception, long millsAfterFirstAttempt) {
+    this.attemptNumber = attemptNumber;
+    this.exception = exception;
+    this.millsAfterFirstAttempt = millsAfterFirstAttempt;
+  }
+
   /**
    * 存在异常
    *
@@ -63,18 +75,6 @@ public class Attempt<T> {
       throw new IllegalStateException("当前尝试存在异常，没有返回值", exception);
     }
     return result;
-  }
-
-  public Attempt(long attemptNumber, T result, long millsAfterFirstAttempt) {
-    this.attemptNumber = attemptNumber;
-    this.result = result;
-    this.millsAfterFirstAttempt = millsAfterFirstAttempt;
-  }
-
-  public Attempt(long attemptNumber, Exception exception, long millsAfterFirstAttempt) {
-    this.attemptNumber = attemptNumber;
-    this.exception = exception;
-    this.millsAfterFirstAttempt = millsAfterFirstAttempt;
   }
 
 }

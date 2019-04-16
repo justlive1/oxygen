@@ -55,13 +55,10 @@ import vip.justlive.oxygen.core.constant.Constants;
  */
 public class FatJarScanner implements JarScanner {
 
-  private final Log log = LogFactory.getLog(FatJarScanner.class);
-
   /**
    * The string resources for this package.
    */
   private static final StringManager SM = StringManager.getManager("org.apache.tomcat.util.scan");
-
   private static final Set<ClassLoader> CLASSLOADER_HIERARCHY;
 
   static {
@@ -75,10 +72,25 @@ public class FatJarScanner implements JarScanner {
     CLASSLOADER_HIERARCHY = Collections.unmodifiableSet(cls);
   }
 
+  private final Log log = LogFactory.getLog(FatJarScanner.class);
   /**
    * Controls the filtering of the results from the scan for JARs
    */
   private JarScanFilter jarScanFilter = new StandardJarScanFilter();
+
+  /**
+   * Since class loader hierarchies can get complicated, this method attempts to apply the following
+   * rule: A class loader is a web application class loader unless it loaded this class
+   * (StandardJarScanner) or is a parent of the class loader that loaded this class.
+   *
+   * This should mean: the webapp class loader is an application class loader the shared class
+   * loader is an application class loader the server class loader is not an application class
+   * loader the common class loader is not an application class loader the system class loader is
+   * not an application class loader the bootstrap class loader is not an application class loader
+   */
+  private static boolean isWebappClassLoader(ClassLoader classLoader) {
+    return !CLASSLOADER_HIERARCHY.contains(classLoader);
+  }
 
   @Override
   public JarScanFilter getJarScanFilter() {
@@ -100,8 +112,7 @@ public class FatJarScanner implements JarScanner {
    * @param callback The handler to process any JARs found
    */
   @Override
-  public void scan(JarScanType scanType, ServletContext context,
-      JarScannerCallback callback) {
+  public void scan(JarScanType scanType, ServletContext context, JarScannerCallback callback) {
 
     if (log.isTraceEnabled()) {
       log.trace(SM.getString("jarScan.webinflibStart"));
@@ -193,8 +204,7 @@ public class FatJarScanner implements JarScanner {
           isWebapp = isWebappClassLoader(classLoader);
         }
 
-        classPathUrlsToProcess.addAll(
-            Arrays.asList(((URLClassLoader) classLoader).getURLs()));
+        classPathUrlsToProcess.addAll(Arrays.asList(((URLClassLoader) classLoader).getURLs()));
 
         processURLs(scanType, callback, processedURLs, isWebapp, classPathUrlsToProcess);
       }
@@ -211,7 +221,6 @@ public class FatJarScanner implements JarScanner {
       processURLs(scanType, callback, processedURLs, false, classPathUrlsToProcess);
     }
   }
-
 
   private void processURLs(JarScanType scanType, JarScannerCallback callback,
       Set<URL> processedURLs, boolean isWebapp, Deque<URL> classPathUrlsToProcess) {
@@ -234,7 +243,6 @@ public class FatJarScanner implements JarScanner {
     }
   }
 
-
   private void addClassPath(Deque<URL> classPathUrlsToProcess) {
     String classPath = System.getProperty("java.class.path");
 
@@ -253,28 +261,11 @@ public class FatJarScanner implements JarScanner {
     }
   }
 
-
-  /**
-   * Since class loader hierarchies can get complicated, this method attempts to apply the following
-   * rule: A class loader is a web application class loader unless it loaded this class
-   * (StandardJarScanner) or is a parent of the class loader that loaded this class.
-   *
-   * This should mean: the webapp class loader is an application class loader the shared class
-   * loader is an application class loader the server class loader is not an application class
-   * loader the common class loader is not an application class loader the system class loader is
-   * not an application class loader the bootstrap class loader is not an application class loader
-   */
-  private static boolean isWebappClassLoader(ClassLoader classLoader) {
-    return !CLASSLOADER_HIERARCHY.contains(classLoader);
-  }
-
-
   /**
    * Scan a URL for JARs with the optional extensions to look at all files and all directories.
    */
-  private void process(JarScanType scanType, JarScannerCallback callback,
-      URL url, String webappPath, boolean isWebapp, Deque<URL> classPathUrlsToProcess)
-      throws IOException {
+  private void process(JarScanType scanType, JarScannerCallback callback, URL url,
+      String webappPath, boolean isWebapp, Deque<URL> classPathUrlsToProcess) throws IOException {
 
     if (log.isTraceEnabled()) {
       log.trace(SM.getString("jarScan.jarUrlStart", url));
@@ -291,9 +282,8 @@ public class FatJarScanner implements JarScanner {
     }
   }
 
-  private void processFile(JarScanType scanType, JarScannerCallback callback,
-      URL url, String webappPath, boolean isWebapp, Deque<URL> classPathUrlsToProcess)
-      throws IOException {
+  private void processFile(JarScanType scanType, JarScannerCallback callback, URL url,
+      String webappPath, boolean isWebapp, Deque<URL> classPathUrlsToProcess) throws IOException {
     try {
       File f = new File(url.toURI());
       if (f.isFile()) {

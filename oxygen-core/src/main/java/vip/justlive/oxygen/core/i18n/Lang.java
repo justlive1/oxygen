@@ -45,47 +45,6 @@ public class Lang extends AbstractResourceLoader implements Plugin {
     init();
   }
 
-  @Override
-  public void init() {
-    this.loader = ClassUtils.getDefaultClassLoader();
-    this.ignoreNotFound = true;
-  }
-
-  @Override
-  public int order() {
-    return Integer.MIN_VALUE + 5;
-  }
-
-  /**
-   * 加载i18n文件
-   *
-   * @param locations 路径
-   */
-  public void load(String... locations) {
-    List<SourceResource> res = this.parse(locations);
-    for (SourceResource resource : res) {
-      this.resources.add(resource);
-      String[] arr = resource.path().split(Constants.UNDERSCORE);
-      try {
-        if (arr.length == 1) {
-          PROPS.load(getReader(resource));
-        } else if (arr.length == 3) {
-          I18N.computeIfAbsent(
-              arr[1] + Constants.UNDERSCORE + arr[2].substring(0, arr[2].indexOf(Constants.DOT)),
-              k -> new Properties()).load(getReader(resource));
-        } else {
-          log.warn("file [{}] used an illegal name", resource.path());
-        }
-      } catch (IOException e) {
-        if (ignoreNotFound) {
-          log.warn("i18n file cannot find [{}]", resource.path());
-        } else {
-          throw Exceptions.wrap(e);
-        }
-      }
-    }
-  }
-
   /**
    * 当前线程区域
    *
@@ -110,7 +69,6 @@ public class Lang extends AbstractResourceLoader implements Plugin {
   public static void clearThreadLocale() {
     LOCALE.remove();
   }
-
 
   /**
    * 根据key获取message
@@ -157,6 +115,56 @@ public class Lang extends AbstractResourceLoader implements Plugin {
     return value;
   }
 
+  private static Locale defaultLocale() {
+    CoreConf conf = ConfigFactory.load(CoreConf.class);
+    if (conf.getI18nDefaultLanguage() != null && conf.getI18nDefaultLanguage().length() > 0
+        && conf.getI18nDefaultCountry() != null && conf.getI18nDefaultCountry().length() > 0) {
+      return new Locale(conf.getI18nDefaultLanguage(), conf.getI18nDefaultCountry());
+    }
+    return Locale.getDefault();
+  }
+
+  @Override
+  public void init() {
+    this.loader = ClassUtils.getDefaultClassLoader();
+    this.ignoreNotFound = true;
+  }
+
+  @Override
+  public int order() {
+    return Integer.MIN_VALUE + 5;
+  }
+
+  /**
+   * 加载i18n文件
+   *
+   * @param locations 路径
+   */
+  public void load(String... locations) {
+    List<SourceResource> res = this.parse(locations);
+    for (SourceResource resource : res) {
+      this.resources.add(resource);
+      String[] arr = resource.path().split(Constants.UNDERSCORE);
+      try {
+        if (arr.length == 1) {
+          PROPS.load(getReader(resource));
+        } else if (arr.length == 3) {
+          I18N.computeIfAbsent(
+              arr[1] + Constants.UNDERSCORE + arr[2].substring(0, arr[2].indexOf(Constants.DOT)),
+              k -> new Properties()).load(getReader(resource));
+        } else {
+          log.warn("file [{}] used an illegal name", resource.path());
+        }
+      } catch (IOException e) {
+        if (ignoreNotFound) {
+          log.warn("i18n file cannot find [{}]", resource.path());
+        } else {
+          throw Exceptions.wrap(e);
+        }
+      }
+    }
+  }
+
   @Override
   public void start() {
     CoreConf conf = ConfigFactory.load(CoreConf.class);
@@ -167,14 +175,5 @@ public class Lang extends AbstractResourceLoader implements Plugin {
   public void stop() {
     PROPS.clear();
     I18N.clear();
-  }
-
-  private static Locale defaultLocale() {
-    CoreConf conf = ConfigFactory.load(CoreConf.class);
-    if (conf.getI18nDefaultLanguage() != null && conf.getI18nDefaultLanguage().length() > 0
-        && conf.getI18nDefaultCountry() != null && conf.getI18nDefaultCountry().length() > 0) {
-      return new Locale(conf.getI18nDefaultLanguage(), conf.getI18nDefaultCountry());
-    }
-    return Locale.getDefault();
   }
 }
