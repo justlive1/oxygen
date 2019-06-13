@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.web.http.HttpMethod;
 
@@ -29,6 +30,7 @@ import vip.justlive.oxygen.web.http.HttpMethod;
  *
  * @author wubo
  */
+@Slf4j
 @UtilityClass
 public class Router {
 
@@ -126,11 +128,17 @@ public class Router {
     if (exist != null) {
       throw Exceptions.fail(String.format("path [%s] already exists", route.path()));
     }
+    if (log.isDebugEnabled()) {
+      log.debug("build route: {}", route);
+    }
   }
 
   private static void buildStaticRoute(StaticRoute route) {
     if (STATIC_HANDLERS.putIfAbsent(route.prefix(), new StaticRouteHandler(route)) != null) {
       throw Exceptions.fail(String.format("path [%s] already exists", route.prefix()));
+    }
+    if (log.isDebugEnabled()) {
+      log.debug("build route: {}", route);
     }
   }
 }

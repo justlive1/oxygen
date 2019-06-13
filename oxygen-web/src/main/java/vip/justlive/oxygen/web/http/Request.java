@@ -52,7 +52,7 @@ public class Request implements Serializable {
   /**
    * 容器路径
    */
-  String contentPath;
+  String contextPath;
   /**
    * 请求全路径 http://host:port/path?queryString
    */

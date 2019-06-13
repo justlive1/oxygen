@@ -23,6 +23,7 @@ import lombok.Data;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.io.SourceStream;
 import vip.justlive.oxygen.core.util.Checks;
+import vip.justlive.oxygen.core.util.FileUtils;
 
 /**
  * multipart item
@@ -43,10 +44,7 @@ public class MultipartItem implements SourceStream {
   public void setFilename(String filename) {
     this.filename = filename;
     if (filename != null) {
-      int index = filename.lastIndexOf(Constants.DOT);
-      if (index > -1) {
-        this.extension = filename.substring(index + 1);
-      }
+      this.extension = FileUtils.extension(filename);
     }
   }
 

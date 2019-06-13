@@ -81,7 +81,7 @@ public class CglibProxy implements MethodInterceptor {
     for (int index = 0, len = interceptors.size(); index < len; index++) {
       if (!interceptors.get(index).intercept(invocation)) {
         if (log.isDebugEnabled()) {
-          log.debug("{} aop intercepted, total size:{}, current index: {}", interceptors.size(),
+          log.debug("aop intercepted, total size:{}, current index: {}", interceptors.size(),
               index);
         }
         return true;

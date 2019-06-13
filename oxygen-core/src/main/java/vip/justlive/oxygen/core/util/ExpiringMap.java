@@ -18,11 +18,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -31,8 +32,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * 有失效时间的 Map，可对每个键值对设置失效时间
@@ -110,7 +113,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   /**
    * 实际数据
    */
-  private TreeMap<K, ExpiringValue<V>> data;
+  private LruMap<K, V> data;
 
   /**
    * 构造函数
@@ -126,12 +129,13 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     expiringPolicy = builder.expiringPolicy;
     scheduleDelay = builder.scheduleDelay;
     accumulateThreshold = builder.accumulateThreshold;
-    executorService = ThreadUtils
-        .newScheduledExecutor(1, "ExpiringMap-" + INSTANCES.getAndIncrement() + "-Clean-Pool-%d");
+    executorService = ThreadUtils.newScheduledExecutor(1, String
+        .format("EM-%s-%s", INSTANCES.getAndIncrement(),
+            MoreObjects.firstNonNull(builder.name, Constants.EMPTY)));
     executorService
         .scheduleWithFixedDelay(this::runScheduleCleanPolicy, scheduleDelay, scheduleDelay,
             TimeUnit.SECONDS);
-    data = new TreeMap<>();
+    data = new LruMap<K, V>().maxSize(maxSize).listeners(asyncExpiredListeners);
   }
 
   /**
@@ -257,10 +261,6 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       writeLock.lock();
       ExpiringValue<V> wrapValue = new ExpiringValue<>(value, duration, timeUnit);
       ExpiringValue<V> preValue = data.put(key, wrapValue);
-      if (data.size() > maxSize) {
-        K k = data.firstKey();
-        data.remove(k);
-      }
       if (preValue != null && !preValue.isExpired()) {
         return preValue.value;
       }
@@ -413,7 +413,10 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
         ExpiringValue<V> newWrapValue = new ExpiringValue<>(value);
         newWrapValue.duration = wrapValue.duration;
         newWrapValue.expireAt = wrapValue.expireAt;
-        return data.put(key, newWrapValue).value;
+        wrapValue = data.put(key, newWrapValue);
+        if (wrapValue != null) {
+          return wrapValue.value;
+        }
       }
       return null;
     } finally {
@@ -427,7 +430,10 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       ExpiringValue<V> wrapValue = data.get(key);
       if (wrapValue != null && !wrapValue.isExpired()) {
         ExpiringValue<V> newWrapValue = new ExpiringValue<>(value, duration, timeUnit);
-        return data.put(key, newWrapValue).value;
+        wrapValue = data.put(key, newWrapValue);
+        if (wrapValue != null) {
+          return wrapValue.value;
+        }
       }
       return null;
     } finally {
@@ -534,6 +540,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
    * @param <V> 泛型
    * @author wubo
    */
+  @FunctionalInterface
   public interface ExpiredListener<K, V> {
 
     /**
@@ -562,8 +569,20 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     private CleanPolicy cleanPolicy = CleanPolicy.ACCUMULATE;
     private int scheduleDelay = 60;
     private int accumulateThreshold = 50;
+    private String name;
 
     private Builder() {
+    }
+
+    /**
+     * 设置名称
+     *
+     * @param name 名称
+     * @return builder
+     */
+    public Builder<K, V> name(String name) {
+      this.name = name;
+      return this;
     }
 
     /**
@@ -776,6 +795,34 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       V pre = this.value;
       this.value = value;
       return pre;
+    }
+  }
+
+  @EqualsAndHashCode(callSuper = true)
+  static final class LruMap<K, V> extends LinkedHashMap<K, ExpiringValue<V>> {
+
+    private int maxSize;
+    private transient List<ExpiredListener<K, V>> listeners;
+
+    LruMap<K, V> maxSize(int maxSize) {
+      this.maxSize = maxSize;
+      return this;
+    }
+
+    LruMap<K, V> listeners(List<ExpiredListener<K, V>> listeners) {
+      this.listeners = listeners;
+      return this;
+    }
+
+    @Override
+    protected boolean removeEldestEntry(Entry<K, ExpiringValue<V>> eldest) {
+      boolean b = maxSize > 0 && maxSize < super.size();
+      if (b && listeners != null && !listeners.isEmpty()) {
+        for (ExpiredListener<K, V> listener : listeners) {
+          listener.expire(eldest.getKey(), eldest.getValue().value);
+        }
+      }
+      return b;
     }
   }
 

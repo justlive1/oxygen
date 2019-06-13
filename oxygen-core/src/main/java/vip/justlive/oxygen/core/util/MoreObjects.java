@@ -13,13 +13,25 @@
  */
 package vip.justlive.oxygen.core.util;
 
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * objects工具增强类
  *
  * @author wubo
  */
+@Slf4j
 @UtilityClass
 public class MoreObjects {
 
@@ -78,5 +90,110 @@ public class MoreObjects {
       }
     }
     throw new IllegalArgumentException();
+  }
+
+  /**
+   * 对象转map
+   *
+   * @param bean 对象
+   * @return map
+   */
+  public static Map<String, Object> beanToMap(Object bean) {
+    Checks.notNull(bean, "bean can not be null");
+    Map<String, Object> map = new HashMap<>(4);
+    if (Map.class.isAssignableFrom(bean.getClass())) {
+      Map<?, ?> beanMap = (Map<?, ?>) bean;
+      beanMap.forEach((k, v) -> map.put(k.toString(), v));
+    } else {
+      for (Field field : ReflectUtils.getAllDeclaredFields(bean.getClass())) {
+        if (Modifier.isStatic(field.getModifiers())) {
+          continue;
+        }
+        field.setAccessible(true);
+        try {
+          Object value = field.get(bean);
+          if (value != null) {
+            map.put(field.getName(), value);
+          }
+        } catch (IllegalAccessException e) {
+          log.warn("field can not get value", e);
+        }
+      }
+    }
+    return map;
+  }
+
+  /**
+   * bean转换成queryString
+   *
+   * @param bean 对象
+   * @return queryString
+   */
+  public static String beanToQueryString(Object bean) {
+    return beanToQueryString(bean, false);
+  }
+
+  /**
+   * bean转换成queryString
+   *
+   * @param bean 对象
+   * @param urlEncoded url encoded
+   * @return queryString
+   */
+  public static String beanToQueryString(Object bean, boolean urlEncoded) {
+    Map<String, Object> map = MoreObjects.beanToMap(bean);
+    StringBuilder sb = new StringBuilder();
+    map.forEach((k, v) -> sb.append(Constants.AND).append(k).append(Constants.EQUAL)
+        .append(urlEncoded ? urlEncode(v.toString()) : v));
+    if (sb.length() > 0) {
+      sb.deleteCharAt(0);
+    }
+    return sb.toString();
+  }
+
+  /**
+   * url encode
+   *
+   * @param s string
+   * @return encoded
+   */
+  public static String urlEncode(String s) {
+    return urlEncode(s, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * url encode
+   *
+   * @param s string
+   * @param charset 字符集
+   * @return encoded
+   */
+  public static String urlEncode(String s, Charset charset) {
+    try {
+      return URLEncoder.encode(s, charset.name());
+    } catch (UnsupportedEncodingException e) {
+      // nothing
+    }
+    return s;
+  }
+
+  /**
+   * always true
+   *
+   * @param <T> 泛型
+   * @return predicate
+   */
+  public static <T> Predicate<T> alwaysTrue() {
+    return t -> true;
+  }
+
+  /**
+   * always false
+   *
+   * @param <T> 泛型
+   * @return predicate
+   */
+  public static <T> Predicate<T> alwaysFalse() {
+    return t -> false;
   }
 }

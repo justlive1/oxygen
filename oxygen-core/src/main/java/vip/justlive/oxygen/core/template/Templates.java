@@ -22,12 +22,12 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
+import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 
 /**
@@ -35,22 +35,16 @@ import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
  *
  * @author wubo
  */
-@Slf4j
 @UtilityClass
 public class Templates {
 
   private static final Map<String, Path> CACHE = new ConcurrentHashMap<>(4);
 
-  private static final String TEMP_DIR;
+  private static final File BASE_DIR;
 
   static {
-    TEMP_DIR = ConfigFactory.load(CoreConf.class).getBaseTempDir() + "/templates";
-    File dir = new File(TEMP_DIR);
-    if (!dir.exists() && !dir.mkdirs()) {
-      log.error("create temp templates dir [{}] error", dir.getAbsolutePath());
-    } else {
-      log.info("temp templates dir is [{}]", dir.getAbsolutePath());
-    }
+    BASE_DIR = new File(ConfigFactory.load(CoreConf.class).getBaseTempDir(), "templates");
+    FileUtils.mkdirs(BASE_DIR);
   }
 
   /**
@@ -63,7 +57,7 @@ public class Templates {
     try {
       SourceResource sourceResource = new SimpleResourceLoader(path);
       try (InputStream is = sourceResource.getInputStream()) {
-        File savedFile = new File(TEMP_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
+        File savedFile = new File(BASE_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
         Path templatePath = savedFile.toPath();
         Files.copy(is, templatePath);
         savedFile.deleteOnExit();

@@ -84,31 +84,10 @@ public final class Bootstrap {
   }
 
   /**
-   * 执行插件前置逻辑
+   * 注册默认线程异常处理
    */
-  public static void invokeBeforePlugins() {
-    PLUGINS.forEach(Plugin::beforeInvoke);
-  }
-
-  /**
-   * 执行插件后置逻辑
-   */
-  public static void invokeAfterPlugins() {
-    PLUGINS.forEach(Plugin::afterInvoke);
-  }
-
-  /**
-   * 执行插件异常逻辑
-   */
-  public static void invokeOnExceptionPlugins() {
-    PLUGINS.forEach(Plugin::onExceptionInvoke);
-  }
-
-  /**
-   * 执行插件最终逻辑
-   */
-  public static void invokeFinalPlugins() {
-    PLUGINS.forEach(Plugin::finalInvoke);
+  public static void registerUncaughtExceptionHandler() {
+    Thread.setDefaultUncaughtExceptionHandler(Bootstrap::exceptionHandle);
   }
 
   /**
@@ -163,5 +142,9 @@ public final class Bootstrap {
     PLUGINS.forEach(Plugin::stop);
     STATE.set(false);
     log.info("bootstrap closed ! bye bye");
+  }
+
+  private static void exceptionHandle(Thread thread, Throwable throwable) {
+    log.error("thread [{}] uncaught exception", thread.getName(), throwable);
   }
 }

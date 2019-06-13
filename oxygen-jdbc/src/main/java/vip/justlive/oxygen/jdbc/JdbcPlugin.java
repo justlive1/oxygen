@@ -50,11 +50,6 @@ public class JdbcPlugin implements Plugin {
     Jdbc.DATA_SOURCE_MAP.clear();
   }
 
-  @Override
-  public void finalInvoke() {
-    Jdbc.clearAll();
-  }
-
   /**
    * 查找数据源
    */

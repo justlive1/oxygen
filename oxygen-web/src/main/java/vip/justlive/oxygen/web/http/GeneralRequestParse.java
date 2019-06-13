@@ -39,7 +39,7 @@ public class GeneralRequestParse implements RequestParse {
     request.queryString = req.getQueryString();
     request.method = req.getMethod().intern();
     request.path = req.getServletPath();
-    request.contentPath = req.getContextPath();
+    request.contextPath = req.getContextPath();
     request.url = req.getRequestURL().toString();
     if (request.getQueryString() != null) {
       request.url = request.getUrl() + Constants.QUESTION_MARK + request.getQueryString();

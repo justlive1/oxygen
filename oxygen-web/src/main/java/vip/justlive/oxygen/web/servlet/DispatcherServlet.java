@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
@@ -207,7 +206,6 @@ public class DispatcherServlet extends HttpServlet {
 
   private void handlerError(RoutingContext ctx, Exception e) {
     log.error("DispatcherServlet occurs an error for path [{}]", ctx.requestPath(), e);
-    Bootstrap.invokeOnExceptionPlugins();
     IocPlugin.beanStore().getBean(ExceptionHandler.class).handle(ctx, e, Constants.SERVER_ERROR);
   }
 

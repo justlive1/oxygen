@@ -33,6 +33,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.ExpiringMap;
+import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
@@ -45,7 +46,7 @@ import vip.justlive.oxygen.web.http.Response;
 @Slf4j
 public class StaticRouteHandler implements RouteHandler {
 
-  private static final String TEMP_DIR;
+  private static final File TEMP_DIR;
   private static final Properties MIME_TYPES = new Properties();
 
   static {
@@ -54,13 +55,8 @@ public class StaticRouteHandler implements RouteHandler {
     } catch (IOException e) {
       log.warn("mime types initial failed ", e);
     }
-    TEMP_DIR = ConfigFactory.load(CoreConf.class).getBaseTempDir() + "/static";
-    File dir = new File(TEMP_DIR);
-    if (!dir.exists() && !dir.mkdirs()) {
-      log.error("create temp static route dir [{}] error", dir.getAbsolutePath());
-    } else {
-      log.info("temp static route dir is [{}]", dir.getAbsolutePath());
-    }
+    TEMP_DIR = new File(ConfigFactory.load(CoreConf.class).getBaseTempDir(), "static");
+    FileUtils.mkdirs(TEMP_DIR);
   }
 
   private final StaticRoute route;
@@ -69,8 +65,8 @@ public class StaticRouteHandler implements RouteHandler {
   public StaticRouteHandler(StaticRoute route) {
     this.route = route;
     if (this.route.cachingEnabled()) {
-      expiringMap = ExpiringMap.<String, StaticSource>builder().expiration(10, TimeUnit.MINUTES)
-          .asyncExpiredListeners(this::cleanExpiredFile).build();
+      expiringMap = ExpiringMap.<String, StaticSource>builder().name("SRH")
+          .expiration(10, TimeUnit.MINUTES).asyncExpiredListeners(this::cleanExpiredFile).build();
     }
   }
 

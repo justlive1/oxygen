@@ -59,6 +59,6 @@ public class RedirectResultHandler implements ResultHandler {
       }
       sb.append(data.getUrl());
     }
-    response.setHeader("Location", sb.toString());
+    response.setHeader(Constants.LOCATION, sb.toString());
   }
 }

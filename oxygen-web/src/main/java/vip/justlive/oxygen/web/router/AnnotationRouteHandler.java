@@ -82,4 +82,8 @@ public class AnnotationRouteHandler implements RouteHandler {
     }
   }
 
+  @Override
+  public String toString() {
+    return String.format("@Router->%s#%s", method.getDeclaringClass().getName(), method.getName());
+  }
 }

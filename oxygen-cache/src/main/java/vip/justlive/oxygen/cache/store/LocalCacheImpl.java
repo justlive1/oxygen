@@ -26,7 +26,8 @@ import vip.justlive.oxygen.core.util.ExpiringMap;
  */
 public class LocalCacheImpl implements Cache {
 
-  private final ExpiringMap<String, Object> expiringMap = ExpiringMap.create();
+  private final ExpiringMap<String, Object> expiringMap = ExpiringMap.<String, Object>builder()
+      .name("LC").build();
 
   @Override
   public Object get(String key) {
