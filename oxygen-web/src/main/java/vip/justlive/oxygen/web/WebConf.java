@@ -27,7 +27,7 @@ public class WebConf {
   /**
    * embedded 启动端口
    */
-  @Value("${server.port:8080}")
+  @Value("${server.port:}")
   private Integer port;
 
   /**

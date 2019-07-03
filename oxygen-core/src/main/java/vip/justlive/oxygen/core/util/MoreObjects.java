@@ -196,4 +196,17 @@ public class MoreObjects {
   public static <T> Predicate<T> alwaysFalse() {
     return t -> false;
   }
+
+  /**
+   * toString
+   *
+   * @param obj obj
+   * @return string
+   */
+  public static String safeToString(Object obj) {
+    if (obj == null) {
+      return Constants.EMPTY;
+    }
+    return obj.toString();
+  }
 }

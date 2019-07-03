@@ -31,12 +31,11 @@ public class TomcatWebServer implements WebServer {
   private Tomcat tomcat;
   private int port;
 
-  private void initServer() {
+  private void initServer(WebConf webConf) {
     if (tomcat == null) {
       tomcat = new Tomcat();
     }
 
-    WebConf webConf = ConfigFactory.load(WebConf.class);
     File baseDir = new File(ConfigFactory.load(CoreConf.class).getBaseTempDir(),
         Tomcat.class.getSimpleName());
     File docBase = new File(baseDir, Context.class.getSimpleName());
@@ -93,9 +92,9 @@ public class TomcatWebServer implements WebServer {
 
   @Override
   public synchronized void listen(int port) {
+    this.port = port;
     WebConf conf = ConfigFactory.load(WebConf.class);
-    this.port = conf.getPort() != null ? conf.getPort() : port;
-    initServer();
+    initServer(conf);
     try {
       tomcat.start();
       log.info("tomcat started and listened on port [{}] with context path [{}]", this.port,

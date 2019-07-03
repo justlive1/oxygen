@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import lombok.Getter;
 import vip.justlive.oxygen.core.util.ExpiringMap;
 
 /**
@@ -26,8 +27,15 @@ import vip.justlive.oxygen.core.util.ExpiringMap;
  */
 public class LocalCacheImpl implements Cache {
 
-  private final ExpiringMap<String, Object> expiringMap = ExpiringMap.<String, Object>builder()
-      .name("LC").build();
+  @Getter
+  private final String name;
+  private final ExpiringMap<String, Object> expiringMap;
+
+  public LocalCacheImpl(String name) {
+    this.name = name;
+    this.expiringMap = ExpiringMap.<String, Object>builder().name(name).build();
+  }
+
 
   @Override
   public Object get(String key) {

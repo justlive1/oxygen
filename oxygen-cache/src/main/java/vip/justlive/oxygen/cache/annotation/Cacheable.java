@@ -41,6 +41,8 @@ public @interface Cacheable {
 
   /**
    * 缓存key
+   * <br>
+   * args[0], args[1][name]
    *
    * @return key
    */

@@ -23,7 +23,7 @@ import vip.justlive.oxygen.core.util.ExpiringMap;
 public class SessionStoreImpl implements SessionStore {
 
   private static final ExpiringMap<String, Session> SESSIONS = ExpiringMap.<String, Session>builder()
-      .name("LS").build();
+      .name("Session").build();
 
   @Override
   public Session get(String id) {

@@ -35,7 +35,7 @@ public class ServiceLoaderUtils {
    * @param <T> 泛型
    * @return service
    */
-  public static <T> T loadSerivce(Class<T> clazz) {
+  public static <T> T loadService(Class<T> clazz) {
     T service = loadServiceOrNull(clazz);
     if (service == null) {
       throw new IllegalStateException(

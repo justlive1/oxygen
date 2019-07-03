@@ -222,6 +222,7 @@ public class HttpRequest {
     connection.setInstanceFollowRedirects(this.followRedirects);
     connection.setRequestMethod(this.method.name());
     connection.setUseCaches(false);
+    setContentType();
     // add headers
     headers.forEach(connection::addRequestProperty);
     if (body == null || this.method == HttpMethod.GET) {
@@ -238,6 +239,13 @@ public class HttpRequest {
       }
     }
     return new HttpResponse(connection, charset);
+  }
+
+  private void setContentType() {
+    String contentType = headers.get(Constants.CONTENT_TYPE);
+    if (contentType != null && !contentType.contains(Constants.CHARSET)) {
+      headers.put(Constants.CONTENT_TYPE, contentType + ";charset=" + charset.name());
+    }
   }
 
   private byte[] formBodyConvert(Object obj) {

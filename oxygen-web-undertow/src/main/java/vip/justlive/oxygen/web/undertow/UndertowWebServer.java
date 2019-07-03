@@ -53,9 +53,9 @@ public class UndertowWebServer implements WebServer {
 
   @Override
   public void listen(int port) {
+    this.port = port;
     webConf = ConfigFactory.load(WebConf.class);
     undertowConf = ConfigFactory.load(UndertowConf.class);
-    this.port = webConf.getPort() != null ? webConf.getPort() : port;
     DeploymentManager manager = deployment();
     manager.deploy();
     Undertow.Builder builder = Undertow.builder();

@@ -14,7 +14,9 @@
 package vip.justlive.oxygen.web.server;
 
 import vip.justlive.oxygen.core.Bootstrap;
+import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
+import vip.justlive.oxygen.web.WebConf;
 
 /**
  * server 启动类
@@ -34,7 +36,7 @@ public class Server {
    */
   public static Server server() {
     Server server = new Server();
-    server.webServer = ServiceLoaderUtils.loadSerivce(WebServer.class);
+    server.webServer = ServiceLoaderUtils.loadService(WebServer.class);
     return server;
   }
 
@@ -42,7 +44,7 @@ public class Server {
    * 监听端口并启动服务
    */
   public void listen() {
-    listen(-1);
+    listen(8080);
   }
 
   /**
@@ -54,6 +56,12 @@ public class Server {
     if (!ready) {
       ready = true;
       Bootstrap.initConfig();
+      WebConf conf = ConfigFactory.load(WebConf.class);
+      if (conf.getPort() != null) {
+        port = conf.getPort();
+      } else {
+        conf.setPort(port);
+      }
       webServer.listen(port);
     }
   }

@@ -81,7 +81,7 @@ public class JettyWebServer implements WebServer {
   public void listen(int port) {
     WebConf webConf = ConfigFactory.load(WebConf.class);
     JettyConf jettyConf = ConfigFactory.load(JettyConf.class);
-    this.port = webConf.getPort() != null ? webConf.getPort() : port;
+    this.port = port;
 
     server = new Server();
 
@@ -130,8 +130,8 @@ public class JettyWebServer implements WebServer {
     String location = ResourceUtils.concat(webConf.getJspViewPrefix(), "/**/*.jsp");
     String rootPath = matcher.getRootDir(location);
     String subPattern = location.substring(rootPath.length());
-    Enumeration<URL> urls =
-        ClassUtils.getDefaultClassLoader().getResources(ResourceUtils.cutRootPath(rootPath));
+    Enumeration<URL> urls = ClassUtils.getDefaultClassLoader()
+        .getResources(ResourceUtils.cutRootPath(rootPath));
     while (urls.hasMoreElements()) {
       URL rootUrl = urls.nextElement();
       this.findJarMatchPath(rootUrl, subPattern, dir);
