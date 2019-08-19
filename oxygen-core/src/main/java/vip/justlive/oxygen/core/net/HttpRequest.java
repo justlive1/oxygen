@@ -36,7 +36,7 @@ public class HttpRequest {
   private final String url;
   private int connectTimeout;
   private int readTimeout;
-  private boolean followRedirects;
+  private boolean followRedirects = true;
   private HttpMethod method;
   private Charset charset = StandardCharsets.UTF_8;
   private Map<String, String> headers = new HashMap<>(4);
@@ -252,7 +252,7 @@ public class HttpRequest {
     if (obj == null) {
       return new byte[0];
     }
-    return MoreObjects.beanToQueryString(obj).getBytes(charset);
+    return MoreObjects.beanToQueryString(obj, true).getBytes(charset);
   }
 
   private byte[] jsonBodyConvert(Object json) {

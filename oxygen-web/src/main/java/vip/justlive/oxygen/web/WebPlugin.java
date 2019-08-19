@@ -82,16 +82,13 @@ public class WebPlugin implements Plugin {
     if (routerClasses == null || routerClasses.isEmpty()) {
       return;
     }
+
     for (Class<?> clazz : routerClasses) {
       Router router = clazz.getAnnotation(Router.class);
       if (router == null) {
         continue;
       }
-      String rootPath = router.value();
-      if (!IocPlugin.tryInstance(clazz, clazz.getName(), Integer.MAX_VALUE)) {
-        throw Exceptions.fail(String.format("实例化Router失败 %s", clazz));
-      }
-      parseRouter(rootPath, IocPlugin.beanStore().getBean(clazz.getName()));
+      parseRouter(router.value(), IocPlugin.beanStore().getBean(clazz.getName()));
     }
   }
 

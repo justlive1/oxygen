@@ -78,8 +78,8 @@ public class NumberUtils {
    */
   @SuppressWarnings("unchecked")
   public static <T extends Number> T parseNumber(String text, Class<T> targetClass) {
-    Checks.notNull(text, "Text must not be null");
-    Checks.notNull(targetClass, "Target class must not be null");
+    MoreObjects.notNull(text, "Text must not be null");
+    MoreObjects.notNull(targetClass, "Target class must not be null");
     String trimmed = text.trim();
     Function<String, ?> func = FUNCTIONS.get(targetClass);
     if (func == null) {

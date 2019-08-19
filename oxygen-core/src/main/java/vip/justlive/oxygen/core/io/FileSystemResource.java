@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import vip.justlive.oxygen.core.util.Checks;
+import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.ResourceUtils;
 
 /**
@@ -39,7 +39,7 @@ public class FileSystemResource implements SourceResource {
    * @param filePath 文件路径
    */
   public FileSystemResource(String filePath) {
-    this.file = new File(Checks.notNull(filePath));
+    this.file = new File(MoreObjects.notNull(filePath));
     this.filePath = file.toPath().normalize().toString();
   }
 
@@ -49,7 +49,7 @@ public class FileSystemResource implements SourceResource {
    * @param file 文件
    */
   public FileSystemResource(File file) {
-    this.file = Checks.notNull(file);
+    this.file = MoreObjects.notNull(file);
   }
 
   /**
@@ -58,7 +58,7 @@ public class FileSystemResource implements SourceResource {
    * @param path 路径
    */
   public FileSystemResource(Path path) {
-    this.path = Checks.notNull(path);
+    this.path = MoreObjects.notNull(path);
     this.file = path.toFile();
   }
 

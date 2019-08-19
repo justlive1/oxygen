@@ -19,6 +19,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import lombok.experimental.UtilityClass;
@@ -33,6 +34,11 @@ public class ThreadUtils {
 
   private static final ThreadLocal<Map<String, Object>> LOCAL = ThreadLocal
       .withInitial(ConcurrentHashMap::new);
+
+  private static final ThreadPoolExecutor CACHED_POOL = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+      60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
+      new ThreadFactoryBuilder().setDaemon(true).setNameFormat("cached-pool-%d").build());
+
 
   /**
    * 线程存储键值
@@ -144,6 +150,15 @@ public class ThreadUtils {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
+  }
+
+  /**
+   * 返回cached pool
+   *
+   * @return pool
+   */
+  public static ThreadPoolExecutor cachedPool() {
+    return CACHED_POOL;
   }
 
 }

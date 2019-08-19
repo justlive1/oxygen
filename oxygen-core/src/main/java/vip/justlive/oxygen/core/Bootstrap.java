@@ -87,7 +87,9 @@ public final class Bootstrap {
    * 注册默认线程异常处理
    */
   public static void registerUncaughtExceptionHandler() {
-    Thread.setDefaultUncaughtExceptionHandler(Bootstrap::exceptionHandle);
+    if (Thread.getDefaultUncaughtExceptionHandler() == null) {
+      Thread.setDefaultUncaughtExceptionHandler(Bootstrap::exceptionHandle);
+    }
   }
 
   /**
@@ -96,6 +98,7 @@ public final class Bootstrap {
   public static void start() {
     if (STATE.compareAndSet(false, true)) {
       log.info("starting bootstrap ...");
+      registerUncaughtExceptionHandler();
       initConfig();
       addSystemPlugin();
       initPlugins();
@@ -110,6 +113,26 @@ public final class Bootstrap {
   public static synchronized void close() {
     doClose();
     Runtime.getRuntime().removeShutdownHook(SHUTDOWN_HOOK);
+  }
+
+  /**
+   * 等待容器关闭，一般在没有web容器时使用
+   */
+  public static void sync() {
+    if (!STATE.get() || Thread.currentThread().isInterrupted()) {
+      return;
+    }
+
+    synchronized (STATE) {
+      while (STATE.get()) {
+        try {
+          STATE.wait();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return;
+        }
+      }
+    }
   }
 
   /**
@@ -141,6 +164,9 @@ public final class Bootstrap {
     log.info("closing bootstrap ...");
     PLUGINS.forEach(Plugin::stop);
     STATE.set(false);
+    synchronized (STATE) {
+      STATE.notifyAll();
+    }
     log.info("bootstrap closed ! bye bye");
   }
 

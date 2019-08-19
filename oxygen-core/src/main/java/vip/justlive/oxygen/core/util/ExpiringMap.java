@@ -606,7 +606,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      * @return 构造器
      */
     public Builder<K, V> asyncExpiredListeners(ExpiredListener<K, V> listener) {
-      Checks.notNull(listener, "listener can not be null");
+      MoreObjects.notNull(listener, "listener can not be null");
       if (asyncExpiredListeners == null) {
         asyncExpiredListeners = new ArrayList<>();
       }
@@ -621,7 +621,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      * @return 构造器
      */
     public Builder<K, V> asyncExpiredListeners(List<ExpiredListener<K, V>> listeners) {
-      Checks.notNull(listeners, "listeners can not be null");
+      MoreObjects.notNull(listeners, "listeners can not be null");
       asyncExpiredListeners = listeners;
       return this;
     }
@@ -637,7 +637,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       if (duration <= 0) {
         throw new IllegalArgumentException("duration should be positive");
       }
-      Checks.notNull(timeUnit, "timeUnit can not be null");
+      MoreObjects.notNull(timeUnit, "timeUnit can not be null");
       this.duration = duration;
       this.timeUnit = timeUnit;
       return this;
@@ -650,7 +650,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      * @return 构造器
      */
     public Builder<K, V> expiringPolicy(ExpiringPolicy expiringPolicy) {
-      Checks.notNull(expiringPolicy, "expiringPolicy can not be null");
+      MoreObjects.notNull(expiringPolicy, "expiringPolicy can not be null");
       this.expiringPolicy = expiringPolicy;
       return this;
     }
@@ -662,7 +662,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      * @return 构造器
      */
     public Builder<K, V> cleanPolicy(CleanPolicy cleanPolicy) {
-      Checks.notNull(cleanPolicy, "cleanPolicy can not be null");
+      MoreObjects.notNull(cleanPolicy, "cleanPolicy can not be null");
       this.cleanPolicy = cleanPolicy;
       return this;
     }

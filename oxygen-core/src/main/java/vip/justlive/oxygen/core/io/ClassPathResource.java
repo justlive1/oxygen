@@ -20,8 +20,8 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.core.util.Checks;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.ResourceUtils;
 
 /**
@@ -51,7 +51,7 @@ public class ClassPathResource implements SourceResource {
    * @param classLoader 类加载器
    */
   public ClassPathResource(String path, ClassLoader classLoader) {
-    this.path = ResourceUtils.cutRootPath(Checks.notNull(path));
+    this.path = ResourceUtils.cutRootPath(MoreObjects.notNull(path));
     this.classLoader = classLoader;
   }
 
@@ -62,7 +62,7 @@ public class ClassPathResource implements SourceResource {
    * @param clazz 类
    */
   public ClassPathResource(String path, Class<?> clazz) {
-    this.path = ResourceUtils.cutRootPath(Checks.notNull(path));
+    this.path = ResourceUtils.cutRootPath(MoreObjects.notNull(path));
     this.clazz = clazz;
   }
 

@@ -18,9 +18,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.experimental.UtilityClass;
@@ -88,7 +90,7 @@ public class ClassUtils {
    * @return 包装类
    */
   public static <T> Class<T> wrap(Class<T> type) {
-    Checks.notNull(type);
+    MoreObjects.notNull(type);
     // cast is safe: long.class and Long.class are both of type Class<Long>
     @SuppressWarnings("unchecked") Class<T> wrapped = (Class<T>) PRIMITIVE_TO_WRAPPER_TYPE
         .get(type);
@@ -103,7 +105,7 @@ public class ClassUtils {
    * @return 基本类型
    */
   public static <T> Class<T> unwrap(Class<T> type) {
-    Checks.notNull(type);
+    MoreObjects.notNull(type);
     // cast is safe: long.class and Long.class are both of type Class<Long>
     @SuppressWarnings("unchecked") Class<T> unwrapped = (Class<T>) WRAPPER_TO_PRIMITIVE_TYPE
         .get(type);
@@ -348,5 +350,72 @@ public class ClassUtils {
       }
     }
     return null;
+  }
+
+  /**
+   * 是否是jdk内置注解
+   *
+   * @param annotation 注解类
+   * @return true为内置注解类
+   */
+  public static boolean isInJavaLangAnnotationPackage(Class<? extends Annotation> annotation) {
+    return (annotation != null && annotation.getName().startsWith("java.lang.annotation"));
+  }
+
+  /**
+   * 是否存在注解
+   *
+   * @param clazz 类型
+   * @param annotation 注解
+   * @return true表示存在注解
+   */
+  public static boolean isAnnotationPresent(Class<?> clazz,
+      Class<? extends Annotation> annotation) {
+    return getAnnotation(clazz, annotation) != null;
+  }
+
+  /**
+   * 获取注解 支持派生注解
+   *
+   * @param clazz 类型
+   * @param annotation 注解
+   * @param <A> 泛型
+   * @return 注解
+   */
+  @SuppressWarnings("unchecked")
+  public static <A extends Annotation> A getAnnotation(Class<?> clazz,
+      Class<A> annotation) {
+    A anno = clazz.getAnnotation(annotation);
+    if (anno != null) {
+      return anno;
+    }
+    Annotation[] annotations = clazz.getAnnotations();
+    Set<Annotation> visited = new LinkedHashSet<>();
+    for (Annotation ann : annotations) {
+      recursivelyCollectAnnotations(visited, ann);
+    }
+    if (visited.isEmpty()) {
+      return null;
+    }
+
+    for (Annotation ann : visited) {
+      if (ann.annotationType() == annotation) {
+        return (A) ann;
+      }
+    }
+    return null;
+  }
+
+  private static void recursivelyCollectAnnotations(Set<Annotation> visited,
+      Annotation annotation) {
+    Class<? extends Annotation> annotationType = annotation.annotationType();
+    if (annotationType == null || isInJavaLangAnnotationPackage(annotationType) || !Modifier
+        .isPublic(annotationType.getModifiers()) || !visited.add(annotation)) {
+      return;
+    }
+
+    for (Annotation metaAnnotation : annotationType.getAnnotations()) {
+      recursivelyCollectAnnotations(visited, metaAnnotation);
+    }
   }
 }

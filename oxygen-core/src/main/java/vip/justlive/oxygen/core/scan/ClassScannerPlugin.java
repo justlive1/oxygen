@@ -45,7 +45,7 @@ public class ClassScannerPlugin implements Plugin {
     if (store.classes == null) {
       store.classes = new HashSet<>();
       for (Class<?> clazz : CLASSES) {
-        if (clazz.isAnnotationPresent(annotation)) {
+        if (ClassUtils.isAnnotationPresent(clazz, annotation)) {
           store.classes.add(clazz);
         }
       }

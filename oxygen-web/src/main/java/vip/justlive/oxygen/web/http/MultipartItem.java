@@ -22,8 +22,8 @@ import java.nio.file.Path;
 import lombok.Data;
 import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.io.SourceStream;
-import vip.justlive.oxygen.core.util.Checks;
 import vip.justlive.oxygen.core.util.FileUtils;
+import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
  * multipart item
@@ -55,7 +55,7 @@ public class MultipartItem implements SourceStream {
    * @throws IOException 抛出异常
    */
   public void transferTo(File file) throws IOException {
-    Checks.notNull(file);
+    MoreObjects.notNull(file);
     Files.copy(path, file.toPath());
   }
 

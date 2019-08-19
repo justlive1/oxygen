@@ -25,6 +25,7 @@ import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * objects工具增强类
@@ -34,6 +35,32 @@ import vip.justlive.oxygen.core.constant.Constants;
 @Slf4j
 @UtilityClass
 public class MoreObjects {
+
+  /**
+   * 非空检查
+   *
+   * @param obj 校验值
+   * @param <T> 泛型类
+   * @return 传入值
+   */
+  public static <T> T notNull(T obj) {
+    return notNull(obj, "can not be null");
+  }
+
+  /**
+   * 非空检查
+   *
+   * @param obj 校验值
+   * @param msg 错误信息
+   * @param <T> 泛型类
+   * @return 传入值
+   */
+  public static <T> T notNull(T obj, String msg) {
+    if (obj == null) {
+      throw Exceptions.fail(msg);
+    }
+    return obj;
+  }
 
   /**
    * 获取第一个不为null的值，没有则返回null
@@ -99,7 +126,7 @@ public class MoreObjects {
    * @return map
    */
   public static Map<String, Object> beanToMap(Object bean) {
-    Checks.notNull(bean, "bean can not be null");
+    notNull(bean, "bean can not be null");
     Map<String, Object> map = new HashMap<>(4);
     if (Map.class.isAssignableFrom(bean.getClass())) {
       Map<?, ?> beanMap = (Map<?, ?>) bean;

@@ -16,7 +16,7 @@ package vip.justlive.oxygen.core.convert;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
-import vip.justlive.oxygen.core.util.Checks;
+import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
  * 默认转换服务实现类
@@ -66,7 +66,7 @@ public class DefaultConverterService implements ConverterService, ConverterRegis
   @SuppressWarnings("unchecked")
   @Override
   public ConverterRegistry addConverter(Converter<?, ?> converter) {
-    Checks.notNull(converter);
+    MoreObjects.notNull(converter);
     for (ConverterTypePair pair : converter.pairs()) {
       converters.put(pair, (Converter<Object, Object>) converter);
     }
@@ -75,13 +75,13 @@ public class DefaultConverterService implements ConverterService, ConverterRegis
 
   @Override
   public ConverterRegistry addConverterFactory(ConverterFactory<?, ?> factory) {
-    Checks.notNull(factory).converters().forEach(this::addConverter);
+    MoreObjects.notNull(factory).converters().forEach(this::addConverter);
     return this;
   }
 
   @Override
   public ConverterRegistry addArrayConverter(ArrayConverter converter) {
-    Checks.notNull(converter);
+    MoreObjects.notNull(converter);
     arrayConverters.put(converter.pair(), converter);
     return this;
   }
@@ -104,11 +104,11 @@ public class DefaultConverterService implements ConverterService, ConverterRegis
     if (targetType.isArray()) {
       ArrayConverter converter = arrayConverters
           .get(ConverterTypePair.create(source.getClass(), Array.class));
-      return (T) Checks.notNull(converter).convert(source, source.getClass(), targetType);
+      return (T) MoreObjects.notNull(converter).convert(source, source.getClass(), targetType);
     }
     Converter<Object, Object> converter = converters
         .get(ConverterTypePair.create(source.getClass(), targetType));
 
-    return (T) Checks.notNull(converter).convert(source);
+    return (T) MoreObjects.notNull(converter).convert(source);
   }
 }

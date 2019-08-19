@@ -136,7 +136,7 @@ public class ThreadFactoryBuilder {
    */
   public ThreadFactoryBuilder setUncaughtExceptionHandler(
       UncaughtExceptionHandler uncaughtExceptionHandler) {
-    this.uncaughtExceptionHandler = Checks.notNull(uncaughtExceptionHandler);
+    this.uncaughtExceptionHandler = MoreObjects.notNull(uncaughtExceptionHandler);
     return this;
   }
 
@@ -149,7 +149,7 @@ public class ThreadFactoryBuilder {
    * @return this for the builder pattern
    */
   public ThreadFactoryBuilder setThreadFactory(ThreadFactory backingThreadFactory) {
-    this.backingThreadFactory = Checks.notNull(backingThreadFactory);
+    this.backingThreadFactory = MoreObjects.notNull(backingThreadFactory);
     return this;
   }
 

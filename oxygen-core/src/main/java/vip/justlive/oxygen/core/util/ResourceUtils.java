@@ -112,8 +112,8 @@ public class ResourceUtils {
    * @return path
    */
   public static String concat(String parent, String child) {
-    Checks.notNull(parent);
-    Checks.notNull(child);
+    MoreObjects.notNull(parent);
+    MoreObjects.notNull(child);
     StringBuilder sb = new StringBuilder(parent);
     if (parent.endsWith(Constants.ROOT_PATH) && child.startsWith(Constants.ROOT_PATH)) {
       sb.deleteCharAt(sb.length() - 1);

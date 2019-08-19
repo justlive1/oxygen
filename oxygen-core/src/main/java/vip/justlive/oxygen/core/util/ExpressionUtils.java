@@ -52,8 +52,8 @@ public class ExpressionUtils {
    * @return value
    */
   private static Object getValue(Object source, String name) {
-    Checks.notNull(source);
-    Checks.notNull(name);
+    MoreObjects.notNull(source);
+    MoreObjects.notNull(name);
     if (Map.class.isAssignableFrom(source.getClass())) {
       return ((Map<?, ?>) source).get(name);
     }

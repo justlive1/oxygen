@@ -71,9 +71,10 @@ public class DataSourceConf {
    * @return conf
    */
   public DataSourceConf validate() {
-    vip.justlive.oxygen.core.util.Checks.notNull(driverClassName, "driverClassName cannot be null");
-    vip.justlive.oxygen.core.util.Checks.notNull(url, "url cannot be null");
-    vip.justlive.oxygen.core.util.Checks.notNull(username, "username cannot be null");
+    vip.justlive.oxygen.core.util.MoreObjects
+        .notNull(driverClassName, "driverClassName cannot be null");
+    vip.justlive.oxygen.core.util.MoreObjects.notNull(url, "url cannot be null");
+    vip.justlive.oxygen.core.util.MoreObjects.notNull(username, "username cannot be null");
     return this;
   }
 

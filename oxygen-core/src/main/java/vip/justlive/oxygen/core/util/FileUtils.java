@@ -83,7 +83,7 @@ public class FileUtils {
    * @param children 子目录
    */
   public static void mkdirs(String parent, String... children) {
-    Checks.notNull(parent);
+    MoreObjects.notNull(parent);
     File parentDir = new File(parent);
     if (children != null && children.length > 0) {
       for (String child : children) {
@@ -163,7 +163,7 @@ public class FileUtils {
    * @return extension
    */
   public static String extension(String filename) {
-    int index = Checks.notNull(filename).lastIndexOf(Constants.DOT);
+    int index = MoreObjects.notNull(filename).lastIndexOf(Constants.DOT);
     if (index == -1) {
       return Constants.EMPTY;
     }
@@ -188,8 +188,8 @@ public class FileUtils {
    * @return count
    */
   public static int countFiles(File file, Predicate<File> filter) {
-    Checks.notNull(file, "file cant not be null");
-    Checks.notNull(filter, "filter can not be null");
+    MoreObjects.notNull(file, "file cant not be null");
+    MoreObjects.notNull(filter, "filter can not be null");
     if (file.isFile()) {
       if (filter.test(file)) {
         return 1;
@@ -226,8 +226,8 @@ public class FileUtils {
    * @return count
    */
   public static int countDirs(File file, Predicate<File> filter) {
-    Checks.notNull(file, "file cant not be null");
-    Checks.notNull(filter, "filter can not be null");
+    MoreObjects.notNull(file, "file cant not be null");
+    MoreObjects.notNull(filter, "filter can not be null");
     if (file.isDirectory()) {
       File[] files = file.listFiles();
       if (files == null || files.length == 0) {
@@ -253,7 +253,7 @@ public class FileUtils {
    * @return path
    */
   public static String absolutePath(File file) {
-    Checks.notNull(file);
+    MoreObjects.notNull(file);
     try {
       return file.getCanonicalPath();
     } catch (IOException e) {

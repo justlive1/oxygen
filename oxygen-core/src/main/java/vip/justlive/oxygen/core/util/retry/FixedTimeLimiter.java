@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import vip.justlive.oxygen.core.util.Checks;
+import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
  * 固定时间 time limiter
@@ -37,8 +37,8 @@ public class FixedTimeLimiter<V> implements TimeLimiter<V> {
       throw new IllegalArgumentException(String.format("timeout must be positive:%s", timeout));
     }
     this.timeout = timeout;
-    this.timeUnit = Checks.notNull(timeUnit);
-    this.executorService = Checks.notNull(executorService);
+    this.timeUnit = MoreObjects.notNull(timeUnit);
+    this.executorService = MoreObjects.notNull(executorService);
   }
 
   @Override

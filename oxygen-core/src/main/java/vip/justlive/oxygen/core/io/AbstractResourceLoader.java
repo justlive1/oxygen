@@ -159,7 +159,7 @@ public abstract class AbstractResourceLoader {
           list.addAll(this.resolveClassPathResource(location));
         }
       } catch (IOException e) {
-        log.warn("location [{}] cannot find resource", location, e);
+        log.warn("location [{}] cannot find resource", location);
         if (!ignoreNotFound) {
           throw Exceptions.wrap(e);
         }

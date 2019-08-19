@@ -20,7 +20,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import vip.justlive.oxygen.core.util.Checks;
+import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
@@ -227,7 +227,7 @@ public class RetryBuilder<T> {
    * @return builder
    */
   public RetryBuilder<T> onRetry(Consumer<Attempt<T>> listener) {
-    retryListeners.add(Checks.notNull(listener));
+    retryListeners.add(MoreObjects.notNull(listener));
     return this;
   }
 
@@ -238,7 +238,7 @@ public class RetryBuilder<T> {
    * @return builder
    */
   public RetryBuilder<T> onFinalFail(Consumer<Attempt<T>> listener) {
-    failListeners.add(Checks.notNull(listener));
+    failListeners.add(MoreObjects.notNull(listener));
     return this;
   }
 
@@ -249,7 +249,7 @@ public class RetryBuilder<T> {
    * @return builder
    */
   public RetryBuilder<T> onSuccess(Consumer<Attempt<T>> listener) {
-    successListeners.add(Checks.notNull(listener));
+    successListeners.add(MoreObjects.notNull(listener));
     return this;
   }
 
@@ -260,7 +260,7 @@ public class RetryBuilder<T> {
    * @return builder
    */
   public RetryBuilder<T> withAsyncExecutor(ScheduledExecutorService scheduledExecutorService) {
-    this.scheduledExecutorService = Checks.notNull(scheduledExecutorService);
+    this.scheduledExecutorService = MoreObjects.notNull(scheduledExecutorService);
     return this;
   }
 

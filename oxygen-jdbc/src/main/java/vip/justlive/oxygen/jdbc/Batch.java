@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import vip.justlive.oxygen.core.util.Checks;
 
 /**
  * 批处理
@@ -105,7 +104,7 @@ public class Batch {
         ps = Jdbc.getConnection(dataSourceName).prepareStatement(sql);
         psts.put(sql, ps);
       }
-      Jdbc.fillStatement(Checks.notNull(ps), params);
+      Jdbc.fillStatement(ps, params);
       ps.addBatch();
       return this;
     } catch (SQLException e) {

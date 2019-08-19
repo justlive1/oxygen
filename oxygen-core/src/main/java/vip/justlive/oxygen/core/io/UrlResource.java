@@ -22,7 +22,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.core.util.Checks;
+import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.ResourceUtils;
 
 /**
@@ -40,7 +40,7 @@ public class UrlResource implements SourceResource {
    * @param url URL
    */
   public UrlResource(URL url) {
-    this.url = Checks.notNull(url);
+    this.url = MoreObjects.notNull(url);
   }
 
   @Override

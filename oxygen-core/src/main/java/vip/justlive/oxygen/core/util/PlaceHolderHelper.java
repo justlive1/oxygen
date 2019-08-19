@@ -76,8 +76,8 @@ public class PlaceHolderHelper {
   public PlaceHolderHelper(String placeholderPrefix, String placeholderSuffix,
       String valueSeparator, boolean ignoreUnresolvablePlaceholders) {
 
-    Checks.notNull(placeholderPrefix, "'placeholderPrefix' must not be null");
-    Checks.notNull(placeholderSuffix, "'placeholderSuffix' must not be null");
+    MoreObjects.notNull(placeholderPrefix, "'placeholderPrefix' must not be null");
+    MoreObjects.notNull(placeholderSuffix, "'placeholderSuffix' must not be null");
     this.placeholderPrefix = placeholderPrefix;
     this.placeholderSuffix = placeholderSuffix;
     String simplePrefixForSuffix = SIMPLE_PREFIXES.get(this.placeholderSuffix);
@@ -114,8 +114,8 @@ public class PlaceHolderHelper {
    * @return 替换后的字符串
    */
   public String replacePlaceholders(String value, final Properties properties) {
-    Checks.notNull(properties, "'properties' must not be null");
-    Checks.notNull(value, "'value' must not be null");
+    MoreObjects.notNull(properties, "'properties' must not be null");
+    MoreObjects.notNull(value, "'value' must not be null");
     return parseStringValue(value, properties, new HashSet<>());
   }
 

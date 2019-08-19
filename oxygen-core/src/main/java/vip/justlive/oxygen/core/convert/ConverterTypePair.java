@@ -15,7 +15,7 @@ package vip.justlive.oxygen.core.convert;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import vip.justlive.oxygen.core.util.Checks;
+import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
  * 转换类型对
@@ -41,8 +41,8 @@ public class ConverterTypePair {
   }
 
   public static ConverterTypePair create(Class<?> sourceType, Class<?> targetType) {
-    Checks.notNull(sourceType, "Source type must not be null");
-    Checks.notNull(targetType, "Target type must not be null");
+    MoreObjects.notNull(sourceType, "Source type must not be null");
+    MoreObjects.notNull(targetType, "Target type must not be null");
     Integer key = hash(sourceType, targetType);
     ConverterTypePair pair = CACHE.get(key);
     if (pair == null) {
