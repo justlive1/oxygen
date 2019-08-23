@@ -12,40 +12,9 @@
  *  the License.
  */
 
-package vip.justlive.oxygen.core.net;
-
 /**
- * http方法枚举
+ * aio相关
  *
  * @author wubo
  */
-public enum HttpMethod {
-  /**
-   * get
-   */
-  GET,
-  /**
-   * head
-   */
-  HEAD,
-  /**
-   * post
-   */
-  POST,
-  /**
-   * put
-   */
-  PUT,
-  /**
-   * delete
-   */
-  DELETE,
-  /**
-   * options
-   */
-  OPTIONS,
-  /**
-   * trace
-   */
-  TRACE
-}
+package vip.justlive.oxygen.core.net.aio;

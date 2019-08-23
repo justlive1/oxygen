@@ -13,8 +13,6 @@
  */
 package vip.justlive.oxygen.core.util;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -80,7 +78,6 @@ public class SnowflakeIdWorker {
   private long dataCenterId;
   private long sequence = 0L;
   private long lastTimestamp = -1L;
-  private boolean isClock = false;
 
   /**
    * 基于Snowflake创建分布式ID生成器
@@ -111,10 +108,6 @@ public class SnowflakeIdWorker {
    */
   public static long defaultNextId() {
     return InstanceHolder.INSTANCE.nextId();
-  }
-
-  public void setClock(boolean clock) {
-    isClock = clock;
   }
 
   /**
@@ -188,12 +181,7 @@ public class SnowflakeIdWorker {
    * @return timestamp
    */
   private long timeGen() {
-    if (isClock) {
-      // 解决高并发下获取时间戳的性能问题
-      return SystemClock.now();
-    } else {
-      return System.currentTimeMillis();
-    }
+    return System.currentTimeMillis();
   }
 
   private static class InstanceHolder {
@@ -203,64 +191,4 @@ public class SnowflakeIdWorker {
     private InstanceHolder() {
     }
   }
-
-  /**
-   * 高并发场景下System.currentTimeMillis()的性能问题的优化
-   * <p>
-   * System.currentTimeMillis()的调用比new一个普通对象要耗时的多（具体耗时高出多少我还没测试过，有人说是100倍左右）
-   * <p>
-   * System.currentTimeMillis()之所以慢是因为去跟系统打了一次交道
-   * <p>
-   * 后台定时更新时钟，JVM退出时，线程自动回收
-   * <p>
-   * 10亿：43410,206,210.72815533980582%
-   * <p>
-   * 1亿：4699,29,162.0344827586207%
-   * <p>
-   * 1000万：480,12,40.0%
-   * <p>
-   * 100万：50,10,5.0%
-   */
-  static class SystemClock {
-
-    private final long period;
-    private final AtomicLong now;
-
-    private SystemClock(long period) {
-      this.period = period;
-      this.now = new AtomicLong(System.currentTimeMillis());
-      scheduleClockUpdating();
-    }
-
-    private static SystemClock instance() {
-      return InstanceHolder.INSTANCE;
-    }
-
-    static long now() {
-      return instance().currentTimeMillis();
-    }
-
-    private void scheduleClockUpdating() {
-      ThreadUtils.newScheduledExecutor(1, "System-Clock-Schedule")
-          .scheduleAtFixedRate(this::updateTimeMillis, period, period, TimeUnit.MILLISECONDS);
-    }
-
-    private void updateTimeMillis() {
-      now.set(System.currentTimeMillis());
-    }
-
-    private long currentTimeMillis() {
-      return now.get();
-    }
-
-    private static class InstanceHolder {
-
-      static final SystemClock INSTANCE = new SystemClock(1);
-
-      private InstanceHolder() {
-      }
-    }
-
-  }
-
 }

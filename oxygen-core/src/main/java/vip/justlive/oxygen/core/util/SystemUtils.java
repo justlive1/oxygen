@@ -17,7 +17,7 @@ public class SystemUtils {
   /**
    * 本地地址
    */
-  public final static String LOCAL_IP = "127.0.0.1";
+  public static final String LOCAL_IP = "127.0.0.1";
 
   /**
    * 默认最小端口

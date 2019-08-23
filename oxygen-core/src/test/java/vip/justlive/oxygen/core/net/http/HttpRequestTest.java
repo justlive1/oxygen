@@ -12,7 +12,7 @@
  *  the License.
  */
 
-package vip.justlive.oxygen.core.net;
+package vip.justlive.oxygen.core.net.http;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
