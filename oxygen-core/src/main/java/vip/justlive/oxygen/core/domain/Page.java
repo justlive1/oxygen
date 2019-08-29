@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 justlive1
+ * Copyright (C) 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core.domain;
 
+import java.io.Serializable;
 import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,8 +26,9 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @NoArgsConstructor
-public class Page<T> {
+public class Page<T> implements Serializable {
 
+  private static final long serialVersionUID = 1L;
   /**
    * 第几页
    */

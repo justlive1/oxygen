@@ -1,9 +1,29 @@
+/*
+ * Copyright (C) 2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package vip.justlive.oxygen.core.util;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.net.ServerSocketFactory;
 import lombok.experimental.UtilityClass;
+import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -107,5 +127,63 @@ public class SystemUtils {
     throw Exceptions.fail(String
         .format("Can not find available port in range [%d, %d] after [%d] attempts", minPort,
             maxPort, searchCounter));
+  }
+
+  /**
+   * 解析成InetSocketAddress，格式host:port
+   *
+   * @param address 需要解析的地址
+   * @return address
+   */
+  public static InetSocketAddress parseAddress(String address) {
+    if (address == null || address.trim().length() == 0) {
+      return null;
+    }
+    String[] hostPort = address.trim().split(Constants.COLON);
+    return new InetSocketAddress(hostPort[0].trim(), Integer.parseInt(hostPort[1].trim()));
+  }
+
+
+  /**
+   * 获取本机地址
+   *
+   * @return address
+   */
+  public static InetAddress getLocalAddress() {
+    InetAddress candidateAddress = null;
+    try {
+      Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+      if (interfaces != null) {
+        candidateAddress = getByNetworkInterfaces(interfaces);
+      }
+    } catch (SocketException e) {
+      // ignore
+    }
+
+    if (candidateAddress == null) {
+      try {
+        candidateAddress = InetAddress.getLocalHost();
+      } catch (UnknownHostException e) {
+        // ignore
+      }
+    }
+    return candidateAddress;
+  }
+
+  private InetAddress getByNetworkInterfaces(Enumeration<NetworkInterface> interfaces) {
+    InetAddress candidateAddress = null;
+    while (interfaces.hasMoreElements()) {
+      NetworkInterface network = interfaces.nextElement();
+      Enumeration<InetAddress> addresses = network.getInetAddresses();
+      while (addresses.hasMoreElements()) {
+        InetAddress address = addresses.nextElement();
+        if (address.isSiteLocalAddress()) {
+          return address;
+        } else if (!address.isLoopbackAddress() || !address.isLinkLocalAddress()) {
+          candidateAddress = address;
+        }
+      }
+    }
+    return candidateAddress;
   }
 }

@@ -17,9 +17,7 @@ package vip.justlive.oxygen.core.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.util.ExpiringMap.CleanPolicy;

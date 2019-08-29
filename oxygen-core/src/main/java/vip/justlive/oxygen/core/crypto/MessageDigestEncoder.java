@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 justlive1
+ * Copyright (C) 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -32,7 +32,7 @@ public class MessageDigestEncoder extends BaseEncoder {
   }
 
   @Override
-  String doEncode(String source) {
+  protected String doEncode(String source) {
     byte[] bytes = create().digest(StandardCharsets.UTF_8.encode(source).array());
     return Hex.encodeToString(bytes);
   }

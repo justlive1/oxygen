@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 justlive1
+ * Copyright (C) 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -24,16 +24,16 @@ import vip.justlive.oxygen.core.util.MoreObjects;
  */
 public class ConverterTypePair {
 
-  static final Map<Integer, ConverterTypePair> CACHE = new ConcurrentHashMap<>(8);
+  private static final Map<Integer, ConverterTypePair> CACHE = new ConcurrentHashMap<>(8);
 
   /**
    * 源类型
    */
-  Class<?> sourceType;
+  private Class<?> sourceType;
   /**
    * 目标类型
    */
-  Class<?> targetType;
+  private Class<?> targetType;
 
   private ConverterTypePair(Class<?> sourceType, Class<?> targetType) {
     this.sourceType = sourceType;

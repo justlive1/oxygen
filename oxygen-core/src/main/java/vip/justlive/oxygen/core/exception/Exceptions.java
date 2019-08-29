@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 justlive1
+ * Copyright (C) 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core.exception;
 
+import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.core.constant.Constants;
 
 /**
@@ -23,10 +24,8 @@ import vip.justlive.oxygen.core.constant.Constants;
  *
  * @author wubo
  */
+@UtilityClass
 public class Exceptions {
-
-  private Exceptions() {
-  }
 
   /**
    * 抛出unchecked异常
