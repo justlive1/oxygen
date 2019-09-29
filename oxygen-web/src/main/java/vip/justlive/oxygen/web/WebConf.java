@@ -79,6 +79,12 @@ public class WebConf {
   private String thymeleafViewSuffix;
 
   /**
+   * freemarker 路径前缀
+   */
+  @Value("${web.view.freemarker.prefix:/templates}")
+  private String freemarkerViewPrefix;
+
+  /**
    * simple 路径前缀
    */
   @Value("${web.view.simple.prefix:/templates}")

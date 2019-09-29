@@ -16,7 +16,7 @@ package vip.justlive.oxygen.web.router;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import vip.justlive.oxygen.core.domain.Resp;
+import vip.justlive.oxygen.core.util.Resp;
 import vip.justlive.oxygen.web.annotation.Mapping;
 import vip.justlive.oxygen.web.annotation.Param;
 import vip.justlive.oxygen.web.annotation.Router;

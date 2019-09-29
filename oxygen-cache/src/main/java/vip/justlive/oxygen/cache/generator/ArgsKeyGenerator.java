@@ -16,9 +16,10 @@ package vip.justlive.oxygen.cache.generator;
 import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.ReflectUtils;
+import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
@@ -39,7 +40,7 @@ public class ArgsKeyGenerator implements KeyGenerator {
     }
     String key = params[0].toString();
     Object[] args = (Object[]) params[1];
-    return String.join(Constants.DOT, method.getDeclaringClass().getName(), method.getName(),
+    return String.join(Strings.DOT, method.getDeclaringClass().getName(), method.getName(),
         MoreObjects.safeToString(parse(key, args)));
   }
 
@@ -49,11 +50,11 @@ public class ArgsKeyGenerator implements KeyGenerator {
       String source = matcher.group(0);
       int index = Integer.parseInt(matcher.group(1));
       if (index > args.length - 1) {
-        throw new IllegalArgumentException(String.format("Cacheable.key配置有误[%s],参数下标越界", key));
+        throw Exceptions.fail(String.format("Cacheable.key[%s] illegal, out of bounds", key));
       }
       return parse(key.substring(source.length()), args[index]);
     } else {
-      throw new IllegalArgumentException(String.format("Cacheable.key配置有误[%s]", key));
+      throw Exceptions.fail(String.format("Cacheable.key[%s] illegal", key));
     }
   }
 

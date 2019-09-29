@@ -152,10 +152,7 @@ public class ExpiringMapTest {
         // 默认失效时间 10
         .expiration(30, TimeUnit.MILLISECONDS)
         // 累积1次
-        .accumulateThreshold(1)
-        .maxSize(2)
-        .asyncExpiredListeners((k, v) -> list.add(k))
-        .build();
+        .accumulateThreshold(1).maxSize(2).asyncExpiredListeners((k, v) -> list.add(k)).build();
 
     expiringMap.put("1", 1);
     expiringMap.put("2", 2);

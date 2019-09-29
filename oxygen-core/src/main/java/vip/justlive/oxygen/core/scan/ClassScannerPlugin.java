@@ -15,6 +15,7 @@ package vip.justlive.oxygen.core.scan;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -79,7 +80,9 @@ public class ClassScannerPlugin implements Plugin {
   public void start() {
     CoreConf config = ConfigFactory.load(CoreConf.class);
     ClassScanner scanner = new DefaultClassScanner();
-    CLASSES.addAll(scanner.scan(config.getClassScan()));
+    String[] pkgs = Arrays.copyOf(config.getClassScan(), config.getClassScan().length + 1);
+    pkgs[pkgs.length - 1] = "vip.justlive.oxygen";
+    CLASSES.addAll(scanner.scan(pkgs));
   }
 
   @Override

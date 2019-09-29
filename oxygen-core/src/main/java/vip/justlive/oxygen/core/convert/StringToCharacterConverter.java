@@ -16,6 +16,7 @@ package vip.justlive.oxygen.core.convert;
 
 import java.util.HashSet;
 import java.util.Set;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * String - Character转换器
@@ -30,8 +31,7 @@ public class StringToCharacterConverter implements Converter<String, Character> 
       return null;
     }
     if (source.length() > 1) {
-      throw new IllegalArgumentException(
-          String.format("Can only convert String[%s] to Character", source));
+      throw Exceptions.fail(String.format("Can only convert String[%s] to Character", source));
     }
     return source.charAt(0);
   }

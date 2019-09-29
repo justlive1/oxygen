@@ -18,12 +18,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.servlet.http.HttpServletRequest;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.web.router.Route;
+import vip.justlive.oxygen.core.net.http.HttpMethod;
+import vip.justlive.oxygen.core.util.HttpHeaders;
+import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.web.router.RouteHandler;
 
 /**
  * Request
@@ -33,34 +35,59 @@ import vip.justlive.oxygen.web.router.Route;
 @Getter
 @ToString
 @EqualsAndHashCode
+@RequiredArgsConstructor
 public class Request implements Serializable {
+
+  public static final String ORIGINAL_REQUEST = "_ORIGINAL_REQUEST";
+  public static final String PATH_VARS = "_PATH_VARS:";
 
   private static final long serialVersionUID = 1L;
 
   private static final ThreadLocal<Request> LOCAL = new ThreadLocal<>();
-  private static final String[] EMPTY = new String[0];
-
-  private final transient HttpServletRequest originalRequest;
+  /**
+   * 请求类型
+   */
+  final HttpMethod method;
+  /**
+   * 请求地址
+   */
+  final String requestUri;
+  /**
+   * 协议 http/1.1
+   */
+  final String protocol;
+  /**
+   * query params
+   */
+  private final Map<String, String[]> params = new HashMap<>(4);
+  /**
+   * headers
+   */
+  private final Map<String, String[]> headers = new HashMap<>(4);
+  /**
+   * cookies
+   */
+  private final Map<String, Cookie> cookies = new HashMap<>(4);
+  /**
+   * attributes
+   */
+  private final transient Map<String, Object> attributes = new HashMap<>(2);
+  /**
+   * body
+   */
+  byte[] body;
   /**
    * 主机名
    */
   String host;
   /**
-   * 请求路径 去除host:port
+   * 请求路径 去除queryString
    */
   String path;
   /**
    * 容器路径
    */
   String contextPath;
-  /**
-   * 请求全路径 http://host:port/path?queryString
-   */
-  String url;
-  /**
-   * 请求类型
-   */
-  String method;
   /**
    * 客户端ip
    */
@@ -72,7 +99,7 @@ public class Request implements Serializable {
   /**
    * 内容类型
    */
-  String contentType = "text/html";
+  String contentType;
   /**
    * 字符集编码
    */
@@ -94,47 +121,19 @@ public class Request implements Serializable {
    */
   boolean secure;
 
-  transient Route route;
+  transient RouteHandler routeHandler;
   /**
    * 异常
    */
   transient Exception exception;
-  /**
-   * query params
-   */
-  private Map<String, String[]> params;
-  /**
-   * 请求路径参数
-   */
-  private Map<String, String> pathVariables;
-  /**
-   * headers
-   */
-  private Map<String, String[]> headers;
-  /**
-   * cookies
-   */
-  private Map<String, Cookie> cookies;
 
-
-  Request(HttpServletRequest originalRequest) {
-    this.originalRequest = originalRequest;
-  }
-
-  /**
-   * 设置线程值Request
-   *
-   * @param originalRequest 原始request
-   * @return request
-   */
-  public static Request set(HttpServletRequest originalRequest) {
-    Request request = new Request(originalRequest);
-    request.params = new HashMap<>(8);
-    request.pathVariables = new HashMap<>(2);
-    request.cookies = new HashMap<>(4);
-    request.headers = new HashMap<>(4);
-    LOCAL.set(request);
-    return request;
+  public Request(HttpMethod method, String requestUri, String protocol, String contextPath,
+      byte[] body) {
+    this.method = method;
+    this.requestUri = requestUri;
+    this.protocol = protocol;
+    this.contextPath = contextPath;
+    this.body = body;
   }
 
   /**
@@ -151,6 +150,13 @@ public class Request implements Serializable {
    */
   public static void clear() {
     LOCAL.remove();
+  }
+
+  /**
+   * 设置到当前线程存储
+   */
+  public void local() {
+    LOCAL.set(this);
   }
 
   /**
@@ -183,13 +189,11 @@ public class Request implements Serializable {
    * @return values
    */
   public String[] getParams(String key) {
-    if (params != null) {
-      String[] values = params.get(key);
-      if (values != null) {
-        return values;
-      }
+    String[] values = params.get(key);
+    if (values != null) {
+      return values;
     }
-    return EMPTY;
+    return Strings.EMPTY_ARRAY;
   }
 
   /**
@@ -199,7 +203,7 @@ public class Request implements Serializable {
    * @return value
    */
   public String getPathVariable(String key) {
-    return pathVariables.get(key);
+    return (String) getAttribute(PATH_VARS + key);
   }
 
   /**
@@ -209,11 +213,7 @@ public class Request implements Serializable {
    * @return value
    */
   public String getHeader(String key) {
-    String[] values = getHeaders(key);
-    if (values.length > 0) {
-      return values[0];
-    }
-    return null;
+    return HttpHeaders.getHeader(key, headers);
   }
 
   /**
@@ -223,14 +223,7 @@ public class Request implements Serializable {
    * @return values
    */
   public String[] getHeaders(String key) {
-    if (headers != null) {
-      for (Map.Entry<String, String[]> entry : headers.entrySet()) {
-        if (entry.getKey().equalsIgnoreCase(key)) {
-          return entry.getValue();
-        }
-      }
-    }
-    return EMPTY;
+    return HttpHeaders.getHeaders(key, headers);
   }
 
   /**
@@ -240,10 +233,7 @@ public class Request implements Serializable {
    * @return cookie
    */
   public Cookie getCookie(String key) {
-    if (cookies != null) {
-      return cookies.get(key);
-    }
-    return null;
+    return cookies.get(key);
   }
 
   /**
@@ -274,6 +264,49 @@ public class Request implements Serializable {
   }
 
   /**
+   * 添加属性
+   *
+   * @param key 键
+   * @param value 值
+   * @return request
+   */
+  public Request addAttribute(String key, Object value) {
+    this.attributes.put(key, value);
+    return this;
+  }
+
+  /**
+   * 添加多属性
+   *
+   * @param attrs 属性
+   * @return request
+   */
+  public Request addAttribute(Map<String, Object> attrs) {
+    this.attributes.putAll(attrs);
+    return this;
+  }
+
+  /**
+   * 获取属性
+   *
+   * @param key 键
+   * @return value
+   */
+  public Object getAttribute(String key) {
+    return this.attributes.get(key);
+  }
+
+  /**
+   * 删除属性
+   *
+   * @param key 键
+   * @return 删除的value
+   */
+  public Object removeAttribute(String key) {
+    return this.attributes.remove(key);
+  }
+
+  /**
    * 设置当前请求异常
    *
    * @param exception 异常
@@ -288,15 +321,7 @@ public class Request implements Serializable {
    * @return true为ajax请求
    */
   public boolean isAjax() {
-    return Objects.equals(getHeader(Constants.X_REQUESTED_WITH), Constants.XML_HTTP_REQUEST);
+    return Objects.equals(getHeader(HttpHeaders.X_REQUESTED_WITH), HttpHeaders.XML_HTTP_REQUEST);
   }
 
-  /**
-   * 设置route
-   *
-   * @param route route
-   */
-  public void setRoute(Route route) {
-    this.route = route;
-  }
 }

@@ -21,7 +21,6 @@ import java.nio.file.Path;
 import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -163,9 +162,9 @@ public class FileUtils {
    * @return extension
    */
   public static String extension(String filename) {
-    int index = MoreObjects.notNull(filename).lastIndexOf(Constants.DOT);
+    int index = MoreObjects.notNull(filename).lastIndexOf(Strings.DOT);
     if (index == -1) {
-      return Constants.EMPTY;
+      return Strings.EMPTY;
     }
     return filename.substring(index + 1);
   }

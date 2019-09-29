@@ -53,7 +53,7 @@ public class GroupContext {
   /**
    * buffer大小
    */
-  private int bufferCapacity = 1024;
+  private int bufferCapacity = 8 * 1024;
   /**
    * 服务端地址
    */
@@ -74,6 +74,27 @@ public class GroupContext {
    * 客户端最大重连次数， 0或负数一直重连
    */
   private int retryMaxAttempts = 0;
+
+  /**
+   * 连接线程数
+   */
+  private int acceptThreads = 100;
+  /**
+   * 连接线程最大等待数
+   */
+  private int acceptMaxWaiter = 10000;
+  /**
+   * 工作线程数
+   */
+  private int workerThreads = 200;
+  /**
+   * 工作线程最大等待数
+   */
+  private int workerMaxWaiter = 1000000;
+  /**
+   * 是否hold住端口，true的话随主线程退出而退出，false的话则要主动退出
+   */
+  private boolean daemon = false;
 
   private ThreadPoolExecutor groupExecutor;
   private ThreadPoolExecutor workerExecutor;
@@ -106,14 +127,19 @@ public class GroupContext {
 
   public ThreadPoolExecutor getGroupExecutor() {
     if (groupExecutor == null) {
-      groupExecutor = ThreadUtils.newThreadPool(100, 100, 120, Integer.MAX_VALUE, "aio-server-%d");
+      groupExecutor = ThreadUtils
+          .newThreadPool(acceptThreads, acceptThreads, 120, acceptMaxWaiter, "aio-server-%d",
+              daemon);
+      groupExecutor.prestartCoreThread();
     }
     return groupExecutor;
   }
 
   public ThreadPoolExecutor getWorkerExecutor() {
     if (workerExecutor == null) {
-      workerExecutor = ThreadUtils.newThreadPool(200, 200, 120, Integer.MAX_VALUE, "aio-worker-%d");
+      workerExecutor = ThreadUtils
+          .newThreadPool(workerThreads, workerThreads, 120, workerMaxWaiter, "aio-worker-%d");
+      workerExecutor.prestartCoreThread();
     }
     return workerExecutor;
   }

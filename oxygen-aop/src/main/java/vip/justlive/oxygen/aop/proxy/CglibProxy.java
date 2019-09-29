@@ -72,7 +72,6 @@ public class CglibProxy implements MethodInterceptor {
     return invocation.getReturnValue();
   }
 
-
   private boolean doIntercept(TYPE type, Method method, Invocation invocation) {
     List<Interceptor> interceptors = ProxyStore.get(type, method);
     if (interceptors == null) {
@@ -81,8 +80,7 @@ public class CglibProxy implements MethodInterceptor {
     for (int index = 0, len = interceptors.size(); index < len; index++) {
       if (!interceptors.get(index).intercept(invocation)) {
         if (log.isDebugEnabled()) {
-          log.debug("aop intercepted, total size:{}, current index: {}", interceptors.size(),
-              index);
+          log.debug("aop intercepted, total:{}, current: {}", interceptors.size(), index);
         }
         return true;
       }

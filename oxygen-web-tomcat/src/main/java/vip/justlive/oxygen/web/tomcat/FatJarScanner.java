@@ -41,7 +41,8 @@ import org.apache.tomcat.util.compat.JreCompat;
 import org.apache.tomcat.util.res.StringManager;
 import org.apache.tomcat.util.scan.JarFactory;
 import org.apache.tomcat.util.scan.StandardJarScanFilter;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.Urls;
 
 /**
  * fat-jar scanner
@@ -104,12 +105,12 @@ public class FatJarScanner implements JarScanner {
 
   /**
    * Scan the provided ServletContext and class loade r for JAR files. Each JAR file found will be
-   * passed to the callback handler to be processed.
+   * passed to the callback handle to be processed.
    *
    * @param scanType The type of JAR scan to perform. This is passed to the filter which uses it to
    * determine how to filter the results
    * @param context The ServletContext - used to locate and access WEB-INF/lib
-   * @param callback The handler to process any JARs found
+   * @param callback The handle to process any JARs found
    */
   @Override
   public void scan(JarScanType scanType, ServletContext context, JarScannerCallback callback) {
@@ -129,13 +130,13 @@ public class FatJarScanner implements JarScanner {
 
   private void doScanWebInfLib(JarScanType scanType, ServletContext context,
       JarScannerCallback callback, Set<URL> processedURLs) {
-    Set<String> dirList = context.getResourcePaths(Constants.WEB_INF_LIB);
+    Set<String> dirList = context.getResourcePaths(TomcatConf.WEB_INF_LIB);
     if (dirList == null) {
       return;
     }
     for (String path : dirList) {
-      if (path.endsWith(Constants.JAR_EXT) && getJarScanFilter()
-          .check(scanType, path.substring(path.lastIndexOf(Constants.ROOT_PATH) + 1))) {
+      if (path.endsWith(TomcatConf.JAR_EXT) && getJarScanFilter()
+          .check(scanType, path.substring(path.lastIndexOf(Strings.SLASH) + 1))) {
         // Need to scan this JAR
         if (log.isDebugEnabled()) {
           log.debug(SM.getString("jarScan.webinflibJarScan", path));
@@ -159,14 +160,14 @@ public class FatJarScanner implements JarScanner {
   private void doScanWebInf(ServletContext context, JarScannerCallback callback,
       Set<URL> processedURLs) {
     try {
-      URL webInfURL = context.getResource(Constants.WEB_INF_CLASSES);
+      URL webInfURL = context.getResource(TomcatConf.WEB_INF_CLASSES);
       if (webInfURL != null) {
         // WEB-INF/classes will also be included in the URLs returned
         // by the web application class loader so ensure the class path
         // scanning below does not re-scan this location.
         processedURLs.add(webInfURL);
 
-        URL url = context.getResource(Constants.WEB_INF_CLASSES + Constants.META_INF_PATH);
+        URL url = context.getResource(TomcatConf.WEB_INF_CLASSES + TomcatConf.META_INF_PATH);
         if (url != null) {
           callback.scanWebInfClasses();
         }
@@ -271,13 +272,13 @@ public class FatJarScanner implements JarScanner {
       log.trace(SM.getString("jarScan.jarUrlStart", url));
     }
 
-    if (Constants.URL_PROTOCOL_JAR.equals(url.getProtocol()) || url.getPath()
-        .endsWith(Constants.JAR_EXT)) {
+    if (Urls.URL_PROTOCOL_JAR.equals(url.getProtocol()) || url.getPath()
+        .endsWith(TomcatConf.JAR_EXT)) {
       try (Jar jar = JarFactory.newInstance(url)) {
         processManifest(jar, isWebapp, classPathUrlsToProcess);
         callback.scan(jar, webappPath, isWebapp);
       }
-    } else if (Constants.URL_PROTOCOL_FILE.equals(url.getProtocol())) {
+    } else if (Urls.URL_PROTOCOL_FILE.equals(url.getProtocol())) {
       processFile(scanType, callback, url, webappPath, isWebapp, classPathUrlsToProcess);
     }
   }
@@ -296,7 +297,7 @@ public class FatJarScanner implements JarScanner {
         if (scanType == JarScanType.PLUGGABILITY) {
           callback.scan(f, webappPath, isWebapp);
         } else {
-          if (new File(f.getAbsoluteFile(), Constants.META_INF).isDirectory()) {
+          if (new File(f.getAbsoluteFile(), TomcatConf.META_INF).isDirectory()) {
             callback.scan(f, webappPath, isWebapp);
           }
         }
@@ -342,8 +343,8 @@ public class FatJarScanner implements JarScanner {
          *       by web applications, checks should be added to ensure that
          *       any relative URL does not step outside the web application.
          */
-        URI classPathEntryURI = jar.getJarFileURL().toURI().resolve(classPathEntry);
-        classPathUrlsToProcess.add(classPathEntryURI.toURL());
+        URI classPathEntryUri = jar.getJarFileURL().toURI().resolve(classPathEntry);
+        classPathUrlsToProcess.add(classPathEntryUri.toURL());
       } catch (Exception e) {
         if (log.isDebugEnabled()) {
           log.debug(SM.getString("jarScan.invalidUri", jarURL), e);

@@ -82,7 +82,24 @@ public class ThreadUtils {
   public static ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
       int keepAliveSeconds, int queueCapacity, String nameFormat) {
     return newThreadPool(corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity, nameFormat,
-        new ThreadPoolExecutor.AbortPolicy());
+        true);
+  }
+
+  /**
+   * 构造线程池
+   *
+   * @param corePoolSize 线程数
+   * @param maxPoolSize 最大线程数
+   * @param keepAliveSeconds 空闲线程等待时间
+   * @param queueCapacity 队列大小
+   * @param nameFormat 线程名称format
+   * @param daemon 是否为守护线程
+   * @return 线程池
+   */
+  public static ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
+      int keepAliveSeconds, int queueCapacity, String nameFormat, boolean daemon) {
+    return newThreadPool(corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity, nameFormat,
+        new ThreadPoolExecutor.AbortPolicy(), daemon);
   }
 
   /**
@@ -99,9 +116,28 @@ public class ThreadUtils {
   public static ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
       int keepAliveSeconds, int queueCapacity, String nameFormat,
       RejectedExecutionHandler handler) {
+    return newThreadPool(corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity, nameFormat,
+        handler, true);
+  }
+
+  /**
+   * 构造线程池
+   *
+   * @param corePoolSize 线程数
+   * @param maxPoolSize 最大线程数
+   * @param keepAliveSeconds 空闲线程等待时间
+   * @param queueCapacity 队列大小
+   * @param nameFormat 线程名称format
+   * @param handler 拒绝策略
+   * @param daemon 是否为守护线程
+   * @return 线程池
+   */
+  public static ThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
+      int keepAliveSeconds, int queueCapacity, String nameFormat,
+      RejectedExecutionHandler handler, boolean daemon) {
     return new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveSeconds, TimeUnit.SECONDS,
         new LinkedBlockingQueue<>(queueCapacity),
-        new ThreadFactoryBuilder().setNameFormat(nameFormat).setDaemon(true).build(), handler);
+        new ThreadFactoryBuilder().setNameFormat(nameFormat).setDaemon(daemon).build(), handler);
   }
 
   /**

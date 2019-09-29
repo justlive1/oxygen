@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -35,7 +36,6 @@ import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * 有失效时间的 Map，可对每个键值对设置失效时间
@@ -63,18 +63,27 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private static final AtomicLong INSTANCES = new AtomicLong();
+  private static final ScheduledExecutorService SCHEDULED;
+  private static final AtomicInteger INS = new AtomicInteger(0);
+
+  static {
+    int poolSize = Integer.getInteger("expiringMap.poolSize", 2);
+    SCHEDULED = ThreadUtils.newScheduledExecutor(poolSize, "ExpiringMap-%d");
+  }
 
   private final transient ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
   private final transient Lock readLock = readWriteLock.readLock();
   private final transient Lock writeLock = readWriteLock.writeLock();
   private final transient AtomicLong accumulate = new AtomicLong();
-
-  private transient ScheduledExecutorService executorService;
   /**
    * 失效监听
    */
   private transient List<ExpiredListener<K, V>> asyncExpiredListeners;
+  /**
+   * 名称
+   */
+  @Getter
+  private String name;
   /**
    * 最大数量
    */
@@ -128,13 +137,14 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     cleanPolicy = builder.cleanPolicy;
     expiringPolicy = builder.expiringPolicy;
     scheduleDelay = builder.scheduleDelay;
+    if (scheduleDelay <= 0) {
+      scheduleDelay = Math.max((int) timeUnit.toSeconds(duration) / 4, 60);
+    }
     accumulateThreshold = builder.accumulateThreshold;
-    executorService = ThreadUtils.newScheduledExecutor(1, String
-        .format("EM-%s-%s", INSTANCES.getAndIncrement(),
-            MoreObjects.firstNonNull(builder.name, Constants.EMPTY)));
-    executorService
-        .scheduleWithFixedDelay(this::runScheduleCleanPolicy, scheduleDelay, scheduleDelay,
-            TimeUnit.SECONDS);
+    int index = INS.getAndIncrement();
+    name = MoreObjects.firstNonNull(builder.name, String.format("Unnamed-%d", index));
+    SCHEDULED.scheduleWithFixedDelay(this::runScheduleCleanPolicy, scheduleDelay, scheduleDelay,
+        TimeUnit.SECONDS);
     data = new LruMap<K, V>().maxSize(maxSize).listeners(asyncExpiredListeners);
   }
 
@@ -166,8 +176,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
    * @return 数量
    */
   public int realSize() {
+    readLock.lock();
     try {
-      readLock.lock();
       return data.size();
     } finally {
       readLock.unlock();
@@ -176,8 +186,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public int size() {
+    readLock.lock();
     try {
-      readLock.lock();
       return (int) data.values().parallelStream().filter(r -> !r.isExpired()).count();
     } finally {
       readLock.unlock();
@@ -191,8 +201,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public boolean containsKey(Object key) {
+    readLock.lock();
     try {
-      readLock.lock();
       ExpiringValue<V> value = data.get(key);
       return value != null && !value.isExpired();
     } finally {
@@ -202,19 +212,24 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public boolean containsValue(Object value) {
-    for (Entry<K, ExpiringValue<V>> entry : data.entrySet()) {
-      ExpiringValue<V> wrapValue = entry.getValue();
-      if (!wrapValue.isExpired() && Objects.equals(wrapValue.value, value)) {
-        return true;
+    readLock.lock();
+    try {
+      for (Entry<K, ExpiringValue<V>> entry : data.entrySet()) {
+        ExpiringValue<V> wrapValue = entry.getValue();
+        if (!wrapValue.isExpired() && Objects.equals(wrapValue.value, value)) {
+          return true;
+        }
       }
+      return false;
+    } finally {
+      readLock.unlock();
     }
-    return false;
   }
 
   @Override
   public V get(Object key) {
+    readLock.lock();
     try {
-      readLock.lock();
       ExpiringValue<V> value = data.get(key);
       if (value == null || value.isExpired()) {
         return null;
@@ -257,8 +272,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
    * @return 已存在的值
    */
   public V put(K key, V value, long duration, TimeUnit timeUnit) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       ExpiringValue<V> wrapValue = new ExpiringValue<>(value, duration, timeUnit);
       ExpiringValue<V> preValue = data.put(key, wrapValue);
       if (preValue != null && !preValue.isExpired()) {
@@ -273,8 +288,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public V remove(Object key) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       ExpiringValue<V> value = data.remove(key);
       if (value == null || value.isExpired()) {
         return null;
@@ -287,8 +302,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public void putAll(Map<? extends K, ? extends V> m) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       Map<K, ExpiringValue<V>> map = new HashMap<>(m.size());
       for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
         map.put(entry.getKey(), new ExpiringValue<>(entry.getValue()));
@@ -302,8 +317,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public void clear() {
+    writeLock.lock();
     try {
-      writeLock.lock();
       data.clear();
     } finally {
       writeLock.unlock();
@@ -312,8 +327,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public Set<K> keySet() {
+    readLock.lock();
     try {
-      readLock.lock();
       return data.entrySet().parallelStream().filter(r -> !r.getValue().isExpired())
           .map(Entry::getKey).collect(Collectors.toSet());
     } finally {
@@ -323,8 +338,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public Collection<V> values() {
+    readLock.lock();
     try {
-      readLock.lock();
       return data.values().parallelStream().filter(r -> !r.isExpired()).map(r -> r.value)
           .collect(Collectors.toList());
     } finally {
@@ -334,8 +349,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public Set<Entry<K, V>> entrySet() {
+    readLock.lock();
     try {
-      readLock.lock();
       return data.entrySet().parallelStream().filter(r -> !r.getValue().isExpired())
           .map(r -> new MapEntry<>(r.getKey(), r.getValue().value)).collect(Collectors.toSet());
     } finally {
@@ -345,35 +360,17 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public V putIfAbsent(K key, V value) {
-    ExpiringValue<V> wrapValue = new ExpiringValue<>(value);
-    ExpiringValue<V> preVal = data.putIfAbsent(key, wrapValue);
-    if (preVal == null) {
-      return null;
-    }
-    if (preVal.expireAt < System.currentTimeMillis()) {
-      data.put(key, wrapValue);
-      return null;
-    }
-    return preVal.value;
+    return putIfAbsent(key, new ExpiringValue<>(value));
   }
 
   public V putIfAbsent(K key, V value, long duration, TimeUnit timeUnit) {
-    ExpiringValue<V> wrapValue = new ExpiringValue<>(value, duration, timeUnit);
-    ExpiringValue<V> preVal = data.putIfAbsent(key, wrapValue);
-    if (preVal == null) {
-      return null;
-    }
-    if (preVal.expireAt < System.currentTimeMillis()) {
-      data.put(key, wrapValue);
-      return null;
-    }
-    return preVal.value;
+    return putIfAbsent(key, new ExpiringValue<>(value, duration, timeUnit));
   }
 
   @Override
   public boolean remove(Object key, Object value) {
+    writeLock.lock();
     try {
-      readLock.lock();
       ExpiringValue<V> wrapValue = data.get(key);
       if (wrapValue != null && !wrapValue.isExpired() && Objects.equals(wrapValue.value, value)) {
         data.remove(key);
@@ -381,14 +378,14 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       }
       return false;
     } finally {
-      readLock.unlock();
+      writeLock.unlock();
     }
   }
 
   @Override
   public boolean replace(K key, V oldValue, V newValue) {
+    writeLock.lock();
     try {
-      readLock.lock();
       ExpiringValue<V> wrapValue = data.get(key);
       if (wrapValue != null && !wrapValue.isExpired() && Objects
           .equals(wrapValue.value, oldValue)) {
@@ -400,14 +397,14 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       }
       return false;
     } finally {
-      readLock.unlock();
+      writeLock.unlock();
     }
   }
 
   @Override
   public V replace(K key, V value) {
+    writeLock.lock();
     try {
-      readLock.lock();
       ExpiringValue<V> wrapValue = data.get(key);
       if (wrapValue != null && !wrapValue.isExpired()) {
         ExpiringValue<V> newWrapValue = new ExpiringValue<>(value);
@@ -420,13 +417,13 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       }
       return null;
     } finally {
-      readLock.unlock();
+      writeLock.unlock();
     }
   }
 
   public V replace(K key, V value, long duration, TimeUnit timeUnit) {
+    writeLock.lock();
     try {
-      readLock.lock();
       ExpiringValue<V> wrapValue = data.get(key);
       if (wrapValue != null && !wrapValue.isExpired()) {
         ExpiringValue<V> newWrapValue = new ExpiringValue<>(value, duration, timeUnit);
@@ -437,9 +434,28 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       }
       return null;
     } finally {
-      readLock.unlock();
+      writeLock.unlock();
     }
   }
+
+  private V putIfAbsent(K key, ExpiringValue<V> wrapValue) {
+    writeLock.lock();
+    try {
+      ExpiringValue<V> preVal = data.putIfAbsent(key, wrapValue);
+      if (preVal == null) {
+        return null;
+      }
+      if (preVal.expireAt < System.currentTimeMillis()) {
+        data.put(key, wrapValue);
+        return null;
+      }
+      return preVal.value;
+    } finally {
+      writeLock.unlock();
+      record();
+    }
+  }
+
 
   private void record() {
     accumulate.getAndIncrement();
@@ -459,8 +475,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   }
 
   private void expiredClean() {
+    writeLock.lock();
     try {
-      writeLock.lock();
       Iterator<Entry<K, ExpiringValue<V>>> it = data.entrySet().iterator();
       while (it.hasNext()) {
         Entry<K, ExpiringValue<V>> entry = it.next();
@@ -477,9 +493,6 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   }
 
   private void notifyListener(K key, V value) {
-    if (log.isDebugEnabled()) {
-      log.debug("expired key [{}] and now realSize is [{}]", key, this.realSize());
-    }
     if (asyncExpiredListeners != null && !asyncExpiredListeners.isEmpty()) {
       for (ExpiredListener<K, V> listener : asyncExpiredListeners) {
         listener.expire(key, value);
@@ -489,16 +502,16 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   private void runScheduleCleanPolicy() {
     if (log.isDebugEnabled()) {
-      log.debug("enter into runScheduleCleanPolicy and realSize is [{}]", this.realSize());
+      log.debug("scheduled clean [{}] and now realSize is [{}]", this.name, this.realSize());
     }
     this.expiredClean();
   }
 
   private void runAccumulateCleanPolicy() {
     if (log.isDebugEnabled()) {
-      log.debug("enter into runAccumulateCleanPolicy and accumulate is {}", accumulate.get());
+      log.debug("accumulate clean [{}] and now realSize is [{}]", this.name, this.realSize());
     }
-    executorService.execute(this::expiredClean);
+    SCHEDULED.execute(this::expiredClean);
   }
 
   /**
@@ -567,8 +580,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     private TimeUnit timeUnit = TimeUnit.SECONDS;
     private ExpiringPolicy expiringPolicy = ExpiringPolicy.CREATED;
     private CleanPolicy cleanPolicy = CleanPolicy.ACCUMULATE;
-    private int scheduleDelay = 60;
-    private int accumulateThreshold = 50;
+    private int scheduleDelay = -1;
+    private int accumulateThreshold = 10000;
     private String name;
 
     private Builder() {
@@ -593,7 +606,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      */
     public Builder<K, V> maxSize(int maxSize) {
       if (maxSize <= 0) {
-        throw new IllegalArgumentException("maxSize should be positive");
+        throw new IllegalArgumentException("[maxSize] should be positive");
       }
       this.maxSize = maxSize;
       return this;
@@ -606,7 +619,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      * @return 构造器
      */
     public Builder<K, V> asyncExpiredListeners(ExpiredListener<K, V> listener) {
-      MoreObjects.notNull(listener, "listener can not be null");
+      MoreObjects.notNull(listener, "[listener] can not be null");
       if (asyncExpiredListeners == null) {
         asyncExpiredListeners = new ArrayList<>();
       }
@@ -621,7 +634,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      * @return 构造器
      */
     public Builder<K, V> asyncExpiredListeners(List<ExpiredListener<K, V>> listeners) {
-      MoreObjects.notNull(listeners, "listeners can not be null");
+      MoreObjects.notNull(listeners, "[listeners] can not be null");
       asyncExpiredListeners = listeners;
       return this;
     }
@@ -635,9 +648,9 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      */
     public Builder<K, V> expiration(long duration, TimeUnit timeUnit) {
       if (duration <= 0) {
-        throw new IllegalArgumentException("duration should be positive");
+        throw new IllegalArgumentException("[duration] should be positive");
       }
-      MoreObjects.notNull(timeUnit, "timeUnit can not be null");
+      MoreObjects.notNull(timeUnit, "[timeUnit] can not be null");
       this.duration = duration;
       this.timeUnit = timeUnit;
       return this;
@@ -650,7 +663,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      * @return 构造器
      */
     public Builder<K, V> expiringPolicy(ExpiringPolicy expiringPolicy) {
-      MoreObjects.notNull(expiringPolicy, "expiringPolicy can not be null");
+      MoreObjects.notNull(expiringPolicy, "[expiringPolicy] can not be null");
       this.expiringPolicy = expiringPolicy;
       return this;
     }
@@ -662,7 +675,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      * @return 构造器
      */
     public Builder<K, V> cleanPolicy(CleanPolicy cleanPolicy) {
-      MoreObjects.notNull(cleanPolicy, "cleanPolicy can not be null");
+      MoreObjects.notNull(cleanPolicy, "[cleanPolicy] can not be null");
       this.cleanPolicy = cleanPolicy;
       return this;
     }
@@ -675,7 +688,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      */
     public Builder<K, V> scheduleDelay(int scheduleDelay) {
       if (scheduleDelay <= 0) {
-        throw new IllegalArgumentException("scheduleDelay should be positive");
+        throw new IllegalArgumentException("[scheduleDelay] should be positive");
       }
       this.scheduleDelay = scheduleDelay;
       return this;
@@ -689,7 +702,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      */
     public Builder<K, V> accumulateThreshold(int accumulateThreshold) {
       if (accumulateThreshold <= 0) {
-        throw new IllegalArgumentException("accumulateThreshold should be positive");
+        throw new IllegalArgumentException("[accumulateThreshold] should be positive");
       }
       this.accumulateThreshold = accumulateThreshold;
       return this;
@@ -710,7 +723,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
    *
    * @param <V> 泛型
    */
-  public static final class ExpiringValue<V> {
+  private static final class ExpiringValue<V> {
 
     /**
      * 不过期
@@ -800,6 +813,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @EqualsAndHashCode(callSuper = true)
   static final class LruMap<K, V> extends LinkedHashMap<K, ExpiringValue<V>> {
+
+    private static final long serialVersionUID = 1L;
 
     private int maxSize;
     private transient List<ExpiredListener<K, V>> listeners;

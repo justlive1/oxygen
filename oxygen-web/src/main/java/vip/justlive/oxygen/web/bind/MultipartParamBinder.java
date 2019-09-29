@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.web.bind;
 
 import java.lang.reflect.Parameter;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.annotation.MultipartParam;
 import vip.justlive.oxygen.web.http.MultipartItem;
 
@@ -22,6 +23,7 @@ import vip.justlive.oxygen.web.http.MultipartItem;
  *
  * @author wubo
  */
+@Bean
 public class MultipartParamBinder implements ParamBinder {
 
   @Override

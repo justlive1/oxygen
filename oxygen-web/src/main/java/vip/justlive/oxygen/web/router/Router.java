@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.web.http.HttpMethod;
+import vip.justlive.oxygen.core.net.http.HttpMethod;
 
 /**
  * Router
@@ -72,6 +72,14 @@ public class Router {
   }
 
   /**
+   * clear
+   */
+  public static void clear() {
+    SIMPLE_HANDLERS.clear();
+    REGEX_HANDLERS.clear();
+  }
+
+  /**
    * lookup route
    *
    * @param method request method
@@ -96,7 +104,7 @@ public class Router {
    * lookup static handle
    *
    * @param path path
-   * @return handler
+   * @return handle
    */
   public static RouteHandler lookupStatic(String path) {
     for (Map.Entry<String, RouteHandler> entry : STATIC_HANDLERS.entrySet()) {
@@ -105,14 +113,6 @@ public class Router {
       }
     }
     return null;
-  }
-
-  /**
-   * clear
-   */
-  public static void clear() {
-    SIMPLE_HANDLERS.clear();
-    REGEX_HANDLERS.clear();
   }
 
   private static void buildRoute(Route route) {

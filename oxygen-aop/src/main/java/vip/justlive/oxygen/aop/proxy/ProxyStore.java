@@ -98,8 +98,7 @@ public class ProxyStore {
    * @param interceptor 拦截器
    */
   public static void addInterceptor(TYPE type, Method method, Interceptor interceptor) {
-    STORE.get(type).computeIfAbsent(method, k -> new LinkedList<>());
-    STORE.get(type).get(method).add(interceptor);
+    STORE.get(type).computeIfAbsent(method, k -> new LinkedList<>()).add(interceptor);
     ready = false;
   }
 
@@ -111,8 +110,7 @@ public class ProxyStore {
    * @param interceptors 拦截器
    */
   public static void addInterceptors(TYPE type, Method method, List<Interceptor> interceptors) {
-    STORE.get(type).computeIfAbsent(method, k -> new LinkedList<>());
-    STORE.get(type).get(method).addAll(interceptors);
+    STORE.get(type).computeIfAbsent(method, k -> new LinkedList<>()).addAll(interceptors);
     ready = false;
   }
 

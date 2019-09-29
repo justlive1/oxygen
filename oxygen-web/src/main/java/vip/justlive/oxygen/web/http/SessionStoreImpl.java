@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.web.http;
 
 import vip.justlive.oxygen.core.util.ExpiringMap;
+import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
 
 /**
  * 本地session实现
@@ -23,7 +24,7 @@ import vip.justlive.oxygen.core.util.ExpiringMap;
 public class SessionStoreImpl implements SessionStore {
 
   private static final ExpiringMap<String, Session> SESSIONS = ExpiringMap.<String, Session>builder()
-      .name("Session").build();
+      .name("Session").expiringPolicy(ExpiringPolicy.ACCESSED).build();
 
   @Override
   public Session get(String id) {

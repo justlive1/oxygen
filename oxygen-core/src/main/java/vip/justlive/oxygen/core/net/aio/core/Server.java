@@ -84,18 +84,4 @@ public class Server {
     groupContext.close();
   }
 
-  /**
-   * 等待
-   */
-  public void sync() {
-    while (!groupContext.isStopped()) {
-      synchronized (this) {
-        try {
-          wait();
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    }
-  }
 }

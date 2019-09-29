@@ -13,8 +13,6 @@
  */
 package vip.justlive.oxygen.web.result;
 
-import vip.justlive.oxygen.web.http.Request;
-
 /**
  * 结果标记
  *
@@ -41,7 +39,6 @@ public interface Result {
   static ViewResult view(String path) {
     ViewResult result = new ViewResult();
     result.setPath(path);
-    result.addAttribute("ctx", Request.current().getContextPath());
     return result;
   }
 

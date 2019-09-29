@@ -39,11 +39,23 @@ public interface AioListener {
   }
 
   /**
-   * channel解码数据处理后触发
+   * channel读取数据并解码处理后触发
    *
    * @param channelContext channel上下文
    * @param data 解码的数据
+   * @param throwable 异常
    */
-  default void onHandled(ChannelContext channelContext, Object data) {
+  default void onReadHandled(ChannelContext channelContext, Object data, Throwable throwable) {
   }
+
+  /**
+   * channel编码处理并写数据后触发
+   *
+   * @param channelContext channel上下文
+   * @param data 待编码的数据
+   * @param throwable 异常
+   */
+  default void onWriteHandled(ChannelContext channelContext, Object data, Throwable throwable) {
+  }
+
 }

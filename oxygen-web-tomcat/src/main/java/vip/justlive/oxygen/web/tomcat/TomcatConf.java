@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import lombok.Data;
 import org.apache.catalina.valves.Constants.AccessLog;
 import vip.justlive.oxygen.core.config.ValueConfig;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * tomcat配置
@@ -26,6 +27,40 @@ import vip.justlive.oxygen.core.config.ValueConfig;
 @Data
 @ValueConfig("server.tomcat")
 public class TomcatConf {
+
+  /**
+   * 后缀名jar
+   */
+  static final String JAR_EXT = ".jar";
+
+  /**
+   * META-INF
+   */
+  static final String META_INF = "META-INF";
+  /**
+   * /META-INF
+   */
+  static final String META_INF_PATH = Strings.SLASH + META_INF;
+  /**
+   * META-INF/resources
+   */
+  static final String META_INF_RESOURCES = "META-INF/resources";
+  /**
+   * /META-INF/resources
+   */
+  static final String META_INF_RESOURCES_PATH = Strings.SLASH + META_INF_RESOURCES;
+  /**
+   * WEB-INF
+   */
+  static final String WEB_INF = "WEB-INF";
+  /**
+   * /WEB-INF/lib/
+   */
+  static final String WEB_INF_LIB = "/WEB-INF/lib/";
+  /**
+   * /WEB-INF/classes
+   */
+  static final String WEB_INF_CLASSES = "/WEB-INF/classes";
 
   // protocolHandler
 

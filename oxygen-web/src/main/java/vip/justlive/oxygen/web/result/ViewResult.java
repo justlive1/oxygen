@@ -16,6 +16,7 @@ package vip.justlive.oxygen.web.result;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
+import vip.justlive.oxygen.web.http.Request;
 
 /**
  * view 视图结果
@@ -34,6 +35,12 @@ public class ViewResult implements Result {
    * 数据
    */
   private Map<String, Object> data = new HashMap<>(4);
+
+  public ViewResult() {
+    Request request = Request.current();
+    addAttribute("ctx", request.getContextPath());
+    addAttribute("request", request);
+  }
 
   /**
    * 添加属性

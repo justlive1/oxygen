@@ -26,7 +26,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -36,6 +35,19 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  */
 @UtilityClass
 public class ClassUtils {
+
+  /**
+   * 数组类名前缀: "[]"
+   */
+  public static final String ARRAY_SUFFIX = "[]";
+  /**
+   * 内部数组类名前缀: "["
+   */
+  public static final String INTERNAL_ARRAY_PREFIX = "[";
+  /**
+   * 内部非基本数组类名前缀: "[L"
+   */
+  public static final String NON_PRIMITIVE_ARRAY_PREFIX = "[L";
 
   private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER_TYPE;
   private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE_TYPE;
@@ -169,24 +181,22 @@ public class ClassUtils {
    */
   public static Class<?> forName(String name, ClassLoader classLoader) {
     // "java.lang.String[]" style arrays
-    if (name.endsWith(Constants.ARRAY_SUFFIX)) {
-      String elementClassName = name.substring(0, name.length() - Constants.ARRAY_SUFFIX.length());
+    if (name.endsWith(ARRAY_SUFFIX)) {
+      String elementClassName = name.substring(0, name.length() - ARRAY_SUFFIX.length());
       Class<?> elementClass = forName(elementClassName, classLoader);
       return Array.newInstance(elementClass, 0).getClass();
     }
 
     // "[Ljava.lang.String;" style arrays
-    if (name.startsWith(Constants.NON_PRIMITIVE_ARRAY_PREFIX) && name
-        .endsWith(Constants.SEMICOLON)) {
-      String elementName = name
-          .substring(Constants.NON_PRIMITIVE_ARRAY_PREFIX.length(), name.length() - 1);
+    if (name.startsWith(NON_PRIMITIVE_ARRAY_PREFIX) && name.endsWith(Strings.SEMICOLON)) {
+      String elementName = name.substring(NON_PRIMITIVE_ARRAY_PREFIX.length(), name.length() - 1);
       Class<?> elementClass = forName(elementName, classLoader);
       return Array.newInstance(elementClass, 0).getClass();
     }
 
     // "[[I" or "[[Ljava.lang.String;" style arrays
-    if (name.startsWith(Constants.INTERNAL_ARRAY_PREFIX)) {
-      String elementName = name.substring(Constants.INTERNAL_ARRAY_PREFIX.length());
+    if (name.startsWith(INTERNAL_ARRAY_PREFIX)) {
+      String elementName = name.substring(INTERNAL_ARRAY_PREFIX.length());
       Class<?> elementClass = forName(elementName, classLoader);
       return Array.newInstance(elementClass, 0).getClass();
     }
@@ -198,11 +208,10 @@ public class ClassUtils {
     try {
       return (clToUse != null ? clToUse.loadClass(name) : Class.forName(name));
     } catch (ClassNotFoundException ex) {
-      int lastDotIndex = name.lastIndexOf(Constants.DOT);
+      int lastDotIndex = name.lastIndexOf(Strings.DOT);
       if (lastDotIndex != -1) {
         String innerClassName =
-            name.substring(0, lastDotIndex) + Constants.INNER_CLASS_SEPARATOR + name
-                .substring(lastDotIndex + 1);
+            name.substring(0, lastDotIndex) + Strings.DOLLAR + name.substring(lastDotIndex + 1);
         try {
           return (clToUse != null ? clToUse.loadClass(innerClassName)
               : Class.forName(innerClassName));
@@ -268,7 +277,7 @@ public class ClassUtils {
    * @return true为是代理类
    */
   public static boolean isCglibProxyClassName(String className) {
-    return (className != null && className.contains(Constants.CGLIB_CLASS_SEPARATOR));
+    return (className != null && className.contains(Strings.DOUBLE_DOLLAR));
   }
 
   /**
@@ -383,8 +392,7 @@ public class ClassUtils {
    * @return 注解
    */
   @SuppressWarnings("unchecked")
-  public static <A extends Annotation> A getAnnotation(Class<?> clazz,
-      Class<A> annotation) {
+  public static <A extends Annotation> A getAnnotation(Class<?> clazz, Class<A> annotation) {
     A anno = clazz.getAnnotation(annotation);
     if (anno != null) {
       return anno;

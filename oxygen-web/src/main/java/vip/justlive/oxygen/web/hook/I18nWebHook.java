@@ -17,8 +17,9 @@ import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
-import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.core.i18n.Lang;
+import vip.justlive.oxygen.core.util.ResourceBundle;
+import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -28,6 +29,7 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  * @author wubo
  */
 @Slf4j
+@Bean
 public class I18nWebHook implements WebHook {
 
   @Override
@@ -38,19 +40,20 @@ public class I18nWebHook implements WebHook {
     if (localeStr == null || localeStr.length() == 0) {
       Locale locale = (Locale) request.getSession().get(conf.getI18nSessionKey());
       if (locale != null) {
-        Lang.setThreadLocale(locale);
+        ResourceBundle.setThreadLocale(locale);
       }
     } else {
-      String[] arr = localeStr.split(Constants.UNDERSCORE);
+      String[] arr = localeStr.split(Strings.UNDERSCORE);
       if (arr.length != 2) {
         log.warn("locale [{}] is incorrect", localeStr);
       } else {
         Locale locale = new Locale(arr[0], arr[1]);
         if (log.isDebugEnabled()) {
-          log.debug("change locale from [{}] to [{}]", Lang.currentThreadLocale(), locale);
+          log.debug("change locale from [{}] to [{}]", ResourceBundle.currentThreadLocale(),
+              locale);
         }
         request.getSession().put(conf.getI18nSessionKey(), locale);
-        Lang.setThreadLocale(locale);
+        ResourceBundle.setThreadLocale(locale);
       }
     }
     return true;
@@ -58,6 +61,6 @@ public class I18nWebHook implements WebHook {
 
   @Override
   public void finished(RoutingContext ctx) {
-    Lang.clearThreadLocale();
+    ResourceBundle.clearThreadLocale();
   }
 }

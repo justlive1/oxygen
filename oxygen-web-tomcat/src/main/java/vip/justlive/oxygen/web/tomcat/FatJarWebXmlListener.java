@@ -25,7 +25,7 @@ import org.apache.catalina.webresources.StandardRoot;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.web.WebConf;
 
 /**
@@ -48,9 +48,9 @@ public class FatJarWebXmlListener implements LifecycleListener {
       }
 
       // 使用embedded tomcat时 WEB-INF放在了classpath下
-      createWebResource(context, resources, Constants.WEB_INF);
+      createWebResource(context, resources, TomcatConf.WEB_INF);
       String customPath = ConfigFactory.load(WebConf.class).getJspViewPrefix();
-      if (!customPath.startsWith(Constants.WEB_INF)) {
+      if (!customPath.startsWith(TomcatConf.WEB_INF)) {
         createWebResource(context, resources, customPath);
       }
     }
@@ -63,7 +63,7 @@ public class FatJarWebXmlListener implements LifecycleListener {
       String webXmlUrlString = resource.toString();
       try {
         URL root = new URL(webXmlUrlString.substring(0, webXmlUrlString.length() - path.length()));
-        String webPath = Constants.ROOT_PATH + path;
+        String webPath = Strings.SLASH + path;
         resources.createWebResourceSet(ResourceSetType.RESOURCE_JAR, webPath, root, webPath);
       } catch (MalformedURLException e) {
         // ignore

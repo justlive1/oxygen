@@ -54,31 +54,37 @@ public class ReadWorker extends AbstractWorker<ByteBuffer> {
       if (data != null) {
         //解码成功
         if (log.isDebugEnabled()) {
-          log.debug("{}成功解码一个包，数据包{}字节", channelContext, buffer.position() - position);
+          log.debug("{} decoded packet successfully,{} bytes", channelContext, buffer.position() - position);
         }
         channelContext.setLastReceivedAt(System.currentTimeMillis());
-        aioHandler.handle(data, channelContext);
-        this.afterHandled(data);
+        Throwable e = null;
+        try {
+          aioHandler.handle(data, channelContext);
+        } catch (Throwable exc) {
+          e = exc;
+        } finally {
+          this.afterHandled(data, e);
+        }
       } else {
         //数据不够
         buffer.position(position);
         buffer.limit(limit);
         lastByteBuffer = buffer;
         if (log.isDebugEnabled()) {
-          log.debug("{}解码失败，剩余{}字节", channelContext, readableSize);
+          log.debug("{} decoded failed,remain {} bytes", channelContext, readableSize);
         }
         break;
       }
     }
   }
 
-  private void afterHandled(Object data) {
+  private void afterHandled(Object data, Throwable e) {
     try {
       if (channelContext.getGroupContext().getAioListener() != null) {
-        channelContext.getGroupContext().getAioListener().onHandled(channelContext, data);
+        channelContext.getGroupContext().getAioListener().onReadHandled(channelContext, data, e);
       }
-    } catch (Exception e) {
-      log.error("{} handled listener error", channelContext, e);
+    } catch (Exception exc) {
+      log.error("{} handled listener error", channelContext, exc);
     }
   }
 }

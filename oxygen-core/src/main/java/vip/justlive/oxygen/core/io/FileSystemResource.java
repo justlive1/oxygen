@@ -20,7 +20,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import vip.justlive.oxygen.core.util.MoreObjects;
-import vip.justlive.oxygen.core.util.ResourceUtils;
+import vip.justlive.oxygen.core.util.Urls;
 
 /**
  * 文件系统资源，包括File，Path
@@ -84,7 +84,7 @@ public class FileSystemResource implements SourceResource {
   }
 
   @Override
-  public File getFile() throws IOException {
+  public File getFile() {
     return file;
   }
 
@@ -107,7 +107,7 @@ public class FileSystemResource implements SourceResource {
 
   @Override
   public SourceResource createRelative(String path) {
-    return new FileSystemResource(ResourceUtils.relativePath(this.path(), path));
+    return new FileSystemResource(Urls.relativePath(this.path(), path));
   }
 
 }

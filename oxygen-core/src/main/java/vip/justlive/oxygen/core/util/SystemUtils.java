@@ -23,7 +23,6 @@ import java.util.Enumeration;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.net.ServerSocketFactory;
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -139,7 +138,7 @@ public class SystemUtils {
     if (address == null || address.trim().length() == 0) {
       return null;
     }
-    String[] hostPort = address.trim().split(Constants.COLON);
+    String[] hostPort = address.trim().split(Strings.COLON);
     return new InetSocketAddress(hostPort[0].trim(), Integer.parseInt(hostPort[1].trim()));
   }
 

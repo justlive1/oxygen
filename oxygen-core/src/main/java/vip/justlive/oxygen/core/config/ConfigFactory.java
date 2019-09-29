@@ -24,13 +24,13 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.PropertiesLoader;
 import vip.justlive.oxygen.core.io.PropertySource;
 import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.ReflectUtils;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * 配置工厂
@@ -137,7 +137,7 @@ public class ConfigFactory {
    * @return 配置类
    */
   public static <T> T load(Class<T> clazz) {
-    return load(clazz, Constants.DOT);
+    return load(clazz, Strings.DOT);
   }
 
   /**
@@ -217,7 +217,7 @@ public class ConfigFactory {
       throw Exceptions.wrap(e);
     }
     Class<?> actualClass = ClassUtils.getCglibActualClass(clazz);
-    if (Constants.DOT.equals(prefix) && actualClass.isAnnotationPresent(ValueConfig.class)) {
+    if (Strings.DOT.equals(prefix) && actualClass.isAnnotationPresent(ValueConfig.class)) {
       prefix = actualClass.getAnnotation(ValueConfig.class).value();
     }
     return clazz.cast(parse(obj, prefix));
@@ -236,7 +236,7 @@ public class ConfigFactory {
       } else if (prefix != null) {
         StringBuilder name = new StringBuilder(prefix);
         if (name.length() > 0) {
-          name.append(Constants.DOT);
+          name.append(Strings.DOT);
         }
         name.append(field.getName());
         Object value = getProperty(name.toString(), field.getType(), false);

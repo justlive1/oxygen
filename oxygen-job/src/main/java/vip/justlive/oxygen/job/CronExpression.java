@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import lombok.Getter;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * Cron
@@ -45,11 +45,11 @@ public class CronExpression implements Serializable {
 
   static {
     int i = 1;
-    for (String month : MONTH_VALUES.split(Constants.COMMA)) {
+    for (String month : MONTH_VALUES.split(Strings.COMMA)) {
       MONTH_MAP.put(month, String.valueOf(i++));
     }
     i = 0;
-    for (String week : WEEK_VALUES.split(Constants.COMMA)) {
+    for (String week : WEEK_VALUES.split(Strings.COMMA)) {
       WEEK_MAP.put(week, String.valueOf(i++));
     }
   }
@@ -232,13 +232,13 @@ public class CronExpression implements Serializable {
   }
 
   private void setNumberBit(BitSet bit, String field, int size) {
-    for (String line : field.split(Constants.COMMA)) {
-      if (Constants.ANY.equals(line.trim()) || Constants.QUESTION_MARK.equals(line.trim())) {
+    for (String line : field.split(Strings.COMMA)) {
+      if (Strings.ANY.equals(line.trim()) || Strings.QUESTION_MARK.equals(line.trim())) {
         bit.set(0, size);
-      } else if (line.contains(Constants.SLASH)) {
+      } else if (line.contains(Strings.SLASH)) {
         parseDuration(bit, line, size);
-      } else if (line.contains(Constants.HYPHEN)) {
-        String[] fromTo = line.split(Constants.HYPHEN);
+      } else if (line.contains(Strings.DASH)) {
+        String[] fromTo = line.split(Strings.DASH);
         if (fromTo.length != 2) {
           throw Exceptions.fail(errorMessage());
         }
@@ -250,7 +250,7 @@ public class CronExpression implements Serializable {
   }
 
   private void parseDuration(BitSet bit, String line, int size) {
-    String[] arr = line.split(Constants.SLASH);
+    String[] arr = line.split(Strings.SLASH);
     if (arr.length != 2) {
       throw Exceptions.fail(errorMessage());
     }
@@ -260,8 +260,8 @@ public class CronExpression implements Serializable {
     }
     int from;
     int to = size - 1;
-    if (arr[0].contains(Constants.HYPHEN)) {
-      String[] fromTo = arr[0].split(Constants.HYPHEN);
+    if (arr[0].contains(Strings.DASH)) {
+      String[] fromTo = arr[0].split(Strings.DASH);
       if (fromTo.length != 2) {
         throw Exceptions.fail(errorMessage());
       }

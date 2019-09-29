@@ -13,7 +13,9 @@
  */
 package vip.justlive.oxygen.web.result;
 
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.HttpHeaders;
+import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
@@ -23,6 +25,7 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  *
  * @author wubo
  */
+@Bean
 public class RedirectResultHandler implements ResultHandler {
 
   private static final String PROTOCOLS_REGEX = "^\\w+://.*";
@@ -46,19 +49,19 @@ public class RedirectResultHandler implements ResultHandler {
       sb.append(data.getUrl());
     } else {
       if (request.isSecure()) {
-        sb.append(Constants.HTTPS_PREFIX);
+        sb.append(HttpHeaders.HTTPS_PREFIX);
       } else {
-        sb.append(Constants.HTTP_PREFIX);
+        sb.append(HttpHeaders.HTTP_PREFIX);
       }
       sb.append(request.getHost());
       if (request.getPort() != DEFAULT_HTTP_PORT && request.getPort() != DEFAULT_HTTPS_PORT) {
-        sb.append(Constants.COLON).append(request.getPort());
+        sb.append(Strings.COLON).append(request.getPort());
       }
-      if (!data.getUrl().startsWith(Constants.SLASH)) {
-        sb.append(ctx.requestPath()).append(Constants.SLASH);
+      if (!data.getUrl().startsWith(Strings.SLASH)) {
+        sb.append(ctx.requestPath()).append(Strings.SLASH);
       }
       sb.append(data.getUrl());
     }
-    response.setHeader(Constants.LOCATION, sb.toString());
+    response.setHeader(HttpHeaders.LOCATION, sb.toString());
   }
 }

@@ -28,8 +28,10 @@ import java.util.List;
 import java.util.Map;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.Bytes;
+import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * multipart 流解析
@@ -38,8 +40,8 @@ import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
  */
 class MultipartStream {
 
-  private static final byte[] LINE_SEPARATOR = {Constants.CR, Constants.LF};
-  private static final byte[] STREAM_TERMINATOR = {Constants.DASH, Constants.DASH};
+  private static final byte[] LINE_SEPARATOR = {Bytes.CR, Bytes.LF};
+  private static final byte[] STREAM_TERMINATOR = {Bytes.DASH, Bytes.DASH};
 
   private final InputStream inputStream;
   private final byte[] boundary;
@@ -101,14 +103,14 @@ class MultipartStream {
     String disposition = new String(bytes, charset);
     String name = null;
     String filename = null;
-    for (String line : disposition.split(Constants.SEMICOLON)) {
-      String[] props = line.split(Constants.EQUAL);
+    for (String line : disposition.split(Strings.SEMICOLON)) {
+      String[] props = line.split(Strings.EQUAL);
       if (props.length == 2) {
         String key = props[0].trim();
-        String val = props[1].replace(Constants.DOUBLE_QUOTATION_MARK, Constants.EMPTY).trim();
-        if (Constants.FORM_DATA_NAME.equals(key)) {
+        String val = props[1].replace(Strings.DOUBLE_QUOTATION_MARK, Strings.EMPTY).trim();
+        if (HttpHeaders.FORM_DATA_NAME.equals(key)) {
           name = val;
-        } else if (Constants.FORM_DATA_FILENAME.equals(key)) {
+        } else if (HttpHeaders.FORM_DATA_FILENAME.equals(key)) {
           filename = val;
         }
       }
@@ -117,7 +119,7 @@ class MultipartStream {
   }
 
   private String parseContentType(byte[] line) {
-    String[] arr = new String(line, charset).split(Constants.COLON);
+    String[] arr = new String(line, charset).split(Strings.COLON);
     if (arr.length > 1) {
       return arr[1];
     }
@@ -166,7 +168,7 @@ class MultipartStream {
     return new File(dir, String.valueOf(SnowflakeIdWorker.defaultNextId())).toPath();
   }
 
-  class WrapByteArrayOutputStream extends ByteArrayOutputStream {
+  static class WrapByteArrayOutputStream extends ByteArrayOutputStream {
 
     /**
      * 当前下标的byte

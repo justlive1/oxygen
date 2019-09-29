@@ -17,7 +17,9 @@ package vip.justlive.oxygen.core.net.aio.core;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
+import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
  * 写操作worker
@@ -52,7 +54,12 @@ public class WriteWorker extends AbstractWorker<Object> {
     try {
       semaphore.acquire();
     } catch (InterruptedException e) {
+      AioListener listener = channelContext.getGroupContext().getAioListener();
+      if (listener != null) {
+        MoreObjects.caughtForeach(data, item -> listener.onWriteHandled(channelContext, item, e));
+      }
       Thread.currentThread().interrupt();
+      return;
     }
 
     if (channelContext.isClosed()) {
@@ -60,12 +67,24 @@ public class WriteWorker extends AbstractWorker<Object> {
       return;
     }
 
+    CompletableFuture<Void> future = new CompletableFuture<>();
+    future.whenComplete((r, e) -> complete(e, data));
     try {
-      channelContext.getChannel()
-          .write(Utils.composite(buffers), semaphore, channelContext.getWriteHandler());
+      WriteHandler.WriteContext ctx = new WriteHandler.WriteContext(future,
+          Utils.composite(buffers));
+      channelContext.getChannel().write(ctx.buffer, ctx, channelContext.getWriteHandler());
     } catch (Exception e) {
-      semaphore.release();
+      complete(e, data);
       throw e;
     }
   }
+
+  private void complete(Throwable exc, List<Object> data) {
+    semaphore.release();
+    AioListener listener = channelContext.getGroupContext().getAioListener();
+    if (listener != null) {
+      MoreObjects.caughtForeach(data, item -> listener.onWriteHandled(channelContext, item, exc));
+    }
+  }
+
 }

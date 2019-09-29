@@ -13,6 +13,10 @@
  */
 package vip.justlive.oxygen.web.router;
 
+import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.ioc.IocPlugin;
+import vip.justlive.oxygen.web.exception.ExceptionHandler;
+
 /**
  * 路由处理器
  *
@@ -22,9 +26,30 @@ package vip.justlive.oxygen.web.router;
 public interface RouteHandler {
 
   /**
+   * 处理404异常
+   *
+   * @param ctx 上下文
+   */
+  static void notFound(RoutingContext ctx) {
+    IocPlugin.beanStore().getBean(ExceptionHandler.class)
+        .handle(ctx, Exceptions.fail("No handle found"), 404);
+  }
+
+  /**
+   * 处理500异常
+   *
+   * @param ctx 上下文
+   * @param e 异常
+   */
+  static void error(RoutingContext ctx, Exception e) {
+    IocPlugin.beanStore().getBean(ExceptionHandler.class).handle(ctx, e, 500);
+  }
+
+  /**
    * 处理
    *
    * @param ctx 上下文
    */
   void handle(RoutingContext ctx);
+
 }

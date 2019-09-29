@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * 数字工具类
@@ -31,6 +30,18 @@ import vip.justlive.oxygen.core.constant.Constants;
 @UtilityClass
 public class NumberUtils {
 
+  /**
+   * 八进制前缀
+   */
+  public static final String OCTONARY_PREFIX = "0";
+  /**
+   * 十六进制前缀
+   */
+  public static final String HEX_PREFIX_0 = "0x";
+  /**
+   * 十六进制前缀
+   */
+  public static final String HEX_PREFIX_1 = "0X";
   /**
    * jdk标准Number类型
    * <br>
@@ -96,9 +107,9 @@ public class NumberUtils {
    * @return true 是十六进制
    */
   public static boolean isHexNumber(String value) {
-    int index = (value.startsWith(Constants.HYPHEN) ? 1 : 0);
-    return (value.startsWith(Constants.HEX_PREFIX_0, index) || value
-        .startsWith(Constants.HEX_PREFIX_1, index) || value.startsWith(Constants.OCTOTHORP, index));
+    int index = (value.startsWith(Strings.DASH) ? 1 : 0);
+    return (value.startsWith(HEX_PREFIX_0, index) || value.startsWith(HEX_PREFIX_1, index) || value
+        .startsWith(Strings.OCTOTHORP, index));
   }
 
   /**
@@ -113,20 +124,19 @@ public class NumberUtils {
     boolean negative = false;
 
     // 处理正负
-    if (value.startsWith(Constants.HYPHEN)) {
+    if (value.startsWith(Strings.DASH)) {
       negative = true;
       index++;
     }
 
     // 判断进制
-    if (value.startsWith(Constants.HEX_PREFIX_0, index) || value
-        .startsWith(Constants.HEX_PREFIX_1, index)) {
+    if (value.startsWith(HEX_PREFIX_0, index) || value.startsWith(HEX_PREFIX_1, index)) {
       index += 2;
       radix = 16;
-    } else if (value.startsWith(Constants.OCTOTHORP, index)) {
+    } else if (value.startsWith(Strings.OCTOTHORP, index)) {
       index++;
       radix = 16;
-    } else if (value.startsWith(Constants.OCTONARY_PREFIX, index) && value.length() > 1 + index) {
+    } else if (value.startsWith(OCTONARY_PREFIX, index) && value.length() > 1 + index) {
       index++;
       radix = 8;
     }

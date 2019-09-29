@@ -37,19 +37,15 @@ public class AopPlugin implements Plugin {
 
   @Override
   public void start() {
-    handleAspect();
+    IocPlugin.beanStore().getBeans().forEach(
+        bean -> ClassUtils.getMethodsAnnotatedWith(bean.getClass(), Aspect.class)
+            .forEach(method -> handleMethod(method, bean)));
     ProxyStore.init();
   }
 
   @Override
   public void stop() {
     ProxyStore.clean();
-  }
-
-  void handleAspect() {
-    IocPlugin.beanStore().getBeans().forEach(
-        bean -> ClassUtils.getMethodsAnnotatedWith(bean.getClass(), Aspect.class)
-            .forEach(method -> handleMethod(method, bean)));
   }
 
   private void handleMethod(Method method, Object bean) {

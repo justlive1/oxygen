@@ -16,6 +16,8 @@ package vip.justlive.oxygen.core.crypto;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * 代理加密
@@ -44,7 +46,7 @@ public class DelegateEncoder extends BaseEncoder {
 
   @Override
   public String encode(String source) {
-    String salt = PREFIX.concat(id).concat(SUFFIX);
+    String salt = Strings.OPEN_BRACE.concat(id).concat(Strings.CLOSE_BRACE);
     return salt.concat(doEncode(source));
   }
 
@@ -59,9 +61,10 @@ public class DelegateEncoder extends BaseEncoder {
     String salt = extractSalt(raw);
     Encoder encoder = ENCODERS.get(salt);
     if (encoder == null) {
-      throw new IllegalArgumentException(String.format(ERROR_TEMPLATE, salt));
+      throw Exceptions.fail(String.format(ERROR_TEMPLATE, salt));
     }
-    String value = PREFIX.concat(salt).concat(SUFFIX).concat(encoder.encode(source));
+    String value = Strings.OPEN_BRACE.concat(salt).concat(Strings.CLOSE_BRACE)
+        .concat(encoder.encode(source));
     return Objects.equals(value, raw);
   }
 

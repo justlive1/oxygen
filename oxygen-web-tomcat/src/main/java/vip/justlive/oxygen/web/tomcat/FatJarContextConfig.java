@@ -25,7 +25,8 @@ import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.Jar;
 import org.apache.tomcat.util.descriptor.web.WebXml;
 import org.apache.tomcat.util.scan.JarFactory;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.Urls;
 
 /**
  * fat-jar for tomcat context config
@@ -42,21 +43,21 @@ public class FatJarContextConfig extends ContextConfig {
       URL url = fragment.getURL();
       try {
         String urlString = url.toString();
-        if (urlString.indexOf(Constants.JAR_URL_SEPARATOR) < urlString
-            .lastIndexOf(Constants.JAR_URL_SEPARATOR)) {
+        if (urlString.indexOf(Urls.JAR_URL_SEPARATOR) < urlString
+            .lastIndexOf(Urls.JAR_URL_SEPARATOR)) {
           urlString = urlString.substring(0, urlString.length() - 2);
         }
         url = new URL(urlString);
-        if (Constants.URL_PROTOCOL_JAR.equals(url.getProtocol()) || url.toString()
-            .endsWith(Constants.JAR_EXT)) {
+        if (Urls.URL_PROTOCOL_JAR.equals(url.getProtocol()) || url.toString()
+            .endsWith(TomcatConf.JAR_EXT)) {
           processJar(url);
-        } else if (Constants.URL_PROTOCOL_FILE.equals(url.getProtocol())) {
+        } else if (Urls.URL_PROTOCOL_FILE.equals(url.getProtocol())) {
           File file = new File(url.toURI());
-          File resources = new File(file, Constants.META_INF_RESOURCES);
+          File resources = new File(file, TomcatConf.META_INF_RESOURCES);
           if (resources.isDirectory()) {
             context.getResources()
-                .createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR,
-                    Constants.ROOT_PATH, resources.getAbsolutePath(), null, Constants.ROOT_PATH);
+                .createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, Strings.SLASH,
+                    resources.getAbsolutePath(), null, Strings.SLASH);
           }
         }
       } catch (IOException | URISyntaxException e) {
@@ -70,9 +71,10 @@ public class FatJarContextConfig extends ContextConfig {
       jar.nextEntry();
       String entryName = jar.getEntryName();
       while (entryName != null) {
-        if (entryName.startsWith(Constants.META_INF_RESOURCES)) {
-          context.getResources().createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR,
-              Constants.ROOT_PATH, url, Constants.META_INF_RESOURCES_PATH);
+        if (entryName.startsWith(TomcatConf.META_INF_RESOURCES)) {
+          context.getResources()
+              .createWebResourceSet(WebResourceRoot.ResourceSetType.RESOURCE_JAR, Strings.SLASH,
+                  url, TomcatConf.META_INF_RESOURCES_PATH);
           break;
         }
         jar.nextEntry();

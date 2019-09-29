@@ -14,28 +14,47 @@
 
 package vip.justlive.oxygen.core.net.aio.core;
 
+import java.nio.ByteBuffer;
 import java.nio.channels.CompletionHandler;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * aio写操作处理
  *
  * @author wubo
  */
+@Slf4j
 @RequiredArgsConstructor
-public class WriteHandler implements CompletionHandler<Integer, Semaphore> {
+public class WriteHandler implements CompletionHandler<Integer, WriteHandler.WriteContext> {
 
   private final ChannelContext channelContext;
 
   @Override
-  public void completed(Integer result, Semaphore semaphore) {
+  public void completed(Integer result, WriteContext ctx) {
     channelContext.setLastSentAt(System.currentTimeMillis());
-    semaphore.release();
+    if (ctx.buffer.hasRemaining()) {
+      if (log.isDebugEnabled()) {
+        log.debug("{} sent remained. {}/{}", channelContext, ctx.buffer.position(),
+            ctx.buffer.limit());
+      }
+      channelContext.getChannel().write(ctx.buffer, ctx, this);
+    } else {
+      ctx.future.complete(null);
+    }
   }
 
   @Override
-  public void failed(Throwable exc, Semaphore semaphore) {
-    semaphore.release();
+  public void failed(Throwable exc, WriteContext ctx) {
+    ctx.future.completeExceptionally(exc);
+  }
+
+  @RequiredArgsConstructor
+  static class WriteContext {
+
+    final CompletableFuture<Void> future;
+    final ByteBuffer buffer;
+
   }
 }

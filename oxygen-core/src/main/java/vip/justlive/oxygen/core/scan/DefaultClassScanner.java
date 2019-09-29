@@ -22,11 +22,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.PathMatcher;
-import vip.justlive.oxygen.core.util.ResourceUtils;
-import vip.justlive.oxygen.core.util.ResourceUtils.JarFileInfo;
+import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.Urls;
+import vip.justlive.oxygen.core.util.Urls.JarFileInfo;
 
 /**
  * 默认class scanner实现，采用类加载方式
@@ -60,11 +60,11 @@ public class DefaultClassScanner implements ClassScanner {
   public Set<Class<?>> scan(String... packages) {
     Set<Class<?>> classes = new HashSet<>();
     for (String pkg : packages) {
-      String transfer = pkg.replace(Constants.DOT, Constants.ROOT_PATH) + CLASS_PATH_MULTI_SUFFIX;
+      String transfer = pkg.replace(Strings.DOT, Strings.SLASH) + CLASS_PATH_MULTI_SUFFIX;
       try {
         this.findMatchPath(transfer, classes);
       } catch (IOException e) {
-        log.warn("scan package [{}] -> [{}] fail", pkg, transfer, e);
+        log.warn("scan package [{}] -> [{}] failed", pkg, transfer, e);
       }
     }
     return classes;
@@ -73,12 +73,12 @@ public class DefaultClassScanner implements ClassScanner {
   private void findMatchPath(String location, Set<Class<?>> classes) throws IOException {
     String rootPath = matcher.getRootDir(location);
     String subPattern = location.substring(rootPath.length());
-    Enumeration<URL> urls = this.loader.getResources(ResourceUtils.cutRootPath(rootPath));
+    Enumeration<URL> urls = this.loader.getResources(Urls.cutRootPath(rootPath));
     while (urls.hasMoreElements()) {
       URL rootUrl = urls.nextElement();
-      if (Constants.URL_PROTOCOL_FILE.equals(rootUrl.getProtocol())) {
+      if (Urls.URL_PROTOCOL_FILE.equals(rootUrl.getProtocol())) {
         this.findFileMatchPath(rootPath, rootUrl, subPattern, classes);
-      } else if (ResourceUtils.isJarURL(rootUrl)) {
+      } else if (Urls.isJarURL(rootUrl)) {
         this.findJarMatchPath(rootUrl, subPattern, classes);
       }
     }
@@ -88,32 +88,32 @@ public class DefaultClassScanner implements ClassScanner {
       Set<Class<?>> classes) {
     File rootDir;
     try {
-      rootDir = new File(ResourceUtils.toURI(rootUrl).getSchemeSpecificPart());
+      rootDir = new File(Urls.toURI(rootUrl).getSchemeSpecificPart());
     } catch (URISyntaxException e) {
       rootDir = new File(rootUrl.getFile());
     }
     Set<File> matchedFiles = matcher.findMatchedFiles(rootDir, subPattern);
     for (File file : matchedFiles) {
       String className = pathToClassName(rootPath, rootDir, file)
-          .replace(CLASS_SUFFIX, Constants.EMPTY);
+          .replace(CLASS_SUFFIX, Strings.EMPTY);
       try {
         classes.add(loader.loadClass(className));
       } catch (ClassNotFoundException | NoClassDefFoundError e) {
-        log.warn("class [{}] cannot load ", className, e);
+        log.warn("class [{}] can not load ", className);
       }
     }
   }
 
   private void findJarMatchPath(URL rootUrl, String subPattern, Set<Class<?>> classes)
       throws IOException {
-    JarFileInfo jarFileInfo = ResourceUtils.getJarFileInfo(rootUrl);
+    JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl);
     try {
       if (log.isDebugEnabled()) {
         log.debug("Looking for matching resources in jar file [" + jarFileInfo.jarFileUrl + "]");
       }
       String rootEntryPath = jarFileInfo.rootEntryPath;
-      if (rootEntryPath.length() > 0 && !rootEntryPath.endsWith(Constants.PATH_SEPARATOR)) {
-        rootEntryPath += Constants.PATH_SEPARATOR;
+      if (rootEntryPath.length() > 0 && !rootEntryPath.endsWith(Strings.SLASH)) {
+        rootEntryPath += Strings.SLASH;
       }
       for (Enumeration<JarEntry> entries = jarFileInfo.jarFile.entries();
           entries.hasMoreElements(); ) {
@@ -121,12 +121,12 @@ public class DefaultClassScanner implements ClassScanner {
         String entryPath = entry.getName();
         if (entryPath.startsWith(rootEntryPath) && matcher
             .match(subPattern, entryPath.substring(rootEntryPath.length()))) {
-          String className = entryPath.replace(Constants.ROOT_PATH, Constants.DOT)
-              .replace(CLASS_SUFFIX, Constants.EMPTY);
+          String className = entryPath.replace(Strings.SLASH, Strings.DOT)
+              .replace(CLASS_SUFFIX, Strings.EMPTY);
           try {
             classes.add(loader.loadClass(className));
           } catch (ClassNotFoundException | NoClassDefFoundError e) {
-            log.warn("class [{}] cannot load ", className, e);
+            log.warn("class [{}] cannot load", className);
           }
         }
       }
@@ -137,16 +137,16 @@ public class DefaultClassScanner implements ClassScanner {
 
   private String pathToClassName(String rootPath, File rootDir, File subFile) {
     return pathToClassName(rootPath,
-        subFile.getAbsolutePath().replace(rootDir.getAbsolutePath(), Constants.EMPTY)
-            .replace(File.separator, Constants.DOT));
+        subFile.getAbsolutePath().replace(rootDir.getAbsolutePath(), Strings.EMPTY)
+            .replace(File.separator, Strings.DOT));
   }
 
   private String pathToClassName(String rootPath, String subPath) {
-    String className = rootPath.replace(Constants.ROOT_PATH, Constants.DOT);
-    if (!className.endsWith(Constants.DOT)) {
-      className = className.concat(Constants.DOT);
+    String className = rootPath.replace(Strings.SLASH, Strings.DOT);
+    if (!className.endsWith(Strings.DOT)) {
+      className = className.concat(Strings.DOT);
     }
-    if (subPath.startsWith(Constants.DOT)) {
+    if (subPath.startsWith(Strings.DOT)) {
       return className.concat(subPath.substring(1));
     }
     return className.concat(subPath);

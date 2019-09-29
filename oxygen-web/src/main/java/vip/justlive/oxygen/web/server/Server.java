@@ -17,6 +17,7 @@ import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.web.server.aio.AioWebServer;
 
 /**
  * server 启动类
@@ -36,7 +37,10 @@ public class Server {
    */
   public static Server server() {
     Server server = new Server();
-    server.webServer = ServiceLoaderUtils.loadService(WebServer.class);
+    server.webServer = ServiceLoaderUtils.loadServiceOrNull(WebServer.class);
+    if (server.webServer == null) {
+      server.webServer = new AioWebServer();
+    }
     return server;
   }
 

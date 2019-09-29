@@ -15,9 +15,7 @@ package vip.justlive.oxygen.cache.generator;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.core.crypto.Encoder;
-import vip.justlive.oxygen.core.crypto.Md5Encoder;
+import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
@@ -28,18 +26,16 @@ import vip.justlive.oxygen.ioc.annotation.Bean;
 @Bean
 public class DefaultKeyGenerator implements KeyGenerator {
 
-  private static Encoder encoder = new Md5Encoder();
-
   @Override
   public Object generate(Object target, Method method, Object... params) {
     String src;
     if (params.length > 0) {
-      src = String.join(Constants.DOT, method.getDeclaringClass().getName(), method.getName(),
+      src = String.join(Strings.DOT, method.getDeclaringClass().getName(), method.getName(),
           Arrays.deepToString(params));
     } else {
-      src = String.join(Constants.DOT, method.getDeclaringClass().getName(), method.getName());
+      src = String.join(Strings.DOT, method.getDeclaringClass().getName(), method.getName());
     }
-    return encoder.encode(src);
+    return src;
   }
 }
 

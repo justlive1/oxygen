@@ -29,40 +29,31 @@ public class ErrorCode implements Serializable {
   /**
    * 模块
    */
-  private String module;
+  private String module = "ERROR";
 
   /**
    * 错误编码
    */
-  private String code;
+  private String code = "99999";
 
   /**
    * 错误信息
    */
   private String message;
 
-  protected ErrorCode(String module, String code) {
-    this.module = module;
-    this.code = code;
+  public ErrorCode(String message) {
+    this.message = message;
   }
 
-  protected ErrorCode(String module, String code, String message) {
-    this.module = module;
+  public ErrorCode(String code, String message) {
     this.code = code;
     this.message = message;
   }
 
-  /**
-   * 获取module + code
-   *
-   * @return module + code
-   */
-  public String getModuleCode() {
-    if (module == null) {
-      return code;
-    } else {
-      return module.concat(code);
-    }
+  public ErrorCode(String module, String code, String message) {
+    this.module = module;
+    this.code = code;
+    this.message = message;
   }
 
   @Override

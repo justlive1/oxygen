@@ -16,12 +16,9 @@ package vip.justlive.oxygen.web.router;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Collections;
-import java.util.List;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
+import vip.justlive.oxygen.web.Context;
 import vip.justlive.oxygen.web.bind.DataBinder;
-import vip.justlive.oxygen.web.bind.ParamBinder;
 import vip.justlive.oxygen.web.result.Result;
 
 /**
@@ -30,13 +27,6 @@ import vip.justlive.oxygen.web.result.Result;
  * @author wubo
  */
 public class AnnotationRouteHandler implements RouteHandler {
-
-  private static final List<ParamBinder> BINDERS;
-
-  static {
-    BINDERS = ServiceLoaderUtils.loadServices(ParamBinder.class);
-    Collections.sort(BINDERS);
-  }
 
   private final Object router;
   private final Method proxyMethod;
@@ -54,12 +44,7 @@ public class AnnotationRouteHandler implements RouteHandler {
   private void parse() {
     Parameter[] parameters = method.getParameters();
     for (int i = 0; i < parameters.length; i++) {
-      for (ParamBinder binder : BINDERS) {
-        if (binder.supported(parameters[i])) {
-          dataBinders[i] = binder.build(parameters[i]);
-          break;
-        }
-      }
+      dataBinders[i] = Context.bind(parameters[i]);
     }
   }
 

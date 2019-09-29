@@ -30,12 +30,12 @@ import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.PathMatcher;
-import vip.justlive.oxygen.core.util.ResourceUtils;
-import vip.justlive.oxygen.core.util.ResourceUtils.JarFileInfo;
+import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.Urls;
+import vip.justlive.oxygen.core.util.Urls.JarFileInfo;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.server.WebServer;
 
@@ -111,7 +111,7 @@ public class JettyWebServer implements WebServer {
     webapp.setConfigurationDiscovered(jettyConf.isConfigurationDiscovered());
     CoreConf conf = ConfigFactory.load(CoreConf.class);
     webapp.setTempDirectory(new File(conf.getBaseTempDir(), "jetty-temp"));
-    URL url = getClass().getResource(Constants.ROOT_PATH);
+    URL url = getClass().getResource(Strings.SLASH);
     if (url != null) {
       webapp.setResourceBase(url.toURI().toASCIIString());
     } else {
@@ -127,11 +127,11 @@ public class JettyWebServer implements WebServer {
   }
 
   private void copyJspFiles(File dir, WebConf webConf) throws IOException {
-    String location = ResourceUtils.concat(webConf.getJspViewPrefix(), "/**/*.jsp");
+    String location = Urls.concat(webConf.getJspViewPrefix(), "/**/*.jsp");
     String rootPath = matcher.getRootDir(location);
     String subPattern = location.substring(rootPath.length());
     Enumeration<URL> urls = ClassUtils.getDefaultClassLoader()
-        .getResources(ResourceUtils.cutRootPath(rootPath));
+        .getResources(Urls.cutRootPath(rootPath));
     while (urls.hasMoreElements()) {
       URL rootUrl = urls.nextElement();
       this.findJarMatchPath(rootUrl, subPattern, dir);
@@ -139,14 +139,14 @@ public class JettyWebServer implements WebServer {
   }
 
   private void findJarMatchPath(URL rootUrl, String subPattern, File dir) throws IOException {
-    JarFileInfo jarFileInfo = ResourceUtils.getJarFileInfo(rootUrl);
+    JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl);
     try {
       if (log.isDebugEnabled()) {
         log.debug("Looking for jsp resources in jar file [" + jarFileInfo.jarFileUrl + "]");
       }
       String rootEntryPath = jarFileInfo.rootEntryPath;
-      if (rootEntryPath.length() > 0 && !rootEntryPath.endsWith(Constants.PATH_SEPARATOR)) {
-        rootEntryPath += Constants.PATH_SEPARATOR;
+      if (rootEntryPath.length() > 0 && !rootEntryPath.endsWith(Strings.SLASH)) {
+        rootEntryPath += Strings.SLASH;
       }
       for (Enumeration<JarEntry> entries = jarFileInfo.jarFile.entries();
           entries.hasMoreElements(); ) {
@@ -165,7 +165,7 @@ public class JettyWebServer implements WebServer {
   }
 
   private File mkdirs(File dir, String name) throws IOException {
-    int index = name.lastIndexOf(Constants.ROOT_PATH);
+    int index = name.lastIndexOf(Strings.SLASH);
     if (index > 0) {
       File newDir = new File(dir, name.substring(0, index));
       if (newDir.mkdirs()) {

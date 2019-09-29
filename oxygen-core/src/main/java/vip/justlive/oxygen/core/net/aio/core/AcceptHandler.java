@@ -41,14 +41,14 @@ public class AcceptHandler implements CompletionHandler<AsynchronousSocketChanne
       ByteBuffer buffer = ByteBuffer.allocate(server.getGroupContext().getBufferCapacity());
       buffer.order(ByteOrder.BIG_ENDIAN);
       ChannelContext channelContext = new ChannelContext(server.getGroupContext(), channel);
-      channel.read(buffer, buffer, channelContext.getReadHandler());
       channelContext.start();
+      channel.read(buffer, buffer, channelContext.getReadHandler());
 
       if (server.getGroupContext().getAioListener() != null) {
         server.getGroupContext().getAioListener().onConnected(channelContext);
       }
     } catch (IOException e) {
-      log.error("Aio连接处理失败", e);
+      log.error("Aio accept completed error", e);
     } finally {
       server.getServerChannel().accept(server, this);
     }
@@ -56,7 +56,7 @@ public class AcceptHandler implements CompletionHandler<AsynchronousSocketChanne
 
   @Override
   public void failed(Throwable exc, Server server) {
-    log.error("Aio连接接收失败", exc);
+    log.error("Aio accept error", exc);
     server.getServerChannel().accept(server, this);
   }
 }

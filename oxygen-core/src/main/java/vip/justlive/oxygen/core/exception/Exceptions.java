@@ -14,7 +14,6 @@
 package vip.justlive.oxygen.core.exception;
 
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * 用于创建CodedException
@@ -34,10 +33,7 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException wrap(Throwable e) {
-    if (e instanceof CodedException) {
-      return (CodedException) e;
-    }
-    return new CodedException(e, null);
+    return wrap(e, (String) null);
   }
 
 
@@ -49,7 +45,7 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException wrap(Throwable e, String message) {
-    return new CodedException(e, errorMessage(message));
+    return wrap(e, errorMessage(message));
   }
 
   /**
@@ -61,7 +57,7 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException wrap(Throwable e, String code, String message) {
-    return new CodedException(e, errorMessage(Constants.DEFAULT_NODULE, code, message));
+    return wrap(e, errorMessage(code, message));
   }
 
   /**
@@ -69,11 +65,13 @@ public class Exceptions {
    *
    * @param e 异常
    * @param errorCode 异常编码包装
-   * @param arguments 参数
    * @return 包装异常
    */
-  public static CodedException wrap(Throwable e, ErrorCode errorCode, Object... arguments) {
-    return new CodedException(e, errorCode, arguments);
+  public static CodedException wrap(Throwable e, ErrorCode errorCode) {
+    if (e instanceof CodedException) {
+      return (CodedException) e;
+    }
+    return new CodedException(e, errorCode);
   }
 
   /**
@@ -83,7 +81,7 @@ public class Exceptions {
    * @return 异常编码包装
    */
   public static ErrorCode errorMessage(String message) {
-    return errorMessage(Constants.DEFAULT_FAIL_CODE, message);
+    return new ErrorCode(message);
   }
 
   /**
@@ -94,7 +92,7 @@ public class Exceptions {
    * @return 异常编码包装
    */
   public static ErrorCode errorMessage(String code, String message) {
-    return errorMessage(Constants.DEFAULT_NODULE, code, message);
+    return new ErrorCode(code, message);
   }
 
   /**
@@ -116,7 +114,7 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException fail(String message) {
-    return fail(Constants.DEFAULT_FAIL_CODE, message);
+    return fail(errorMessage(message));
   }
 
   /**
@@ -124,22 +122,20 @@ public class Exceptions {
    *
    * @param code 异常编码
    * @param message 异常消息
-   * @param params 参数
    * @return 包装异常
    */
-  public static CodedException fail(String code, String message, Object... params) {
-    return fail(errorMessage(code, message), params);
+  public static CodedException fail(String code, String message) {
+    return fail(errorMessage(code, message));
   }
 
   /**
    * 创建可带参数的业务逻辑异常
    *
    * @param errCode 异常编码包装
-   * @param params 参数
    * @return 包装异常
    */
-  public static CodedException fail(ErrorCode errCode, Object... params) {
-    return new NoStackException(errCode, params);
+  public static CodedException fail(ErrorCode errCode) {
+    return new NoStackException(errCode);
   }
 
   /**
@@ -157,11 +153,10 @@ public class Exceptions {
    *
    * @param code 异常编码
    * @param message 异常消息
-   * @param params 参数
    * @return 包装异常
    */
-  public static CodedException fault(String code, String message, Object... params) {
-    return fault(errorMessage(code, message), params);
+  public static CodedException fault(String code, String message) {
+    return fault(errorMessage(code, message));
   }
 
   /**
@@ -170,22 +165,20 @@ public class Exceptions {
    * @param e 异常
    * @param code 异常编码
    * @param message 异常消息
-   * @param params 参数
    * @return 包装异常
    */
-  public static CodedException fault(Throwable e, String code, String message, Object... params) {
-    return fault(e, errorMessage(code, message), params);
+  public static CodedException fault(Throwable e, String code, String message) {
+    return fault(e, errorMessage(code, message));
   }
 
   /**
    * 创建可带参数的故障异常
    *
    * @param errCode 异常编码包装
-   * @param params 参数
    * @return 包装异常
    */
-  public static CodedException fault(ErrorCode errCode, Object... params) {
-    return new CodedException(errCode, params);
+  public static CodedException fault(ErrorCode errCode) {
+    return new CodedException(errCode);
   }
 
   /**
@@ -193,10 +186,9 @@ public class Exceptions {
    *
    * @param e 异常
    * @param errCode 异常编码包装
-   * @param params 参数
    * @return 包装异常
    */
-  public static CodedException fault(Throwable e, ErrorCode errCode, Object... params) {
-    return new CodedException(e, errCode, params);
+  public static CodedException fault(Throwable e, ErrorCode errCode) {
+    return new CodedException(e, errCode);
   }
 }

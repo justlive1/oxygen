@@ -18,6 +18,7 @@ import java.util.Base64;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * 基础加密类
@@ -28,9 +29,6 @@ import lombok.Setter;
 @Setter
 public abstract class BaseEncoder implements Encoder {
 
-  public static final String PREFIX = "{";
-  public static final String SUFFIX = "}";
-  public static final String EMPTY = "";
   private final SecureRandom random = new SecureRandom();
   protected int iterations = 1;
   protected boolean useSalt = false;
@@ -38,7 +36,7 @@ public abstract class BaseEncoder implements Encoder {
 
   @Override
   public String encode(String source) {
-    String salt = EMPTY;
+    String salt = Strings.EMPTY;
     if (useSalt) {
       salt = generateSaltKey();
     }
@@ -50,8 +48,8 @@ public abstract class BaseEncoder implements Encoder {
     for (int i = 0; i < iterations; i++) {
       value = doEncode(value);
     }
-    if (!EMPTY.equals(salt)) {
-      value = PREFIX.concat(salt).concat(SUFFIX).concat(value);
+    if (!Strings.EMPTY.equals(salt)) {
+      value = Strings.OPEN_BRACE.concat(salt).concat(Strings.CLOSE_BRACE).concat(value);
     }
     return value;
   }
@@ -89,7 +87,7 @@ public abstract class BaseEncoder implements Encoder {
    * @return wrapper salt
    */
   public String wrapperSalt(String salt) {
-    return PREFIX.concat(salt).concat(SUFFIX);
+    return Strings.OPEN_BRACE.concat(salt).concat(Strings.CLOSE_BRACE);
   }
 
   /**
@@ -99,13 +97,13 @@ public abstract class BaseEncoder implements Encoder {
    * @return salt
    */
   public String extractSalt(String raw) {
-    int start = raw.indexOf(PREFIX);
+    int start = raw.indexOf(Strings.OPEN_BRACE);
     if (start != 0) {
-      return EMPTY;
+      return Strings.EMPTY;
     }
-    int end = raw.indexOf(SUFFIX, start);
+    int end = raw.indexOf(Strings.CLOSE_BRACE, start);
     if (end < 0) {
-      return EMPTY;
+      return Strings.EMPTY;
     }
     return raw.substring(start + 1, end);
   }

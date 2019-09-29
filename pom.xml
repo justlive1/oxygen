@@ -6,7 +6,7 @@
 
   <groupId>vip.justlive</groupId>
   <artifactId>oxygen</artifactId>
-  <version>2.1.1</version>
+  <version>2.1.2</version>
   <modules>
     <module>oxygen-aop</module>
     <module>oxygen-cache</module>
@@ -29,17 +29,17 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>1.8</java.version>
 
-    <cglib.version>3.2.12</cglib.version>
+    <cglib.version>3.3.0</cglib.version>
     <junit.version>4.12</junit.version>
     <lombok.version>1.18.8</lombok.version>
-    <slf4j.version>1.7.26</slf4j.version>
+    <slf4j.version>1.7.28</slf4j.version>
 
     <skipTests>true</skipTests>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
-    <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
-    <maven-source-plugin.version>2.4</maven-source-plugin.version>
+    <maven-javadoc-plugin.version>3.1.0</maven-javadoc-plugin.version>
+    <maven-source-plugin.version>3.1.0</maven-source-plugin.version>
     <maven-version-plugin.version>2.7</maven-version-plugin.version>
   </properties>
 
@@ -89,6 +89,19 @@
         </configuration>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/java</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>vip/justlive/oxygen/core/Version</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
   </build>
 
   <profiles>
@@ -207,12 +220,6 @@
       </dependency>
 
       <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>oxygen-web-tomcat</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>cglib</groupId>
         <artifactId>cglib-nodep</artifactId>
         <version>${cglib.version}</version>
@@ -259,6 +266,13 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.2.3</version>
       <scope>test</scope>
     </dependency>
 

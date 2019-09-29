@@ -27,7 +27,7 @@ public abstract class AbstractInterceptor implements Interceptor {
 
   private final AopWrapper aopWrapper;
 
-  protected AbstractInterceptor(AopWrapper aopWrapper) {
+  AbstractInterceptor(AopWrapper aopWrapper) {
     this.aopWrapper = aopWrapper;
   }
 

@@ -14,6 +14,9 @@
 
 package vip.justlive.oxygen.core.net.http;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * http方法枚举
  *
@@ -47,5 +50,31 @@ public enum HttpMethod {
   /**
    * trace
    */
-  TRACE
+  TRACE,
+  /**
+   * patch
+   */
+  PATCH,
+  /**
+   * unknown
+   */
+  UNKNOWN;
+
+  private static final Map<String, HttpMethod> METHODS = new HashMap<>(8, 1);
+
+  static {
+    for (HttpMethod method : HttpMethod.values()) {
+      METHODS.put(method.name(), method);
+    }
+  }
+
+  /**
+   * 获取HttpMethod
+   *
+   * @param method 请求方法
+   * @return HttpMethod
+   */
+  public static HttpMethod find(String method) {
+    return METHODS.getOrDefault(method, UNKNOWN);
+  }
 }

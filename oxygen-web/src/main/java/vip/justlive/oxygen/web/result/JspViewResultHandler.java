@@ -13,9 +13,13 @@
  */
 package vip.justlive.oxygen.web.result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ResourceUtils;
+import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
+import vip.justlive.oxygen.core.util.Urls;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
@@ -26,6 +30,7 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  *
  * @author wubo
  */
+@Bean
 public class JspViewResultHandler implements ResultHandler {
 
   private static final String SUFFIX = ".jsp";
@@ -48,14 +53,25 @@ public class JspViewResultHandler implements ResultHandler {
   public void apply(RoutingContext ctx, Result result) {
     ViewResult data = (ViewResult) result;
     Request request = ctx.request();
-    Response response = ctx.response();
-    data.getData().forEach(request.getOriginalRequest()::setAttribute);
-    String path = ResourceUtils.concat(jspPrefix, data.getPath());
-    try {
-      request.getOriginalRequest().getRequestDispatcher(path)
-          .forward(request.getOriginalRequest(), response.getOriginalResponse());
-    } catch (Exception e) {
-      throw Exceptions.wrap(e);
+    if (request.getAttribute(Request.ORIGINAL_REQUEST) instanceof ChannelContext) {
+      throw Exceptions.fail("Not servlet container, jsp unsupported");
+    }
+    new JspRender().render(request, data);
+  }
+
+  private class JspRender {
+
+    void render(Request request, ViewResult data) {
+      HttpServletRequest req = (HttpServletRequest) request.getAttribute(Request.ORIGINAL_REQUEST);
+      HttpServletResponse resp = (HttpServletResponse) request
+          .getAttribute(Response.ORIGINAL_RESPONSE);
+      data.getData().forEach(req::setAttribute);
+      String path = Urls.concat(jspPrefix, data.getPath());
+      try {
+        req.getRequestDispatcher(path).forward(req, resp);
+      } catch (Exception e) {
+        throw Exceptions.wrap(e);
+      }
     }
   }
 }

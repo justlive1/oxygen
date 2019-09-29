@@ -15,6 +15,7 @@
 package vip.justlive.oxygen.core.net.aio.core;
 
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.CompletionHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,9 +35,9 @@ public class ReadHandler implements CompletionHandler<Integer, ByteBuffer> {
   public void completed(Integer result, ByteBuffer buffer) {
     if (result <= 0) {
       if (result == -1) {
-        log.info("对方关闭了连接 {}", channelContext);
+        log.info("{} target closed", channelContext);
       } else {
-        log.warn("读取数据时返回了 {} {}", channelContext, result);
+        log.warn("{} read result {}", channelContext, result);
       }
       channelContext.close();
       return;
@@ -53,7 +54,9 @@ public class ReadHandler implements CompletionHandler<Integer, ByteBuffer> {
 
   @Override
   public void failed(Throwable exc, ByteBuffer buffer) {
-    log.error("读取数据失败 {}", channelContext, exc);
+    if (!(channelContext.isClosed() && exc instanceof AsynchronousCloseException)) {
+      log.error("{} read error", channelContext, exc);
+    }
     channelContext.close();
   }
 }

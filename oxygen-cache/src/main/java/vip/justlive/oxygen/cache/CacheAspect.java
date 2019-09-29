@@ -26,7 +26,7 @@ import vip.justlive.oxygen.cache.generator.DefaultKeyGenerator;
 import vip.justlive.oxygen.cache.store.Cache;
 import vip.justlive.oxygen.cache.store.JCache;
 import vip.justlive.oxygen.cache.store.LocalCacheImpl;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.ioc.annotation.Inject;
 
@@ -38,7 +38,7 @@ import vip.justlive.oxygen.ioc.annotation.Inject;
 @Bean
 public class CacheAspect {
 
-  static final Cache CACHE = new LocalCacheImpl("AspectCache");
+  static final Cache CACHE = new LocalCacheImpl("Aspect-Cache");
   private final DefaultKeyGenerator defaultKeyGenerator;
   private final ArgsKeyGenerator argsKeyGenerator;
 
@@ -76,7 +76,7 @@ public class CacheAspect {
   }
 
   private Ctx parse(Invocation invocation) {
-    String cacheKey = String.join(Constants.COLON, invocation.getTarget().getClass().getName(),
+    String cacheKey = String.join(Strings.COLON, invocation.getTarget().getClass().getName(),
         invocation.getMethod().getName(), Arrays.deepToString(invocation.getArgs()));
     Ctx ctx = CACHE.get(cacheKey, Ctx.class);
     if (ctx != null) {

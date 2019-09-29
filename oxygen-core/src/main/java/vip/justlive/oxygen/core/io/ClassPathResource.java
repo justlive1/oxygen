@@ -19,10 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.MoreObjects;
-import vip.justlive.oxygen.core.util.ResourceUtils;
+import vip.justlive.oxygen.core.util.Urls;
 
 /**
  * classpath路径下的资源
@@ -51,7 +50,7 @@ public class ClassPathResource implements SourceResource {
    * @param classLoader 类加载器
    */
   public ClassPathResource(String path, ClassLoader classLoader) {
-    this.path = ResourceUtils.cutRootPath(MoreObjects.notNull(path));
+    this.path = Urls.cutRootPath(MoreObjects.notNull(path));
     this.classLoader = classLoader;
   }
 
@@ -62,7 +61,7 @@ public class ClassPathResource implements SourceResource {
    * @param clazz 类
    */
   public ClassPathResource(String path, Class<?> clazz) {
-    this.path = ResourceUtils.cutRootPath(MoreObjects.notNull(path));
+    this.path = Urls.cutRootPath(MoreObjects.notNull(path));
     this.clazz = clazz;
   }
 
@@ -91,7 +90,7 @@ public class ClassPathResource implements SourceResource {
   public boolean isFile() {
     URL url = getURL0();
     if (url != null) {
-      return Constants.URL_PROTOCOL_FILE.equals(url.getProtocol());
+      return Urls.URL_PROTOCOL_FILE.equals(url.getProtocol());
     }
     return false;
   }
@@ -100,7 +99,7 @@ public class ClassPathResource implements SourceResource {
   public File getFile() throws IOException {
     if (isFile()) {
       try {
-        return new File(ResourceUtils.toURI(getURL()).getSchemeSpecificPart());
+        return new File(Urls.toURI(getURL()).getSchemeSpecificPart());
       } catch (URISyntaxException e) {
         return new File(getURL0().getFile());
       }
@@ -146,7 +145,7 @@ public class ClassPathResource implements SourceResource {
 
   @Override
   public SourceResource createRelative(String path) {
-    ClassPathResource resource = new ClassPathResource(ResourceUtils.relativePath(this.path, path));
+    ClassPathResource resource = new ClassPathResource(Urls.relativePath(this.path, path));
     resource.classLoader = this.classLoader;
     resource.clazz = this.clazz;
     return resource;

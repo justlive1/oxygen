@@ -16,6 +16,8 @@ package vip.justlive.oxygen.web.bind;
 import java.lang.reflect.Parameter;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.util.MoreObjects;
+import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.annotation.Param;
 
 /**
@@ -23,6 +25,7 @@ import vip.justlive.oxygen.web.annotation.Param;
  *
  * @author wubo
  */
+@Bean
 public class BasicParamBinder implements ParamBinder {
 
   @Override
@@ -35,7 +38,7 @@ public class BasicParamBinder implements ParamBinder {
     DataBinder dataBinder = new DataBinder();
     dataBinder.setType(parameter.getType());
     Param param = parameter.getAnnotation(Param.class);
-    dataBinder.setName(MoreObjects.firstNonEmpty(param.value(), parameter.getName()));
+    dataBinder.setName(Strings.firstNonNull(param.value(), parameter.getName()));
     if (param.defaultValue().length() > 0) {
       dataBinder.setDefaultValue(param.defaultValue());
     }

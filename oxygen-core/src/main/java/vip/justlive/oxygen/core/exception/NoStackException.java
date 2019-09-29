@@ -26,10 +26,9 @@ public class NoStackException extends CodedException {
    * 构造方法
    *
    * @param errorCode 异常编码包装
-   * @param args 参数
    */
-  NoStackException(ErrorCode errorCode, Object... args) {
-    super(errorCode, args);
+  NoStackException(ErrorCode errorCode) {
+    super(errorCode);
   }
 
   /**

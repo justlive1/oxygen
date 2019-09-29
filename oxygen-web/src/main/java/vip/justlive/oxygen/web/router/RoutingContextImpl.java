@@ -28,12 +28,10 @@ public class RoutingContextImpl implements RoutingContext {
 
   private final Request request;
   private final Response response;
-  private final String requestPath;
 
-  public RoutingContextImpl(Request request, Response response, String requestPath) {
+  public RoutingContextImpl(Request request, Response response) {
     this.request = request;
     this.response = response;
-    this.requestPath = requestPath;
   }
 
   @Override
@@ -48,7 +46,7 @@ public class RoutingContextImpl implements RoutingContext {
 
   @Override
   public String requestPath() {
-    return requestPath;
+    return request.getPath();
   }
 
   @Override
@@ -74,7 +72,14 @@ public class RoutingContextImpl implements RoutingContext {
 
   @Override
   public <T> T bindPathVariables(Class<T> clazz) {
-    return bind(new HashMap<>(request.getPathVariables()), clazz);
+    Map<String, Object> map = new HashMap<>(2);
+    int len = Request.PATH_VARS.length();
+    request.getAttributes().forEach((k, v) -> {
+      if (k.startsWith(Request.PATH_VARS)) {
+        map.put(k.substring(len), v);
+      }
+    });
+    return bind(map, clazz);
   }
 
   private <T> T bind(Map<String, Object> map, Class<T> clazz) {

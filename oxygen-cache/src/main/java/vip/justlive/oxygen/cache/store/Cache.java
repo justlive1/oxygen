@@ -75,7 +75,7 @@ public interface Cache {
    * @param key cache key
    * @param value cache value
    * @param duration duration
-   * @param unit timeunit
+   * @param unit time unit
    * @return exist cache value
    */
   Object putIfAbsent(String key, Object value, long duration, TimeUnit unit);
@@ -95,7 +95,7 @@ public interface Cache {
    * @param key cache key
    * @param value cache value
    * @param duration duration
-   * @param unit timeunit
+   * @param unit time unit
    * @return exist cache value
    */
   Object set(String key, Object value, long duration, TimeUnit unit);
@@ -116,7 +116,7 @@ public interface Cache {
    * @param key cache key
    * @param value cache value
    * @param duration duration
-   * @param unit timeunit
+   * @param unit time unit
    * @return exist cache value
    */
   Object replace(String key, Object value, long duration, TimeUnit unit);

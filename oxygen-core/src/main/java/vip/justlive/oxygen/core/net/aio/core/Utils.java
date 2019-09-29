@@ -45,17 +45,17 @@ public class Utils {
     try {
       channel.shutdownInput();
     } catch (IOException e) {
-      log.error("关闭channel.input失败", e);
+      log.error("close channel.input error", e);
     }
     try {
       channel.shutdownOutput();
     } catch (IOException e) {
-      log.error("关闭channel.output失败", e);
+      log.error("close channel.output error", e);
     }
     try {
       channel.close();
     } catch (IOException e) {
-      log.error("关闭channel失败", e);
+      log.error("close channel error", e);
     }
   }
 

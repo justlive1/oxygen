@@ -15,25 +15,28 @@ package vip.justlive.oxygen.web;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.net.http.HttpMethod;
 import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
 import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.ResourceUtils;
+import vip.justlive.oxygen.core.util.Urls;
 import vip.justlive.oxygen.ioc.IocPlugin;
 import vip.justlive.oxygen.web.annotation.Mapping;
 import vip.justlive.oxygen.web.annotation.Router;
+import vip.justlive.oxygen.web.bind.ParamBinder;
 import vip.justlive.oxygen.web.exception.ExceptionHandler;
 import vip.justlive.oxygen.web.exception.ExceptionHandlerImpl;
-import vip.justlive.oxygen.web.http.HttpMethod;
-import vip.justlive.oxygen.web.http.SessionManager;
+import vip.justlive.oxygen.web.hook.WebHook;
+import vip.justlive.oxygen.web.http.Parser;
 import vip.justlive.oxygen.web.http.SessionStore;
+import vip.justlive.oxygen.web.result.ResultHandler;
 import vip.justlive.oxygen.web.router.AnnotationRouteHandler;
 import vip.justlive.oxygen.web.router.Route;
-import vip.justlive.oxygen.web.servlet.DispatcherServlet;
 
 /**
  * web插件
@@ -43,8 +46,6 @@ import vip.justlive.oxygen.web.servlet.DispatcherServlet;
 @Slf4j
 public class WebPlugin implements Plugin {
 
-  public static final SessionManager SESSION_MANAGER = new SessionManager();
-
   @Override
   public int order() {
     return Integer.MIN_VALUE + 60;
@@ -52,17 +53,19 @@ public class WebPlugin implements Plugin {
 
   @Override
   public void start() {
+    loadWebEnv();
     loadStaticRoute();
     loadAnnotationRouter();
     loadErrorHandler();
-    loadSessionManager();
-    DispatcherServlet.load();
     vip.justlive.oxygen.web.router.Router.build();
   }
 
   @Override
   public void stop() {
-    DispatcherServlet.clear();
+    Context.PARSERS.clear();
+    Context.BINDERS.clear();
+    Context.HANDLERS.clear();
+    Context.HOOKS.clear();
     vip.justlive.oxygen.web.router.Router.clear();
   }
 
@@ -102,7 +105,7 @@ public class WebPlugin implements Plugin {
         }
         Method requestMethod = clazz.getMethod(method.getName(), method.getParameterTypes());
         Mapping mapping = method.getAnnotation(Mapping.class);
-        String routePath = ResourceUtils.concat(rootPath, mapping.value());
+        String routePath = Urls.concat(rootPath, mapping.value());
         Route route = vip.justlive.oxygen.web.router.Router.router().path(routePath);
         for (HttpMethod httpMethod : mapping.method()) {
           route.method(httpMethod);
@@ -118,22 +121,35 @@ public class WebPlugin implements Plugin {
     ExceptionHandler handler = IocPlugin.beanStore().getBean(ExceptionHandler.class);
     if (handler != null) {
       if (log.isDebugEnabled()) {
-        log.debug("loaded error handler of user {}", handler);
+        log.debug("loaded error handle of user {}", handler);
       }
     } else {
       handler = new ExceptionHandlerImpl();
       IocPlugin.beanStore().addBean(handler);
       if (log.isDebugEnabled()) {
-        log.debug("loaded default error handler {}", handler);
+        log.debug("loaded default error handle {}", handler);
       }
     }
   }
 
-  private void loadSessionManager() {
+  private void loadWebEnv() {
     SessionStore sessionStore = IocPlugin.beanStore().getBean(SessionStore.class);
     if (sessionStore != null) {
-      SESSION_MANAGER.setStore(sessionStore);
+      Context.SESSION_MANAGER.setStore(sessionStore);
     }
-    SESSION_MANAGER.setExpired(ConfigFactory.load(WebConf.class).getSessionExpired());
+    Context.SESSION_MANAGER.setExpired(ConfigFactory.load(WebConf.class).getSessionExpired());
+
+    Context.PARSERS.addAll(IocPlugin.beanStore().getCastBeanMap(Parser.class).values());
+    Collections.sort(Context.PARSERS);
+
+    Context.BINDERS.addAll(IocPlugin.beanStore().getCastBeanMap(ParamBinder.class).values());
+    Collections.sort(Context.BINDERS);
+
+    Context.HANDLERS.addAll(IocPlugin.beanStore().getCastBeanMap(ResultHandler.class).values());
+    Collections.sort(Context.HANDLERS);
+
+    Context.HOOKS.addAll(IocPlugin.beanStore().getCastBeanMap(WebHook.class).values());
+    Collections.sort(Context.HOOKS);
   }
+
 }

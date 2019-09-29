@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.web.http;
 
 import lombok.Data;
+import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * session manager
@@ -21,9 +22,10 @@ import lombok.Data;
  * @author wubo
  */
 @Data
+@Bean
 public class SessionManager {
 
-  private long expired = 3600;
+  private long expired;
   private SessionStore store = new SessionStoreImpl();
 
   /**
@@ -41,7 +43,7 @@ public class SessionManager {
    *
    * @param session session
    */
-  public void createSession(Session session) {
+  void createSession(Session session) {
     session.setManager(this);
     session.setExpired(expired);
     store.put(session.getId(), session, session.getExpired());

@@ -34,8 +34,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.server.WebServer;
-import vip.justlive.oxygen.web.servlet.WebAppInitializer;
-import vip.justlive.oxygen.web.servlet.WebContainerInitializer;
+import vip.justlive.oxygen.web.servlet.ServletWebInitializer;
 
 /**
  * undertow server
@@ -84,12 +83,11 @@ public class UndertowWebServer implements WebServer {
 
   private DeploymentManager deployment() {
     Set<Class<?>> handlesTypes = new HashSet<>(2);
-    handlesTypes.add(WebAppInitializer.class);
     return Servlets.defaultContainer().addDeployment(
         Servlets.deployment().setClassLoader(ClassUtils.getDefaultClassLoader())
             .setContextPath(webConf.getContextPath()).setDeploymentName("oxygen")
             .addServletContainerInitializer(
-                new ServletContainerInitializerInfo(WebContainerInitializer.class, handlesTypes)));
+                new ServletContainerInitializerInfo(ServletWebInitializer.class, handlesTypes)));
   }
 
   private void configServer(Undertow.Builder builder) {

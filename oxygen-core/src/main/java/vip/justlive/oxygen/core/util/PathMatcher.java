@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.constant.Constants;
 
 /**
  * 路径匹配
@@ -29,12 +28,8 @@ import vip.justlive.oxygen.core.constant.Constants;
 @Slf4j
 public class PathMatcher {
 
-  private static final char ANY = '*';
   private static final String ANY_REGEX = ".*";
   private static final String DB_ANY_REGEX = "[/]?";
-  private static final char ONLY_ONE = '?';
-  private static final String ONLY_NOE_REGEX = ".";
-  private static final char SLASH = '/';
   private static final String NOT_SEPARATOR_REGEX = "[^/]*";
   private static final WeakHashMap<String, Pattern> PATTERNS = new WeakHashMap<>(32);
 
@@ -45,7 +40,7 @@ public class PathMatcher {
    * @return true 是通配符
    */
   public boolean isPattern(String path) {
-    return (path.indexOf(ANY) != -1 || path.indexOf(ONLY_ONE) != -1);
+    return (path.indexOf(Bytes.ANY) != -1 || path.indexOf(Bytes.QUESTION_MARK) != -1);
   }
 
   /**
@@ -89,7 +84,7 @@ public class PathMatcher {
   }
 
   private boolean[] parse(boolean pre, boolean dbPre, char[] chars, int i, StringBuilder sb) {
-    if (chars[i] == ANY) {
+    if (chars[i] == Bytes.ANY) {
       if (pre) {
         // 第二次遇到*，替换成.*
         sb.append(ANY_REGEX);
@@ -101,15 +96,15 @@ public class PathMatcher {
         pre = true;
       }
     } else {
-      if (dbPre && chars[i] == SLASH) {
+      if (dbPre && chars[i] == Bytes.SLASH) {
         sb.append(DB_ANY_REGEX);
       } else if (!dbPre && pre) {
         sb.append(NOT_SEPARATOR_REGEX);
       }
-      if (chars[i] == ONLY_ONE) {
+      if (chars[i] == Bytes.QUESTION_MARK) {
         // 遇到？替换成. 否则不变
-        sb.append(ONLY_NOE_REGEX);
-      } else if (!dbPre || chars[i] != SLASH) {
+        sb.append(Strings.DOT);
+      } else if (!dbPre || chars[i] != Bytes.SLASH) {
         sb.append(chars[i]);
       }
       pre = false;
@@ -125,10 +120,10 @@ public class PathMatcher {
    * @return 根路径
    */
   public String getRootDir(String location) {
-    int prefixEnd = location.indexOf(Constants.COLON) + 1;
+    int prefixEnd = location.indexOf(Strings.COLON) + 1;
     int rootDirEnd = location.length();
     while (rootDirEnd > prefixEnd && isPattern(location.substring(prefixEnd, rootDirEnd))) {
-      rootDirEnd = location.lastIndexOf(Constants.PATH_SEPARATOR, rootDirEnd - 2) + 1;
+      rootDirEnd = location.lastIndexOf(Strings.SLASH, rootDirEnd - 2) + 1;
     }
     if (rootDirEnd == 0) {
       rootDirEnd = prefixEnd;
@@ -151,12 +146,11 @@ public class PathMatcher {
       }
       return files;
     }
-    String fullPattern = rootDir.getAbsolutePath()
-        .replace(File.separator, Constants.PATH_SEPARATOR);
-    if (!subPattern.startsWith(Constants.PATH_SEPARATOR)) {
-      fullPattern += Constants.PATH_SEPARATOR;
+    String fullPattern = rootDir.getAbsolutePath().replace(File.separator, Strings.SLASH);
+    if (!subPattern.startsWith(Strings.SLASH)) {
+      fullPattern += Strings.SLASH;
     }
-    fullPattern += subPattern.replace(File.separator, Constants.PATH_SEPARATOR);
+    fullPattern += subPattern.replace(File.separator, Strings.SLASH);
     this.searchMatchedFiles(fullPattern, rootDir, files);
     return files;
   }
@@ -177,11 +171,10 @@ public class PathMatcher {
       return;
     }
     for (File content : dirContents) {
-      String currentPath = content.getAbsolutePath()
-          .replace(File.separator, Constants.PATH_SEPARATOR);
+      String currentPath = content.getAbsolutePath().replace(File.separator, Strings.SLASH);
       if (content.isDirectory()) {
         if (!content.canRead() && log.isDebugEnabled()) {
-          log.debug("dir [{}] has no read permission, skip");
+          log.debug("dir [{}] has no read permission, skip", content);
         } else {
           this.searchMatchedFiles(fullPattern, content, files);
         }

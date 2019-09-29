@@ -20,10 +20,10 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import lombok.Data;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.io.SourceStream;
 import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.MoreObjects;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * multipart item
@@ -37,7 +37,7 @@ public class MultipartItem implements SourceStream {
   private Charset charset;
   private String name;
   private String filename;
-  private String extension = Constants.EMPTY;
+  private String extension = Strings.EMPTY;
   private String contentType;
   private Path path;
 

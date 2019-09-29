@@ -23,8 +23,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import vip.justlive.oxygen.core.constant.Constants;
+import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.MoreObjects;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * http request
@@ -165,7 +166,7 @@ public class HttpRequest {
   public HttpRequest formBody(Object body) {
     this.body = body;
     this.func = this::formBodyConvert;
-    this.headers.put(Constants.CONTENT_TYPE, Constants.APPLICATION_FORM_URLENCODED);
+    this.headers.put(HttpHeaders.CONTENT_TYPE, HttpHeaders.APPLICATION_FORM_URLENCODED);
     return this;
   }
 
@@ -178,7 +179,7 @@ public class HttpRequest {
   public HttpRequest jsonBody(String body) {
     this.body = body;
     this.func = this::jsonBodyConvert;
-    this.headers.put(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
+    this.headers.put(HttpHeaders.CONTENT_TYPE, HttpHeaders.APPLICATION_JSON);
     return this;
   }
 
@@ -205,10 +206,10 @@ public class HttpRequest {
     String httpUrl = this.url;
     if (queryParam != null) {
       String queryString = MoreObjects.beanToQueryString(queryParam, true);
-      if (!url.contains(Constants.QUESTION_MARK)) {
-        httpUrl += Constants.QUESTION_MARK;
-      } else if (!url.endsWith(Constants.AND)) {
-        httpUrl += Constants.AND;
+      if (!url.contains(Strings.QUESTION_MARK)) {
+        httpUrl += Strings.QUESTION_MARK;
+      } else if (!url.endsWith(Strings.AND)) {
+        httpUrl += Strings.AND;
       }
       httpUrl += queryString;
     }
@@ -242,9 +243,9 @@ public class HttpRequest {
   }
 
   private void setContentType() {
-    String contentType = headers.get(Constants.CONTENT_TYPE);
-    if (contentType != null && !contentType.contains(Constants.CHARSET)) {
-      headers.put(Constants.CONTENT_TYPE, contentType + ";charset=" + charset.name());
+    String contentType = headers.get(HttpHeaders.CONTENT_TYPE);
+    if (contentType != null && !contentType.contains(HttpHeaders.CHARSET)) {
+      headers.put(HttpHeaders.CONTENT_TYPE, contentType + ";charset=" + charset.name());
     }
   }
 

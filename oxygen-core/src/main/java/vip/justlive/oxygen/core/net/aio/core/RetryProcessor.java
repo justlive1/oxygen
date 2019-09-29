@@ -49,14 +49,14 @@ public class RetryProcessor implements Runnable {
       if (client.getGroupContext().getRetryMaxAttempts() > 0 && retryAttempts > client
           .getGroupContext().getRetryMaxAttempts()) {
         hasNext = false;
-        log.error("{}客户端重连->{}超过最大次数{}", client.getChannelContext(),
-            client.getGroupContext().getServerAddress(), retryAttempts);
+        log.error("{} client try to connect to {} reached the max attempts [{}]",
+            client.getChannelContext(), client.getGroupContext().getServerAddress(), retryAttempts);
         return;
       }
 
       if (log.isDebugEnabled()) {
-        log.info("{}客户端开始第{}次重连->{}", client.getChannelContext(), retryAttempts,
-            client.getGroupContext().getServerAddress());
+        log.info("{} client try to connect to {} for {} attempt(s)", client.getChannelContext(),
+            client.getGroupContext().getServerAddress(), retryAttempts);
       }
 
       ChannelContext channelContext = client.getChannelContext();
@@ -65,8 +65,8 @@ public class RetryProcessor implements Runnable {
       channel.connect(channelContext.getGroupContext().getServerAddress(), channelContext,
           ConnectHandler.INSTANCE);
     } catch (IOException e) {
-      log.error("{}客户端第{}次重连->{}失败", client.getChannelContext(),
-          client.getChannelContext().getRetryAttempts(),
+      log.error("{} client try to connect to {} failed for {} attempt(s)",
+          client.getChannelContext(), client.getChannelContext().getRetryAttempts(),
           client.getGroupContext().getServerAddress(), e);
     } finally {
       if (hasNext) {

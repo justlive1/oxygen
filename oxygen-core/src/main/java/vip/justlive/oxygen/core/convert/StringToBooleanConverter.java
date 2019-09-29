@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * String - Boolean 转换器
@@ -53,7 +54,7 @@ public class StringToBooleanConverter implements Converter<String, Boolean> {
     } else if (FALSE_VALUES.contains(value)) {
       return Boolean.FALSE;
     } else {
-      throw new IllegalArgumentException("Invalid boolean value '" + source + "'");
+      throw Exceptions.fail("Invalid boolean value '" + source + "'");
     }
   }
 

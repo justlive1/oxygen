@@ -33,16 +33,6 @@ public class JCache {
   static Map<String, Cache> cacheImpls = new ConcurrentHashMap<>(4, 1);
 
   /**
-   * 初始化
-   *
-   * @param name 缓存名称
-   * @param cacheImpl 缓存实现
-   */
-  public static void init(String name, Cache cacheImpl) {
-    cacheImpls.put(name, cacheImpl);
-  }
-
-  /**
    * 获取默认cache
    *
    * @return cache

@@ -21,6 +21,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import vip.justlive.oxygen.core.util.SystemUtils;
+import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
  * aio 客户端
@@ -97,6 +98,7 @@ public class Client {
   public void close() {
     if (channelContext != null) {
       channelContext.close();
+      ThreadUtils.sleep(10);
       groupContext.close();
     }
   }

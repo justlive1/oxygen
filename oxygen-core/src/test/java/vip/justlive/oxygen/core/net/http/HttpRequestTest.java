@@ -37,16 +37,10 @@ public class HttpRequestTest {
   }
 
   public void test1() throws IOException {
-    HttpResponse response = HttpRequest
-        .post("http://localhost:8080/api/login/validate")
-        .charset(StandardCharsets.UTF_8)
-        .connectTimeout(1000)
-        .readTimeout(1000)
-        .followRedirects(false)
-        .queryParam(new Body().mobile("1").captcha("2"))
-        .jsonBody("{\"a\":1}")
-        .addHeader("token", "zzz")
-        .execute();
+    HttpResponse response = HttpRequest.post("http://localhost:8080/api/login/validate")
+        .charset(StandardCharsets.UTF_8).connectTimeout(1000).readTimeout(1000)
+        .followRedirects(false).queryParam(new Body().mobile("1").captcha("2"))
+        .jsonBody("{\"a\":1}").addHeader("token", "zzz").execute();
     Assert.assertEquals(200, response.getCode());
     Assert.assertNotNull(response.bodyAsString());
   }

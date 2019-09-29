@@ -71,6 +71,23 @@ public class IOUtils {
   }
 
   /**
+   * 输入流转byte[]
+   *
+   * @param input 输入流
+   * @return byte[]
+   * @throws IOException io异常
+   */
+  public static byte[] toBytes(InputStream input) throws IOException {
+    Bytes bytes = new Bytes();
+    byte[] buffer = new byte[BUFFER_SIZE];
+    int bytesRead;
+    while ((bytesRead = input.read(buffer)) != -1) {
+      bytes.write(buffer, 0, bytesRead);
+    }
+    return bytes.toArray();
+  }
+
+  /**
    * 输入流转字符串
    *
    * @param input 输入流

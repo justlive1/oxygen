@@ -1,8 +1,0 @@
-
-
-vip.justlive.oxygen.web.bind.BasicParamBinder
-vip.justlive.oxygen.web.bind.CookieParamBinder
-vip.justlive.oxygen.web.bind.PathParamBinder
-vip.justlive.oxygen.web.bind.HeaderParamBinder
-vip.justlive.oxygen.web.bind.MultipartParamBinder
-vip.justlive.oxygen.web.bind.OthersParamBinder

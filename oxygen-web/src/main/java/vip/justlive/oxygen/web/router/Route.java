@@ -20,8 +20,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import vip.justlive.oxygen.core.constant.Constants;
-import vip.justlive.oxygen.web.http.HttpMethod;
+import vip.justlive.oxygen.core.net.http.HttpMethod;
 
 /**
  * 路由
@@ -31,6 +30,9 @@ import vip.justlive.oxygen.web.http.HttpMethod;
 @Data
 @Accessors(fluent = true)
 public class Route {
+
+  public static final String REGEX_PATH_VAR = "\\{\\w+}";
+  public static final String REGEX_PATH_VAR_REPLACE = "(\\\\w+)";
 
   /**
    * 方法
@@ -79,7 +81,7 @@ public class Route {
         pathVars.add(matcher.group(1));
         start = matcher.end();
       } while (matcher.find(start));
-      path = path.replaceAll(Constants.REGEX_PATH_VAR, Constants.REGEX_PATH_VAR_REPLACE);
+      path = path.replaceAll(REGEX_PATH_VAR, REGEX_PATH_VAR_REPLACE);
       this.regex = true;
     }
     this.path = path;

@@ -44,7 +44,7 @@ public class ConnectHandler implements CompletionHandler<Void, ChannelContext> {
 
   @Override
   public void failed(Throwable exc, ChannelContext channelContext) {
-    log.error("Aio客户端连接失败 {}", channelContext, exc);
+    log.error("Aio client {} connected error", channelContext, exc);
     channelContext.getFuture().completeExceptionally(exc);
     channelContext.close();
   }

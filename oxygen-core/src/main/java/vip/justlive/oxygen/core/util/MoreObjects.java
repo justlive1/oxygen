@@ -13,18 +13,14 @@
  */
 package vip.justlive.oxygen.core.util;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.constant.Constants;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -94,32 +90,6 @@ public class MoreObjects {
   }
 
   /**
-   * 获取第一个不为null或空字符串的值
-   *
-   * @param first first value
-   * @param second second value
-   * @param others other values
-   * @return nonEmpty
-   */
-  public static String firstNonEmpty(String first, String second, String... others) {
-    if (first != null && first.length() > 0) {
-      return first;
-    }
-    if (second != null && second.length() > 0) {
-      return second;
-    }
-    if (others == null || others.length == 0) {
-      throw new IllegalArgumentException();
-    }
-    for (String str : others) {
-      if (str != null && str.length() > 0) {
-        return str;
-      }
-    }
-    throw new IllegalArgumentException();
-  }
-
-  /**
    * 对象转map
    *
    * @param bean 对象
@@ -170,38 +140,12 @@ public class MoreObjects {
   public static String beanToQueryString(Object bean, boolean urlEncoded) {
     Map<String, Object> map = MoreObjects.beanToMap(bean);
     StringBuilder sb = new StringBuilder();
-    map.forEach((k, v) -> sb.append(Constants.AND).append(k).append(Constants.EQUAL)
-        .append(urlEncoded ? urlEncode(v.toString()) : v));
+    map.forEach((k, v) -> sb.append(Strings.AND).append(k).append(Strings.EQUAL)
+        .append(urlEncoded ? Urls.urlEncode(v.toString()) : v));
     if (sb.length() > 0) {
       sb.deleteCharAt(0);
     }
     return sb.toString();
-  }
-
-  /**
-   * url encode
-   *
-   * @param s string
-   * @return encoded
-   */
-  public static String urlEncode(String s) {
-    return urlEncode(s, StandardCharsets.UTF_8);
-  }
-
-  /**
-   * url encode
-   *
-   * @param s string
-   * @param charset 字符集
-   * @return encoded
-   */
-  public static String urlEncode(String s, Charset charset) {
-    try {
-      return URLEncoder.encode(s, charset.name());
-    } catch (UnsupportedEncodingException e) {
-      // nothing
-    }
-    return s;
   }
 
   /**
@@ -232,8 +176,24 @@ public class MoreObjects {
    */
   public static String safeToString(Object obj) {
     if (obj == null) {
-      return Constants.EMPTY;
+      return Strings.EMPTY;
     }
     return obj.toString();
   }
+
+  /**
+   * 捕获异常的foreach
+   *
+   * @param iterable 迭代对象
+   * @param consumer 处理单元
+   * @param <T> 泛型
+   */
+  public static <T> void caughtForeach(Iterable<T> iterable, Consumer<? super T> consumer) {
+    if (consumer instanceof CaughtConsumer) {
+      iterable.forEach(consumer);
+    } else {
+      iterable.forEach(new CaughtConsumer<>(consumer));
+    }
+  }
+
 }
