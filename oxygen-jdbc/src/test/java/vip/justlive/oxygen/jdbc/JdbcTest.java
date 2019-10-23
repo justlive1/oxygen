@@ -65,11 +65,12 @@ public class JdbcTest {
     Assert.assertEquals(Long.valueOf(1222), option.getLl());
 
     option = new Option();
-    option.setId(123l);
+    option.setId(123L);
     option.setFl(0.2f);
     Record.insert(option);
 
     Assert.assertEquals(2, Record.count(new Option()));
+    Assert.assertEquals(2, Record.findAll(Option.class).size());
 
     Record.deleteById(Option.class, 123);
 

@@ -31,6 +31,7 @@ public class Strings {
   public static final String OPEN_BRACE = "{";
   public static final String OPEN_BRACKET = "[";
   public static final String OPEN_PAREN = "(";
+  public static final String PLUS = "+";
   public static final String QUESTION_MARK = "?";
   public static final String SEMICOLON = ";";
   public static final String SLASH = "/";

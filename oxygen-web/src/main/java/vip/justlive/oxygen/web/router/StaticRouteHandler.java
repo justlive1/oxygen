@@ -115,16 +115,17 @@ public class StaticRouteHandler implements RouteHandler {
     if (route.cachingEnabled() && expiringMap.containsKey(path)) {
       return expiringMap.get(path);
     }
+    StaticSource source = null;
     for (String location : route.locations()) {
-      StaticSource source = findMappedSource(path, location);
+      source = findMappedSource(path, location);
       if (source != null) {
-        if (route.cachingEnabled()) {
-          expiringMap.put(path, source);
-        }
-        return source;
+        break;
       }
     }
-    return null;
+    if (source != null && route.cachingEnabled() && expiringMap.putIfAbsent(path, source) != null) {
+      source.remove();
+    }
+    return source;
   }
 
   private StaticSource findMappedSource(String path, String basePath) {
@@ -151,12 +152,8 @@ public class StaticRouteHandler implements RouteHandler {
     if (log.isDebugEnabled()) {
       log.debug("static mapping cached source expired for [{}] [{}]", key, source);
     }
-    if (source != null && source.path != null) {
-      try {
-        Files.deleteIfExists(source.path);
-      } catch (IOException e) {
-        log.error("delete file error", e);
-      }
+    if (source != null) {
+      source.remove();
     }
   }
 
@@ -195,6 +192,16 @@ public class StaticRouteHandler implements RouteHandler {
     String eTag() {
       return Strings.DOUBLE_QUOTATION_MARK + lastModified() + Strings.DASH + path.hashCode()
           + Strings.DOUBLE_QUOTATION_MARK;
+    }
+
+    void remove() {
+      if (path != null) {
+        try {
+          Files.deleteIfExists(path);
+        } catch (IOException e) {
+          log.error("delete file error", e);
+        }
+      }
     }
   }
 }

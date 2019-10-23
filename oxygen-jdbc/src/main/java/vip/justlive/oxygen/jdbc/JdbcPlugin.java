@@ -46,8 +46,7 @@ public class JdbcPlugin implements Plugin {
 
   @Override
   public void stop() {
-    Jdbc.JDBC_INTERCEPTORS.clear();
-    Jdbc.DATA_SOURCE_MAP.clear();
+    Jdbc.shutdown();
   }
 
   /**

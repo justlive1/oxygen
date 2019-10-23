@@ -34,7 +34,9 @@ public class DefaultConverterService implements ConverterService, ConverterRegis
   private Map<ConverterTypePair, ArrayConverter> arrayConverters = new HashMap<>(8, 1);
 
   public DefaultConverterService() {
-    addDefaultConverter(this);
+    addConverter(new StringToBooleanConverter()).addConverter(new StringToCharacterConverter())
+        .addConverterFactory(new StringToNumberConverterFactory())
+        .addArrayConverter(new StringToArrayConverter(this));
   }
 
   /**
@@ -53,14 +55,6 @@ public class DefaultConverterService implements ConverterService, ConverterRegis
       }
     }
     return sharedConverterService;
-  }
-
-  public static void addDefaultConverter(ConverterRegistry registry) {
-    ConverterService converterService = (ConverterService) registry;
-    registry.addConverter(new StringToBooleanConverter())
-        .addConverter(new StringToCharacterConverter())
-        .addConverterFactory(new StringToNumberConverterFactory())
-        .addArrayConverter(new StringToArrayConverter(converterService));
   }
 
   @SuppressWarnings("unchecked")

@@ -102,7 +102,7 @@ public class RetryerTest {
     pool.execute(r);
     pool.execute(r);
 
-    Thread.sleep(1000);
+    ThreadUtils.sleep(1000);
     Assert.assertEquals(4, ato.get());
   }
 

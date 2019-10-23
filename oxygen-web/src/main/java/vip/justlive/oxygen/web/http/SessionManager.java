@@ -14,7 +14,6 @@
 package vip.justlive.oxygen.web.http;
 
 import lombok.Data;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * session manager
@@ -22,7 +21,6 @@ import vip.justlive.oxygen.ioc.annotation.Bean;
  * @author wubo
  */
 @Data
-@Bean
 public class SessionManager {
 
   private long expired;

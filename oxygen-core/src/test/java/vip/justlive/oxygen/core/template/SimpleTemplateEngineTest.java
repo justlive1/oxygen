@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core.template;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Assert;
@@ -29,15 +30,31 @@ public class SimpleTemplateEngineTest {
 
     Map<String, Object> attrs = new HashMap<>();
     attrs.put("a", 1);
-    attrs.put("b", "b");
     CoreConf conf = new CoreConf();
     conf.setBaseTempDir("/aaa");
     attrs.put("c", conf);
+    attrs.put("b", Arrays.asList(1, 2, 3));
 
-    String template = "<i>${a}</i><i>${b}</i><i>${c.baseTempDir}</i>";
+    String template = "<i>${a}</i><i>${1+3}</i><i>${c.baseTempDir}</i>";
 
     SimpleTemplateEngine engine = new SimpleTemplateEngine();
     String result = engine.render(template, attrs);
-    Assert.assertEquals("<i>1</i><i>b</i><i>/aaa</i>", result);
+    Assert.assertEquals("<i>1</i><i>4</i><i>/aaa</i>", result);
+
+    template = "<a>${x,$</a>";
+    result = engine.render(template, attrs);
+    Assert.assertEquals(template, result);
+
+    template = "<a>${x,${a}</a>";
+    result = engine.render(template, attrs);
+    Assert.assertEquals("<a>${x,1</a>", result);
+
+    template = "#: if(a == 1) { \n 1+2${a}x${a} \n #:}";
+    result = engine.render(template, attrs);
+    Assert.assertEquals("1+21x1", result);
+
+    template = "#: for(var it in b) { \n ${b[it]} \n #:}";
+    result = engine.render(template, attrs);
+    Assert.assertEquals("123", result);
   }
 }

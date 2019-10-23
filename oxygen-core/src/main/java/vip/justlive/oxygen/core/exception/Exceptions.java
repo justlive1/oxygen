@@ -71,7 +71,7 @@ public class Exceptions {
     if (e instanceof CodedException) {
       return (CodedException) e;
     }
-    return new CodedException(e, errorCode);
+    return new CodedException(e, errorCode, null);
   }
 
   /**
@@ -108,7 +108,7 @@ public class Exceptions {
   }
 
   /**
-   * 创建可带参数的业务逻辑异常
+   * 创建业务逻辑异常
    *
    * @param message 异常消息
    * @return 包装异常
@@ -122,24 +122,63 @@ public class Exceptions {
    *
    * @param code 异常编码
    * @param message 异常消息
+   * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fail(String code, String message) {
-    return fail(errorMessage(code, message));
+  public static CodedException fail(String code, String message, Object... args) {
+    return fail(errorMessage(code, message), args);
   }
 
   /**
    * 创建可带参数的业务逻辑异常
    *
    * @param errCode 异常编码包装
+   * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fail(ErrorCode errCode) {
-    return new NoStackException(errCode);
+  public static CodedException fail(ErrorCode errCode, Object... args) {
+    return new NoStackException(errCode, args);
   }
 
   /**
-   * 创建可带参数的故障异常
+   * 创建可带扩展数据的业务逻辑异常
+   *
+   * @param message 异常消息
+   * @param data 扩展数据
+   * @return 包装异常
+   */
+  public static CodedException failWithData(String message, Object data) {
+    return failWithData(errorMessage(message), data);
+  }
+
+  /**
+   * 创建可带参数和扩展数据的业务逻辑异常
+   *
+   * @param code 异常编码
+   * @param message 异常消息
+   * @param data 扩展数据
+   * @param args 参数
+   * @return 包装异常
+   */
+  public static CodedException failWithData(String code, String message, Object data,
+      Object... args) {
+    return failWithData(errorMessage(code, message), args, data);
+  }
+
+  /**
+   * 创建可带参数和扩展数据的业务逻辑异常
+   *
+   * @param errCode 异常编码包装
+   * @param data 扩展数据
+   * @param args 参数
+   * @return 包装异常
+   */
+  public static CodedException failWithData(ErrorCode errCode, Object data, Object... args) {
+    return new NoStackException(errCode, args, data);
+  }
+
+  /**
+   * 创建故障异常
    *
    * @param message 异常消息
    * @return 包装异常
@@ -153,10 +192,11 @@ public class Exceptions {
    *
    * @param code 异常编码
    * @param message 异常消息
+   * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fault(String code, String message) {
-    return fault(errorMessage(code, message));
+  public static CodedException fault(String code, String message, Object... args) {
+    return fault(errorMessage(code, message), args);
   }
 
   /**
@@ -165,20 +205,22 @@ public class Exceptions {
    * @param e 异常
    * @param code 异常编码
    * @param message 异常消息
+   * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fault(Throwable e, String code, String message) {
-    return fault(e, errorMessage(code, message));
+  public static CodedException fault(Throwable e, String code, String message, Object... args) {
+    return fault(e, errorMessage(code, message), args);
   }
 
   /**
    * 创建可带参数的故障异常
    *
    * @param errCode 异常编码包装
+   * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fault(ErrorCode errCode) {
-    return new CodedException(errCode);
+  public static CodedException fault(ErrorCode errCode, Object... args) {
+    return new CodedException(errCode, args);
   }
 
   /**
@@ -186,9 +228,76 @@ public class Exceptions {
    *
    * @param e 异常
    * @param errCode 异常编码包装
+   * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fault(Throwable e, ErrorCode errCode) {
-    return new CodedException(e, errCode);
+  public static CodedException fault(Throwable e, ErrorCode errCode, Object... args) {
+    return new CodedException(e, errCode, args);
+  }
+
+  /**
+   * 创建可带扩展数据故障异常
+   *
+   * @param message 异常消息
+   * @param data 扩展数据
+   * @return 包装异常
+   */
+  public static CodedException faultWithData(String message, Object data) {
+    return faultWithData(errorMessage(message), data);
+  }
+
+  /**
+   * 创建可带参数和扩展数据的故障异常
+   *
+   * @param code 异常编码
+   * @param message 异常消息
+   * @param data 扩展数据
+   * @param args 参数
+   * @return 包装异常
+   */
+  public static CodedException faultWithData(String code, String message, Object data,
+      Object... args) {
+    return faultWithData(errorMessage(code, message), args, data);
+  }
+
+  /**
+   * 创建可带参数和扩展数据的故障异常
+   *
+   * @param e 异常
+   * @param code 异常编码
+   * @param message 异常消息
+   * @param data 扩展数据
+   * @param args 参数
+   * @return 包装异常
+   */
+  public static CodedException faultWithData(Throwable e, String code, String message, Object data,
+      Object... args) {
+    return faultWithData(e, errorMessage(code, message), args, data);
+  }
+
+  /**
+   * 创建可带参数和扩展数据的故障异常
+   *
+   * @param errCode 异常编码包装
+   * @param data 扩展数据
+   * @param args 参数
+   * @return 包装异常
+   */
+  public static CodedException faultWithData(ErrorCode errCode, Object data, Object... args) {
+    return new CodedException(errCode, args, data);
+  }
+
+  /**
+   * 创建可带参数和扩展数据的故障异常
+   *
+   * @param e 异常
+   * @param errCode 异常编码包装
+   * @param data 扩展数据
+   * @param args 参数
+   * @return 包装异常
+   */
+  public static CodedException faultWithData(Throwable e, ErrorCode errCode, Object data,
+      Object... args) {
+    return new CodedException(e, errCode, args, data);
   }
 }

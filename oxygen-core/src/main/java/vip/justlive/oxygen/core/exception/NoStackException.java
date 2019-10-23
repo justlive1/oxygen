@@ -22,13 +22,12 @@ public class NoStackException extends CodedException {
 
   private static final long serialVersionUID = 1L;
 
-  /**
-   * 构造方法
-   *
-   * @param errorCode 异常编码包装
-   */
-  NoStackException(ErrorCode errorCode) {
-    super(errorCode);
+  NoStackException(ErrorCode errorCode, Object[] args) {
+    super(errorCode, args);
+  }
+
+  NoStackException(ErrorCode errorCode, Object[] args, Object data) {
+    super(errorCode, args, data);
   }
 
   /**

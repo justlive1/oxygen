@@ -13,14 +13,28 @@
  */
 package vip.justlive.oxygen.core.template;
 
-import java.util.LinkedList;
+import java.io.BufferedReader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import vip.justlive.oxygen.core.util.ExpressionUtils;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import javax.script.SimpleScriptContext;
+import lombok.RequiredArgsConstructor;
+import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.ExpiringMap;
+import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
+import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * 简单模板引擎实现
@@ -29,48 +43,141 @@ import vip.justlive.oxygen.core.util.ExpressionUtils;
  */
 public class SimpleTemplateEngine implements TemplateEngine {
 
-  private static final Pattern REGEX = Pattern.compile("[$][{]([^{}]*)[}]");
-  private static final String AT = "____AT____";
-  private static final Map<String, TemplateSpec> CACHE = new ConcurrentHashMap<>(4);
+  private static final String VALUE_PREFIX = "${";
+  private static final String VALUE_SUFFIX = Strings.CLOSE_BRACE;
+  private static final String SCRIPT_PREFIX = "#:";
 
+  private static final ScriptEngine ENGINE;
+  private static final Compilable COMPILABLE;
+  private static final ExpiringMap<String, TemplateSpec> CACHE;
+
+  static {
+    ENGINE = new ScriptEngineManager().getEngineByName("js");
+    if (ENGINE instanceof Compilable) {
+      COMPILABLE = (Compilable) ENGINE;
+    } else {
+      COMPILABLE = null;
+    }
+    CACHE = ExpiringMap.<String, TemplateSpec>builder().expiration(10, TimeUnit.MINUTES)
+        .expiringPolicy(ExpiringPolicy.ACCESSED).build();
+  }
 
   @Override
   public String render(String template, Map<String, Object> attrs) {
-    TemplateSpec spec = CACHE.get(template);
-    if (spec != null) {
-      return spec.apply(attrs);
-    }
-    spec = new TemplateSpec(template);
-    CACHE.put(template, spec);
-    return spec.apply(attrs);
+    StringWriter writer = new StringWriter();
+    render(template, attrs, writer);
+    return writer.toString();
   }
 
-  private class TemplateSpec implements Function<Map<String, Object>, String> {
-
-    private final String[] data;
-    private final List<String> selectors;
-
-    TemplateSpec(String template) {
-      Matcher matcher = REGEX.matcher(template);
-      int index = 0;
-      String value = template;
-      selectors = new LinkedList<>();
-      while (matcher.find(index)) {
-        selectors.add(matcher.group(1).trim());
-        value = value.replace(matcher.group(0), AT);
-        index = matcher.end();
+  @Override
+  public void render(String template, Map<String, Object> attrs, Writer writer) {
+    TemplateSpec spec = CACHE.get(template);
+    try {
+      if (spec != null) {
+        spec.apply(attrs, writer);
       }
-      this.data = value.split(AT);
+      spec = new TemplateSpec(template);
+      CACHE.put(template, spec);
+      spec.apply(attrs, writer);
+    } catch (ScriptException e) {
+      throw Exceptions.wrap(e);
     }
+  }
+
+  @RequiredArgsConstructor
+  private class Text implements Consumer<StringBuilder> {
+
+    final int index;
 
     @Override
-    public String apply(Map<String, Object> attrs) {
-      StringBuilder sb = new StringBuilder(data[0]);
-      for (int i = 0; i < data.length - 1; i++) {
-        sb.append(ExpressionUtils.eval(attrs, selectors.get(i)));
-        sb.append(data[i + 1]);
+    public void accept(StringBuilder sb) {
+      sb.append("$out.write($data[").append(index).append("]);");
+    }
+  }
+
+  @RequiredArgsConstructor
+  private class Script implements Consumer<StringBuilder> {
+
+    final String value;
+
+    @Override
+    public void accept(StringBuilder sb) {
+      sb.append(value);
+    }
+  }
+
+  @RequiredArgsConstructor
+  private class Statement implements Consumer<StringBuilder> {
+
+    final String value;
+
+    @Override
+    public void accept(StringBuilder sb) {
+      sb.append("$out.write(''+(").append(value).append("));");
+    }
+  }
+
+  private class TemplateSpec {
+
+    String parsed;
+    CompiledScript compiledScript;
+    List<String> data = new ArrayList<>();
+    List<Consumer<StringBuilder>> consumers = new ArrayList<>();
+
+    TemplateSpec(String template) throws ScriptException {
+      StringBuilder sb = new StringBuilder("var func = function(){");
+      BufferedReader reader = new BufferedReader(new StringReader(template));
+      reader.lines().forEach(this::parse);
+      for (Consumer<StringBuilder> consumer : consumers) {
+        consumer.accept(sb);
       }
-      return sb.toString();
+      sb.append("};func();");
+      if (COMPILABLE != null) {
+        compiledScript = COMPILABLE.compile(sb.toString());
+      } else {
+        parsed = sb.toString();
+      }
+    }
+
+    private void parse(String line) {
+      line = line.trim();
+      if (line.startsWith(SCRIPT_PREFIX)) {
+        consumers.add(new Script(line.substring(SCRIPT_PREFIX.length())));
+        return;
+      }
+
+      while (true) {
+        int start = line.indexOf(VALUE_PREFIX);
+        int end = line.indexOf(VALUE_SUFFIX);
+        if (start == -1 || end <= start) {
+          consumers.add(new Text(data.size()));
+          data.add(line);
+          break;
+        }
+        String statement = line.substring(start + 2, end);
+        if (statement.contains(VALUE_PREFIX)) {
+          start = line.lastIndexOf(VALUE_PREFIX);
+          statement = line.substring(start + 2, end);
+        }
+        consumers.add(new Text(data.size()));
+        data.add(line.substring(0, start));
+        consumers.add(new Statement(statement));
+        line = line.substring(end + 1);
+      }
+    }
+
+    void apply(Map<String, Object> attrs, Writer writer) throws ScriptException {
+      Bindings bindings = ENGINE.createBindings();
+      ScriptContext ctx = new SimpleScriptContext();
+      ctx.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
+      bindings.putAll(attrs);
+      bindings.put("$out", writer);
+      bindings.put("$data", this.data);
+      if (compiledScript != null) {
+        compiledScript.eval(bindings);
+      } else {
+        ENGINE.eval(parsed, bindings);
+      }
     }
   }
 }

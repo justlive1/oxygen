@@ -13,13 +13,10 @@
  */
 package vip.justlive.oxygen.core.util.retry;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * 异步重试器
@@ -29,19 +26,8 @@ import java.util.function.Predicate;
  */
 public class AsyncRetryer<T> extends Retryer<T> {
 
-  private final ScheduledExecutorService scheduledExecutorService;
-  private final long waitTime;
-
-  AsyncRetryer(TimeLimiter<T> timeLimiter, Predicate<Attempt<T>> retryPredicate,
-      Predicate<Attempt<T>> stopPredicate, Consumer<Attempt<T>> blockConsumer,
-      List<Consumer<Attempt<T>>> retryListeners, List<Consumer<Attempt<T>>> failListeners,
-      List<Consumer<Attempt<T>>> successListeners,
-      ScheduledExecutorService scheduledExecutorService, long waitTime) {
-    super(timeLimiter, retryPredicate, stopPredicate, blockConsumer, retryListeners, failListeners,
-        successListeners);
-    this.scheduledExecutorService = scheduledExecutorService;
-    this.waitTime = waitTime;
-  }
+  ScheduledExecutorService scheduledExecutorService;
+  long waitTime;
 
   /**
    * 异步执行

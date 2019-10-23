@@ -16,7 +16,6 @@ package vip.justlive.oxygen.core.util;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -244,10 +243,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public V put(K key, V value) {
-    if (duration > 0) {
-      return put(key, value, duration);
-    }
-    return put(key, value, ExpiringValue.NOT_EXPIRED);
+    return put(key, value, duration);
   }
 
   /**
@@ -276,8 +272,11 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     try {
       ExpiringValue<V> wrapValue = new ExpiringValue<>(value, duration, timeUnit);
       ExpiringValue<V> preValue = data.put(key, wrapValue);
-      if (preValue != null && !preValue.isExpired()) {
-        return preValue.value;
+      if (preValue != null) {
+        notifyListener(key, preValue.value);
+        if (!preValue.isExpired()) {
+          return preValue.value;
+        }
       }
       return null;
     } finally {
@@ -304,11 +303,13 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   public void putAll(Map<? extends K, ? extends V> m) {
     writeLock.lock();
     try {
-      Map<K, ExpiringValue<V>> map = new HashMap<>(m.size());
       for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
-        map.put(entry.getKey(), new ExpiringValue<>(entry.getValue()));
+        ExpiringValue<V> preValue = data
+            .put(entry.getKey(), new ExpiringValue<>(entry.getValue(), duration, timeUnit));
+        if (preValue != null) {
+          notifyListener(entry.getKey(), preValue.value);
+        }
       }
-      data.putAll(map);
     } finally {
       writeLock.unlock();
       record();
@@ -360,7 +361,14 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   @Override
   public V putIfAbsent(K key, V value) {
+    if (duration > 0) {
+      return putIfAbsent(key, value, duration);
+    }
     return putIfAbsent(key, new ExpiringValue<>(value));
+  }
+
+  public V putIfAbsent(K key, V value, long duration) {
+    return putIfAbsent(key, value, duration, timeUnit);
   }
 
   public V putIfAbsent(K key, V value, long duration, TimeUnit timeUnit) {
@@ -447,6 +455,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       }
       if (preVal.expireAt < System.currentTimeMillis()) {
         data.put(key, wrapValue);
+        notifyListener(key, preVal.value);
         return null;
       }
       return preVal.value;
@@ -778,7 +787,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      * @return true是过期
      */
     boolean isExpired() {
-      return expireAt != -1 && expireAt < System.currentTimeMillis();
+      return expireAt != NOT_EXPIRED && expireAt < System.currentTimeMillis();
     }
 
   }
@@ -832,7 +841,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     @Override
     protected boolean removeEldestEntry(Entry<K, ExpiringValue<V>> eldest) {
       boolean b = maxSize > 0 && maxSize < super.size();
-      if (b && listeners != null && !listeners.isEmpty()) {
+      if (b && listeners != null) {
         for (ExpiredListener<K, V> listener : listeners) {
           listener.expire(eldest.getKey(), eldest.getValue().value);
         }

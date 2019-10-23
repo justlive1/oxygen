@@ -39,7 +39,7 @@ public class WebTest {
     Server server = Server.server();
     new Thread(() -> server.listen(port)).start();
 
-    ThreadUtils.sleep(1000);
+    ThreadUtils.sleep(3000);
 
     try (HttpResponse response = HttpRequest.get("http://localhost:" + port + "/a").execute()) {
       Assert.assertEquals(msg, response.bodyAsString());

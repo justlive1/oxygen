@@ -80,9 +80,12 @@ public class ClassScannerPlugin implements Plugin {
   public void start() {
     CoreConf config = ConfigFactory.load(CoreConf.class);
     ClassScanner scanner = new DefaultClassScanner();
-    String[] pkgs = Arrays.copyOf(config.getClassScan(), config.getClassScan().length + 1);
-    pkgs[pkgs.length - 1] = "vip.justlive.oxygen";
-    CLASSES.addAll(scanner.scan(pkgs));
+    Set<String> pkgs = new HashSet<>(2);
+    if (config.getClassScan() != null) {
+      pkgs.addAll(Arrays.asList(config.getClassScan()));
+    }
+    pkgs.add("vip.justlive.oxygen");
+    CLASSES.addAll(scanner.scan(pkgs.toArray(new String[0])));
   }
 
   @Override

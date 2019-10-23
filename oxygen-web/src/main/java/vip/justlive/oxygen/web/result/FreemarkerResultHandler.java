@@ -92,7 +92,7 @@ public class FreemarkerResultHandler implements ResultHandler {
       Locale locale = ResourceBundle.currentThreadLocale();
       try {
         Template template = cfg.getTemplate(path, locale);
-        template.process(data, new OutputStreamWriter(response.getOut()));
+        template.process(data, new OutputStreamWriter(response.getOut(), StandardCharsets.UTF_8));
       } catch (Exception e) {
         throw Exceptions.wrap(e);
       }

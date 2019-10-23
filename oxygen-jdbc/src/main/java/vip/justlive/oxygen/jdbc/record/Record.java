@@ -79,6 +79,17 @@ public final class Record {
   }
 
   /**
+   * 获取所有集合
+   *
+   * @param clazz 类型
+   * @param <T> 泛型
+   * @return list
+   */
+  public static <T> List<T> findAll(Class<T> clazz) {
+    return Jdbc.queryForList(parseClass(clazz).getBaseQuery(), clazz);
+  }
+
+  /**
    * count
    *
    * @param obj record

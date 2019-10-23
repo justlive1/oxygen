@@ -36,6 +36,10 @@ public class ConnectionTimeoutUpdater implements Runnable {
   @Override
   public void run() {
     long now = System.currentTimeMillis();
+    int size = context.getChannels().size();
+    if (size > 0 && log.isDebugEnabled()) {
+      log.debug("current {} connections.", size);
+    }
     for (Map.Entry<Long, ChannelContext> entry : context.getChannels().entrySet()) {
       ChannelContext channelContext = entry.getValue();
       long last = Math

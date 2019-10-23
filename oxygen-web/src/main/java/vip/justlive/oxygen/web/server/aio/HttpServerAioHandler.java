@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.net.aio.core.AioHandler;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
 import vip.justlive.oxygen.core.net.http.HttpMethod;
@@ -96,7 +97,14 @@ public class HttpServerAioHandler implements AioHandler {
   public Object decode(ByteBuffer buffer, int readableSize, ChannelContext channelContext) {
     int index = buffer.position();
     RequestBuilder builder = parseStatusText(buffer);
-    if (builder != null && parseHeaders(builder, buffer) && parseBody(builder, buffer)) {
+    if (builder == null) {
+      return null;
+    }
+    if (!builder.requestUri.startsWith(contextPath)) {
+      channelContext.close();
+      throw Exceptions.fail("RequestUri not match contextPath");
+    }
+    if (parseHeaders(builder, buffer) && parseBody(builder, buffer)) {
       Request request = builder.build(channelContext);
       if (log.isDebugEnabled()) {
         log.debug("Received Http [{}]",

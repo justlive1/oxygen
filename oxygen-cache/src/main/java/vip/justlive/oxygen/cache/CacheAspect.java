@@ -24,7 +24,6 @@ import vip.justlive.oxygen.cache.annotation.Cacheable;
 import vip.justlive.oxygen.cache.generator.ArgsKeyGenerator;
 import vip.justlive.oxygen.cache.generator.DefaultKeyGenerator;
 import vip.justlive.oxygen.cache.store.Cache;
-import vip.justlive.oxygen.cache.store.JCache;
 import vip.justlive.oxygen.cache.store.LocalCacheImpl;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.ioc.annotation.Bean;
@@ -51,7 +50,7 @@ public class CacheAspect {
   @Aspect(annotation = Cacheable.class, type = TYPE.BEFORE)
   public boolean cacheRead(Invocation invocation) {
     Ctx ctx = parse(invocation);
-    Cache cache = JCache.cache(ctx.cacheName);
+    Cache cache = Cache.cache(ctx.cacheName);
     Object obj = cache.get(ctx.key);
     if (obj != null) {
       invocation.setReturnValue(obj);
@@ -63,13 +62,13 @@ public class CacheAspect {
   @Aspect(annotation = Cacheable.class, type = TYPE.AFTER)
   public boolean cacheWrite(Invocation invocation) {
     Ctx ctx = parse(invocation);
-    Object obj = JCache.cache(ctx.cacheName).get(ctx.key);
+    Object obj = Cache.cache(ctx.cacheName).get(ctx.key);
     if (!Objects.equals(obj, invocation.getReturnValue())) {
       if (ctx.duration > 0) {
-        JCache.cache(ctx.cacheName)
+        Cache.cache(ctx.cacheName)
             .set(ctx.key, invocation.getReturnValue(), ctx.duration, ctx.unit);
       } else {
-        JCache.cache(ctx.cacheName).set(ctx.key, invocation.getReturnValue());
+        Cache.cache(ctx.cacheName).set(ctx.key, invocation.getReturnValue());
       }
     }
     return true;
@@ -86,7 +85,7 @@ public class CacheAspect {
     Cacheable cacheable = invocation.getMethod().getAnnotation(Cacheable.class);
     String cacheName = cacheable.value();
     if (cacheName.length() == 0) {
-      cacheName = JCache.class.getSimpleName();
+      cacheName = Cache.class.getSimpleName();
     }
     String key = cacheable.key();
     if (key.length() == 0) {

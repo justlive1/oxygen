@@ -273,8 +273,9 @@ public class RetryBuilder<T> {
     if (timeLimiter == null) {
       timeLimiter = TimeLimiter.noTimeLimit();
     }
-    return new Retryer<>(timeLimiter, retryPredicate, stopPredicate, blockConsumer, retryListeners,
-        failListeners, successListeners);
+    Retryer<T> retryer = new Retryer<>();
+    configure(retryer);
+    return retryer;
   }
 
   /**
@@ -289,8 +290,21 @@ public class RetryBuilder<T> {
     if (scheduledExecutorService == null) {
       scheduledExecutorService = ThreadUtils.newScheduledExecutor(5, "retry-async-%d");
     }
-    return new AsyncRetryer<>(timeLimiter, retryPredicate, stopPredicate, blockConsumer,
-        retryListeners, failListeners, successListeners, scheduledExecutorService, waitTime);
+    AsyncRetryer<T> retryer = new AsyncRetryer<>();
+    configure(retryer);
+    retryer.scheduledExecutorService = scheduledExecutorService;
+    retryer.waitTime = waitTime;
+    return retryer;
+  }
+
+  private void configure(Retryer<T> retryer) {
+    retryer.timeLimiter = timeLimiter;
+    retryer.retryPredicate = retryPredicate;
+    retryer.stopPredicate = stopPredicate;
+    retryer.blockConsumer = blockConsumer;
+    retryer.retryListeners = retryListeners;
+    retryer.failListeners = failListeners;
+    retryer.successListeners = successListeners;
   }
 
   private void waitBlock(long millis) {

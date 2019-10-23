@@ -29,15 +29,29 @@ public class CodedException extends RuntimeException {
    * 该异常的错误码
    */
   private final ErrorCode errorCode;
+  private final transient Object[] args;
+  private final transient Object data;
 
-  CodedException(Throwable throwable, ErrorCode errorCode) {
-    super(throwable);
-    this.errorCode = errorCode;
+  CodedException(Throwable throwable, ErrorCode errorCode, Object[] args) {
+    this(throwable, errorCode, args, null);
   }
 
-  CodedException(ErrorCode errorCode) {
+  CodedException(Throwable throwable, ErrorCode errorCode, Object[] args, Object data) {
+    super(throwable);
+    this.errorCode = errorCode;
+    this.args = args;
+    this.data = data;
+  }
+
+  CodedException(ErrorCode errorCode, Object[] args) {
+    this(errorCode, args, null);
+  }
+
+  CodedException(ErrorCode errorCode, Object[] args, Object data) {
     super(errorCode.getMessage());
     this.errorCode = errorCode;
+    this.args = args;
+    this.data = data;
   }
 
   @Override
@@ -47,4 +61,5 @@ public class CodedException extends RuntimeException {
     }
     return errorCode.toString();
   }
+
 }

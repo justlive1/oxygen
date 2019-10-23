@@ -14,7 +14,7 @@
 package vip.justlive.oxygen.cache;
 
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.cache.store.JCache;
+import vip.justlive.oxygen.cache.store.Cache;
 import vip.justlive.oxygen.core.Plugin;
 
 /**
@@ -33,15 +33,15 @@ public class CachePlugin implements Plugin {
   @Override
   public void start() {
     // fast fail
-    JCache.cache();
+    Cache.cache();
     if (log.isDebugEnabled()) {
-      log.debug("init cache of class [{}]", JCache.cache().getClass());
+      log.debug("init cache of class [{}]", Cache.cache().getClass());
     }
   }
 
   @Override
   public void stop() {
-    JCache.clear();
+    Cache.clearAll();
     CacheAspect.CACHE.clear();
   }
 

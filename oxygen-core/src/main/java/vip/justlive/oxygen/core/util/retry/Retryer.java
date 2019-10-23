@@ -26,44 +26,31 @@ import java.util.function.Predicate;
  */
 public class Retryer<T> {
 
-  protected final TimeLimiter<T> timeLimiter;
+  TimeLimiter<T> timeLimiter;
   /**
    * 重试判断
    */
-  protected final Predicate<Attempt<T>> retryPredicate;
+  Predicate<Attempt<T>> retryPredicate;
   /**
    * 终止判断
    */
-  protected final Predicate<Attempt<T>> stopPredicate;
+  Predicate<Attempt<T>> stopPredicate;
   /**
    * 阻塞策略
    */
-  protected final Consumer<Attempt<T>> blockConsumer;
+  Consumer<Attempt<T>> blockConsumer;
   /**
    * 重试监听
    */
-  protected final List<Consumer<Attempt<T>>> retryListeners;
+  List<Consumer<Attempt<T>>> retryListeners;
   /**
    * 失败监听
    */
-  protected final List<Consumer<Attempt<T>>> failListeners;
+  List<Consumer<Attempt<T>>> failListeners;
   /**
    * 成功监听
    */
-  protected final List<Consumer<Attempt<T>>> successListeners;
-
-  Retryer(TimeLimiter<T> timeLimiter, Predicate<Attempt<T>> retryPredicate,
-      Predicate<Attempt<T>> stopPredicate, Consumer<Attempt<T>> blockConsumer,
-      List<Consumer<Attempt<T>>> retryListeners, List<Consumer<Attempt<T>>> failListeners,
-      List<Consumer<Attempt<T>>> successListeners) {
-    this.timeLimiter = timeLimiter;
-    this.retryPredicate = retryPredicate;
-    this.stopPredicate = stopPredicate;
-    this.blockConsumer = blockConsumer;
-    this.retryListeners = retryListeners;
-    this.failListeners = failListeners;
-    this.successListeners = successListeners;
-  }
+  List<Consumer<Attempt<T>>> successListeners;
 
   /**
    * 执行

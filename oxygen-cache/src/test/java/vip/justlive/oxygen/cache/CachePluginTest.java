@@ -16,7 +16,7 @@ package vip.justlive.oxygen.cache;
 import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.cache.store.JCache;
+import vip.justlive.oxygen.cache.store.Cache;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.ioc.IocPlugin;
 
@@ -37,12 +37,12 @@ public class CachePluginTest {
     cacheService.time1(2);
     cacheService.time1(2);
 
-    Assert.assertEquals(3, JCache.cache().keys().size());
+    Assert.assertEquals(3, Cache.cache().keys().size());
 
     TimeUnit.SECONDS.sleep(1);
 
     cacheService.time1(1);
-    Assert.assertEquals(2, JCache.cache().keys().size());
+    Assert.assertEquals(2, Cache.cache().keys().size());
 
   }
 }

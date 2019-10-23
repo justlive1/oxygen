@@ -15,7 +15,12 @@ package vip.justlive.oxygen.cache.store;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.config.CoreConf;
+import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.ClassUtils;
 
 /**
  * 缓存接口
@@ -23,6 +28,8 @@ import java.util.concurrent.TimeUnit;
  * @author wubo
  */
 public interface Cache {
+
+  Map<String, Cache> CACHES = new ConcurrentHashMap<>(4, 1);
 
   /**
    * 获取缓存对象
@@ -139,4 +146,65 @@ public interface Cache {
    * Clear the cache
    */
   void clear();
+
+  /**
+   * 获取默认cache
+   *
+   * @return cache
+   */
+  static Cache cache() {
+    return cache(Cache.class.getSimpleName());
+  }
+
+  /**
+   * 根据缓存名称获取cache
+   *
+   * @param name cache name
+   * @return cache
+   */
+  static Cache cache(String name) {
+    if (!CACHES.containsKey(name)) {
+      CACHES.putIfAbsent(name, createCache(name));
+    }
+    return CACHES.get(name);
+  }
+
+  /**
+   * 获取缓存名称集合
+   *
+   * @return 缓存名称集合
+   */
+  static Collection<String> cacheNames() {
+    return CACHES.keySet();
+  }
+
+  /**
+   * 清除缓存
+   */
+  static void clearAll() {
+    for (Cache cache : CACHES.values()) {
+      cache.clear();
+    }
+    CACHES.clear();
+  }
+
+  /**
+   * 创建cache
+   *
+   * @param name 缓存名称
+   * @return cache
+   */
+  static Cache createCache(String name) {
+    CoreConf config = ConfigFactory.load(CoreConf.class);
+    if (config.getCacheImplClass() != null && config.getCacheImplClass().length() > 0) {
+      try {
+        Class<?> clazz = ClassUtils.forName(config.getCacheImplClass());
+        return (Cache) clazz.getConstructor(String.class).newInstance(name);
+      } catch (Exception e) {
+        throw Exceptions.wrap(e);
+      }
+    } else {
+      return new LocalCacheImpl(name);
+    }
+  }
 }

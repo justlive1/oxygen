@@ -31,7 +31,7 @@ public class CoreConf {
   /**
    * 类扫描路径属性
    */
-  @Value("${main.class.scan:vip.justlive}")
+  @Value("${main.class.scan:}")
   private String[] classScan;
 
   /**

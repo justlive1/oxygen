@@ -36,8 +36,8 @@ public class Jdbc {
 
   static final String PRIMARY_KEY = Jdbc.class.getSimpleName();
   static final String TEMPLATE = "datasource.%s";
-  static final List<JdbcInterceptor> JDBC_INTERCEPTORS = new ArrayList<>(4);
-  static final Map<String, DataSource> DATA_SOURCE_MAP = new ConcurrentHashMap<>(2, 1f);
+  private static final List<JdbcInterceptor> JDBC_INTERCEPTORS = new ArrayList<>(4);
+  private static final Map<String, DataSource> DATA_SOURCE_MAP = new ConcurrentHashMap<>(2, 1f);
   private static final ThreadLocal<Map<String, Connection>> CONNECTION_CONTAINER = ThreadLocal
       .withInitial(ConcurrentHashMap::new);
   private static final ThreadLocal<String> CURRENT_DATASOURCE = ThreadLocal
@@ -106,6 +106,15 @@ public class Jdbc {
   public static void clearAll() {
     clear();
     CONNECTION_CONTAINER.remove();
+  }
+
+  /**
+   * 关闭并清除数据源
+   */
+  public static void shutdown() {
+    clearAll();
+    JDBC_INTERCEPTORS.clear();
+    DATA_SOURCE_MAP.clear();
   }
 
   /**

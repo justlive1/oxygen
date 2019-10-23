@@ -16,7 +16,7 @@ package vip.justlive.oxygen.cache;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import vip.justlive.oxygen.cache.store.JCache;
+import vip.justlive.oxygen.cache.store.Cache;
 import vip.justlive.oxygen.core.Bootstrap;
 
 /**
@@ -29,8 +29,8 @@ public class JCacheTest {
 
     Bootstrap.start();
 
-    JCache.cache("z").putIfAbsent("k", 1);
-    assertEquals(1, JCache.cache("z").get("k"));
+    Cache.cache("z").putIfAbsent("k", 1);
+    assertEquals(1, Cache.cache("z").get("k"));
 
   }
 
