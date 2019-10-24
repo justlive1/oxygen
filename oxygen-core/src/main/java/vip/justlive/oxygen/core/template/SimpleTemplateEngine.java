@@ -75,6 +75,7 @@ public class SimpleTemplateEngine implements TemplateEngine {
     try {
       if (spec != null) {
         spec.apply(attrs, writer);
+		return;
       }
       spec = new TemplateSpec(template);
       CACHE.put(template, spec);
