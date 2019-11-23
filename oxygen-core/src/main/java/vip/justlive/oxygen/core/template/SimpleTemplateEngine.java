@@ -13,15 +13,13 @@
  */
 package vip.justlive.oxygen.core.template;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -30,11 +28,10 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
-import lombok.RequiredArgsConstructor;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ExpiringMap;
 import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.TokenParser;
 
 /**
  * 简单模板引擎实现
@@ -43,9 +40,8 @@ import vip.justlive.oxygen.core.util.Strings;
  */
 public class SimpleTemplateEngine implements TemplateEngine {
 
-  private static final String VALUE_PREFIX = "${";
-  private static final String VALUE_SUFFIX = Strings.CLOSE_BRACE;
-  private static final String SCRIPT_PREFIX = "#:";
+  private static final TokenParser SCRIPT_PARSER = new TokenParser("#{", "}");
+  private static final TokenParser VARS_PARSER = new TokenParser("${", "}");
 
   private static final ScriptEngine ENGINE;
   private static final Compilable COMPILABLE;
@@ -75,7 +71,7 @@ public class SimpleTemplateEngine implements TemplateEngine {
     try {
       if (spec != null) {
         spec.apply(attrs, writer);
-		return;
+        return;
       }
       spec = new TemplateSpec(template);
       CACHE.put(template, spec);
@@ -85,85 +81,22 @@ public class SimpleTemplateEngine implements TemplateEngine {
     }
   }
 
-  @RequiredArgsConstructor
-  private class Text implements Consumer<StringBuilder> {
-
-    final int index;
-
-    @Override
-    public void accept(StringBuilder sb) {
-      sb.append("$out.write($data[").append(index).append("]);");
-    }
-  }
-
-  @RequiredArgsConstructor
-  private class Script implements Consumer<StringBuilder> {
-
-    final String value;
-
-    @Override
-    public void accept(StringBuilder sb) {
-      sb.append(value);
-    }
-  }
-
-  @RequiredArgsConstructor
-  private class Statement implements Consumer<StringBuilder> {
-
-    final String value;
-
-    @Override
-    public void accept(StringBuilder sb) {
-      sb.append("$out.write(''+(").append(value).append("));");
-    }
-  }
-
-  private class TemplateSpec {
+  static class TemplateSpec {
 
     String parsed;
     CompiledScript compiledScript;
     List<String> data = new ArrayList<>();
-    List<Consumer<StringBuilder>> consumers = new ArrayList<>();
 
     TemplateSpec(String template) throws ScriptException {
-      StringBuilder sb = new StringBuilder("var func = function(){");
-      BufferedReader reader = new BufferedReader(new StringReader(template));
-      reader.lines().forEach(this::parse);
-      for (Consumer<StringBuilder> consumer : consumers) {
-        consumer.accept(sb);
-      }
-      sb.append("};func();");
+      parsed = String.format("var func = function(){%s};func();",
+          SCRIPT_PARSER.parse(template, text -> VARS_PARSER.parse(text, a -> {
+            data.add(a);
+            return String.format("$out.write($data[%s]);", data.size() - 1);
+          }, b -> String.format("$out.write(''+(%s));", b)), Function.identity()));
       if (COMPILABLE != null) {
-        compiledScript = COMPILABLE.compile(sb.toString());
+        compiledScript = COMPILABLE.compile(parsed);
       } else {
-        parsed = sb.toString();
-      }
-    }
-
-    private void parse(String line) {
-      line = line.trim();
-      if (line.startsWith(SCRIPT_PREFIX)) {
-        consumers.add(new Script(line.substring(SCRIPT_PREFIX.length())));
-        return;
-      }
-
-      while (true) {
-        int start = line.indexOf(VALUE_PREFIX);
-        int end = line.indexOf(VALUE_SUFFIX);
-        if (start == -1 || end <= start) {
-          consumers.add(new Text(data.size()));
-          data.add(line);
-          break;
-        }
-        String statement = line.substring(start + 2, end);
-        if (statement.contains(VALUE_PREFIX)) {
-          start = line.lastIndexOf(VALUE_PREFIX);
-          statement = line.substring(start + 2, end);
-        }
-        consumers.add(new Text(data.size()));
-        data.add(line.substring(0, start));
-        consumers.add(new Statement(statement));
-        line = line.substring(end + 1);
+        parsed = null;
       }
     }
 
@@ -173,7 +106,7 @@ public class SimpleTemplateEngine implements TemplateEngine {
       ctx.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
       bindings.putAll(attrs);
       bindings.put("$out", writer);
-      bindings.put("$data", this.data);
+      bindings.put("$data", data);
       if (compiledScript != null) {
         compiledScript.eval(bindings);
       } else {

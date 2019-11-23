@@ -13,11 +13,12 @@
  */
 package vip.justlive.oxygen.web.router;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import lombok.experimental.UtilityClass;
@@ -101,6 +102,25 @@ public class Router {
   }
 
   /**
+   * 获取路径支持的方法
+   *
+   * @param path 路径
+   * @return http methods
+   */
+  public static Set<HttpMethod> getAllows(String path) {
+    Route route = SIMPLE_HANDLERS.get(path);
+    if (route != null) {
+      return new HashSet<>(route.methods());
+    }
+    for (Map.Entry<String, Route> entry : REGEX_HANDLERS.entrySet()) {
+      if (Pattern.compile(entry.getKey()).matcher(path).matches()) {
+        return new HashSet<>(entry.getValue().methods());
+      }
+    }
+    return new HashSet<>(0);
+  }
+
+  /**
    * lookup static handle
    *
    * @param path path
@@ -117,7 +137,11 @@ public class Router {
 
   private static void buildRoute(Route route) {
     if (route.methods().isEmpty()) {
-      route.methods().addAll(Arrays.asList(HttpMethod.values()));
+      for (HttpMethod method : HttpMethod.values()) {
+        if (method != HttpMethod.UNKNOWN) {
+          route.methods().add(method);
+        }
+      }
     }
     Route exist;
     if (route.regex()) {

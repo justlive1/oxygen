@@ -48,7 +48,7 @@ public class ChannelContext {
   private AsynchronousSocketChannel channel;
   private InetSocketAddress address;
   private volatile boolean closed;
-  private volatile CompletableFuture<Void> future;
+  private CompletableFuture<Void> future;
 
   // stat
 
@@ -86,7 +86,7 @@ public class ChannelContext {
       } else {
         this.address = (InetSocketAddress) channel.getLocalAddress();
       }
-    } catch (IOException e) {
+    } catch (IOException ignore) {
       //ignore
     }
     this.future = new CompletableFuture<>();

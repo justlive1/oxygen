@@ -37,6 +37,12 @@ public class WriteWorker extends AbstractWorker<Object> {
   }
 
   @Override
+  public void stop() {
+    semaphore.release();
+    super.stop();
+  }
+
+  @Override
   public void handle(List<Object> data) {
     if (stopped) {
       return;

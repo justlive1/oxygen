@@ -46,34 +46,41 @@ public class ReadWorker extends AbstractWorker<ByteBuffer> {
 
     ByteBuffer buffer = Utils.composite(buffers);
     while (buffer.hasRemaining()) {
-      int position = buffer.position();
-      int limit = buffer.limit();
-      int readableSize = limit - position;
+      try {
+        int position = buffer.position();
+        int limit = buffer.limit();
+        int readableSize = limit - position;
 
-      Object data = aioHandler.decode(buffer, readableSize, channelContext);
-      if (data != null) {
-        //解码成功
-        if (log.isDebugEnabled()) {
-          log.debug("{} decoded packet successfully,{} bytes", channelContext, buffer.position() - position);
+        Object data = aioHandler.decode(buffer, readableSize, channelContext);
+        if (data != null) {
+          //解码成功
+          if (log.isDebugEnabled()) {
+            log.debug("{} decoded packet successfully,{} bytes", channelContext,
+                buffer.position() - position);
+          }
+          channelContext.setLastReceivedAt(System.currentTimeMillis());
+          Throwable e = null;
+          try {
+            aioHandler.handle(data, channelContext);
+          } catch (Throwable exc) {
+            e = exc;
+          } finally {
+            this.afterHandled(data, e);
+          }
+        } else {
+          //数据不够
+          buffer.position(position);
+          buffer.limit(limit);
+          lastByteBuffer = buffer;
+          if (log.isDebugEnabled()) {
+            log.debug("{} decoded failed,remain {} bytes", channelContext, readableSize);
+          }
+          break;
         }
-        channelContext.setLastReceivedAt(System.currentTimeMillis());
-        Throwable e = null;
-        try {
-          aioHandler.handle(data, channelContext);
-        } catch (Throwable exc) {
-          e = exc;
-        } finally {
-          this.afterHandled(data, e);
-        }
-      } else {
-        //数据不够
-        buffer.position(position);
-        buffer.limit(limit);
-        lastByteBuffer = buffer;
-        if (log.isDebugEnabled()) {
-          log.debug("{} decoded failed,remain {} bytes", channelContext, readableSize);
-        }
-        break;
+      } catch (Exception e) {
+        log.error("aio decode error", e);
+        channelContext.close();
+        return;
       }
     }
   }

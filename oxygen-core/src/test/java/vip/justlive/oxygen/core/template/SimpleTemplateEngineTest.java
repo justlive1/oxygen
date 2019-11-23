@@ -19,14 +19,17 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.config.CoreConf;
+import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
  * @author wubo
  */
 public class SimpleTemplateEngineTest {
 
+  SimpleTemplateEngine engine = new SimpleTemplateEngine();
+
   @Test
-  public void render() {
+  public void t0() {
 
     Map<String, Object> attrs = new HashMap<>();
     attrs.put("a", 1);
@@ -37,7 +40,6 @@ public class SimpleTemplateEngineTest {
 
     String template = "<i>${a}</i><i>${1+3}</i><i>${c.baseTempDir}</i>";
 
-    SimpleTemplateEngine engine = new SimpleTemplateEngine();
     String result = engine.render(template, attrs);
     Assert.assertEquals("<i>1</i><i>4</i><i>/aaa</i>", result);
 
@@ -45,16 +47,35 @@ public class SimpleTemplateEngineTest {
     result = engine.render(template, attrs);
     Assert.assertEquals(template, result);
 
-    template = "<a>${x,${a}</a>";
+    template = "<a>\\${x,${a}</a>";
     result = engine.render(template, attrs);
     Assert.assertEquals("<a>${x,1</a>", result);
 
-    template = "#: if(a == 1) { \n 1+2${a}x${a} \n #:}";
-    result = engine.render(template, attrs);
-    Assert.assertEquals("1+21x1", result);
 
-    template = "#: for(var it in b) { \n ${b[it]} \n #:}";
+  }
+
+  @Test
+  public void t1() {
+    Map<String, Object> attrs = new HashMap<>();
+    attrs.put("a", 1);
+    CoreConf conf = new CoreConf();
+    conf.setBaseTempDir("/aaa");
+    attrs.put("c", conf);
+    attrs.put("b", Arrays.asList(1, 2, 3));
+
+    String template = "#{ if(a == 1) { } 1+2${a}x${a}  #{ \\}}";
+    String result = engine.render(template, attrs);
+    Assert.assertEquals(" 1+21x1  ", result);
+
+    template = "#{ for(var it in b) { } ${b[it]} #{ \\}}";
     result = engine.render(template, attrs);
-    Assert.assertEquals("123", result);
+    Assert.assertEquals(" 1  2  3 ", result);
+  }
+
+  @Test
+  public void test2() {
+    String template = Templates.template("classpath:template/tpl.txt");
+    String value = engine.render(template, MoreObjects.mapOf("a", 1, "b", new int[]{5, 9, 7}));
+    System.out.println(value);
   }
 }

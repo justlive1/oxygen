@@ -11,36 +11,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package vip.justlive.oxygen.core.exception;
 
+import lombok.Getter;
+
 /**
- * 不带堆栈的异常
+ * 包装异常
  *
  * @author wubo
  */
-public class NoStackException extends CodedException {
+public class WrappedException extends CodedException {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 3109011947026387897L;
 
-  public NoStackException(ErrorCode errorCode) {
+  @Getter
+  private final Exception exception;
+
+  public WrappedException(Exception exception) {
+    this(exception, null);
+  }
+
+  public WrappedException(Exception exception, ErrorCode errorCode) {
     super(errorCode);
+    this.exception = exception;
   }
 
-  public NoStackException(ErrorCode errorCode, Object[] args) {
-    super(errorCode, args);
-  }
-
-  public NoStackException(ErrorCode errorCode, Object[] args, Object data) {
-    super(errorCode, args, data);
-  }
-
-  /**
-   * 覆盖该方法，以提高服务层异常Runtime时的执行效率
-   * <br>
-   * 不需要声明方法为父类的synchronized
-   */
   @Override
-  public Throwable fillInStackTrace() {
-    return this;
+  public String getMessage() {
+    return String.format("Wrapper of [%s]", exception);
   }
 }

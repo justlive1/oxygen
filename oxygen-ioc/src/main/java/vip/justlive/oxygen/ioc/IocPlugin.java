@@ -80,47 +80,6 @@ public class IocPlugin implements Plugin {
     return BEAN_PROXY;
   }
 
-  /**
-   * try instance
-   *
-   * @param clazz 类
-   * @param beanName name of bean
-   * @param order order of bean
-   * @return instance successful if true
-   */
-  public static boolean tryInstance(Class<?> clazz, String beanName, int order) {
-    Constructor<?> constructor = ClassUtils.getConstructorAnnotatedWith(clazz, Inject.class);
-    if (constructor != null) {
-      Object bean = dependencyInstance(clazz, constructor);
-      if (bean == null) {
-        return false;
-      }
-      ConfigFactory.load(bean);
-      BEAN_STORE.addBean(beanName, bean, order);
-      return true;
-    }
-    Object bean = BEAN_PROXY.proxy(clazz);
-    ConfigFactory.load(bean);
-    BEAN_STORE.addBean(beanName, bean, order);
-    return true;
-  }
-
-  private static Object dependencyInstance(Class<?> clazz, Constructor<?> constructor) {
-    Parameter[] params = constructor.getParameters();
-    Object[] args = new Object[params.length];
-    for (int i = 0; i < params.length; i++) {
-      if (params[i].isAnnotationPresent(Named.class)) {
-        args[i] = BEAN_STORE.getBean(params[i].getAnnotation(Named.class).value());
-      } else {
-        args[i] = BEAN_STORE.getBean(params[i].getType());
-      }
-      if (args[i] == null) {
-        return null;
-      }
-    }
-    return BEAN_PROXY.proxy(clazz, args);
-  }
-
   @Override
   public int order() {
     return Integer.MIN_VALUE + 10;
@@ -140,10 +99,10 @@ public class IocPlugin implements Plugin {
     Set<Class<?>> beanClasses = ClassScannerPlugin.getTypesAnnotatedWith(Bean.class);
     Map<Class<?>, ClassInfo> iocMap = new HashMap<>(8);
     for (Class<?> clazz : beanClasses) {
-      if (clazz.isInterface()) {
+      Bean bean;
+      if (clazz.isInterface() || (bean = ClassUtils.getAnnotation(clazz, Bean.class)) == null) {
         continue;
       }
-      Bean bean = ClassUtils.getAnnotation(clazz, Bean.class);
       String beanName = bean.value();
       if (beanName.length() == 0) {
         beanName = clazz.getName();
@@ -163,6 +122,65 @@ public class IocPlugin implements Plugin {
     }
   }
 
+  /**
+   * try instance
+   *
+   * @param clazz 类
+   * @param beanName name of bean
+   * @param order order of bean
+   * @return instance successful if true
+   */
+  private static boolean tryInstance(Class<?> clazz, String beanName, int order) {
+    Constructor<?> constructor = getConstructor(clazz);
+    if (constructor != null) {
+      Object bean = dependencyInstance(clazz, constructor);
+      if (bean == null) {
+        return false;
+      }
+      ConfigFactory.load(bean);
+      BEAN_STORE.addBean(beanName, bean, order);
+      return true;
+    }
+    Object bean = BEAN_PROXY.proxy(clazz);
+    ConfigFactory.load(bean);
+    BEAN_STORE.addBean(beanName, bean, order);
+    return true;
+  }
+
+  private void tryInstance(Class<?> clazz, String beanName, int order,
+      Map<Class<?>, ClassInfo> iocMap) {
+    if (!tryInstance(clazz, beanName, order)) {
+      iocMap.put(clazz, new ClassInfo(beanName, getConstructor(clazz), order));
+    }
+  }
+
+  private static Constructor<?> getConstructor(Class<?> clazz) {
+    Constructor<?>[] constructors = clazz.getConstructors();
+    Constructor<?> constructor;
+    if (constructors.length == 1) {
+      constructor = constructors[0];
+    } else {
+      constructor = ClassUtils.getConstructorAnnotatedWith(constructors, Inject.class);
+    }
+    return constructor;
+  }
+
+  private static Object dependencyInstance(Class<?> clazz, Constructor<?> constructor) {
+    Parameter[] params = constructor.getParameters();
+    Object[] args = new Object[params.length];
+    for (int i = 0; i < params.length; i++) {
+      if (params[i].isAnnotationPresent(Named.class)) {
+        args[i] = BEAN_STORE.getBean(params[i].getAnnotation(Named.class).value());
+      } else {
+        args[i] = BEAN_STORE.getBean(params[i].getType());
+      }
+      if (args[i] == null) {
+        return null;
+      }
+    }
+    return BEAN_PROXY.proxy(clazz, args);
+  }
+
   private void reIoc(Map<Class<?>, ClassInfo> iocMap) {
     Iterator<Entry<Class<?>, ClassInfo>> it = iocMap.entrySet().iterator();
     while (it.hasNext()) {
@@ -174,15 +192,6 @@ public class IocPlugin implements Plugin {
         BEAN_STORE.addBean(classInfo.name, bean, classInfo.order);
         it.remove();
       }
-    }
-  }
-
-  private void tryInstance(Class<?> clazz, String beanName, int order,
-      Map<Class<?>, ClassInfo> iocMap) {
-    if (!tryInstance(clazz, beanName, order)) {
-      iocMap.put(clazz,
-          new ClassInfo(beanName, ClassUtils.getConstructorAnnotatedWith(clazz, Inject.class),
-              order));
     }
   }
 

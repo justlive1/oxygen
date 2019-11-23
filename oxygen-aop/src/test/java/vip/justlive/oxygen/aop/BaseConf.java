@@ -11,17 +11,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package vip.justlive.oxygen.aop;
 
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.aop.annotation.Aspect;
+import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
 
 /**
  * @author wubo
  */
-@Bean
-public class LogService {
+public class BaseConf {
 
-  public void log() {
-    System.out.println("log service log.");
+  final LogService logService;
+
+  public BaseConf(LogService logService) {
+    this.logService = logService;
   }
+
+  @Log
+  public void print() {
+    System.out.println("print");
+  }
+
+  @Aspect(annotation = Log.class, type = TYPE.BEFORE)
+  public boolean log1(Invocation invocation) {
+    System.out.println("aop before log1 " + invocation.getMethod());
+    logService.log();
+    return true;
+  }
+
 }

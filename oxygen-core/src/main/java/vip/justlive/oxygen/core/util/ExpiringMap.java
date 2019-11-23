@@ -273,7 +273,9 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       ExpiringValue<V> wrapValue = new ExpiringValue<>(value, duration, timeUnit);
       ExpiringValue<V> preValue = data.put(key, wrapValue);
       if (preValue != null) {
-        notifyListener(key, preValue.value);
+        if (preValue.value != value) {
+          notifyListener(key, preValue.value);
+        }
         if (!preValue.isExpired()) {
           return preValue.value;
         }
@@ -286,6 +288,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public V remove(Object key) {
     writeLock.lock();
     try {
@@ -293,6 +296,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       if (value == null || value.isExpired()) {
         return null;
       }
+      notifyListener((K) key, value.value);
       return value.value;
     } finally {
       writeLock.unlock();
@@ -306,7 +310,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
         ExpiringValue<V> preValue = data
             .put(entry.getKey(), new ExpiringValue<>(entry.getValue(), duration, timeUnit));
-        if (preValue != null) {
+        if (preValue != null && preValue.value != entry.getValue()) {
           notifyListener(entry.getKey(), preValue.value);
         }
       }
@@ -376,11 +380,13 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public boolean remove(Object key, Object value) {
     writeLock.lock();
     try {
       ExpiringValue<V> wrapValue = data.get(key);
       if (wrapValue != null && !wrapValue.isExpired() && Objects.equals(wrapValue.value, value)) {
+        notifyListener((K) key, wrapValue.value);
         data.remove(key);
         return true;
       }
@@ -400,6 +406,9 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
         ExpiringValue<V> newWrapValue = new ExpiringValue<>(newValue);
         newWrapValue.duration = wrapValue.duration;
         newWrapValue.expireAt = wrapValue.expireAt;
+        if (newValue != wrapValue.value) {
+          notifyListener(key, wrapValue.value);
+        }
         data.put(key, newWrapValue);
         return true;
       }
@@ -420,6 +429,9 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
         newWrapValue.expireAt = wrapValue.expireAt;
         wrapValue = data.put(key, newWrapValue);
         if (wrapValue != null) {
+          if (wrapValue.value != value) {
+            notifyListener(key, wrapValue.value);
+          }
           return wrapValue.value;
         }
       }
@@ -437,6 +449,9 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
         ExpiringValue<V> newWrapValue = new ExpiringValue<>(value, duration, timeUnit);
         wrapValue = data.put(key, newWrapValue);
         if (wrapValue != null) {
+          if (wrapValue.value != value) {
+            notifyListener(key, wrapValue.value);
+          }
           return wrapValue.value;
         }
       }
@@ -455,7 +470,9 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       }
       if (preVal.expireAt < System.currentTimeMillis()) {
         data.put(key, wrapValue);
-        notifyListener(key, preVal.value);
+        if (wrapValue.value != preVal.value) {
+          notifyListener(key, preVal.value);
+        }
         return null;
       }
       return preVal.value;

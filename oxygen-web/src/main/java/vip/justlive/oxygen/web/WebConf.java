@@ -37,6 +37,11 @@ public class WebConf {
   private String contextPath;
 
   /**
+   * 是否处理options请求，默认不返回数据
+   */
+  @Value("${web.request.handleOptions:false}")
+  private boolean handleOptionsRequest;
+  /**
    * session失效时间，单位秒
    */
   @Value("${web.session.expired:3600}")

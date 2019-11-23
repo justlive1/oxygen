@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import vip.justlive.oxygen.core.exception.WrappedException;
 
 /**
  * 重试器
@@ -67,8 +68,9 @@ public class Retryer<T> {
       try {
         T value = timeLimiter.call(callable);
         attempt = new Attempt<>(attemptNumbers, value, System.currentTimeMillis() - startTime);
-      } catch (Exception e) {
-        attempt = new Attempt<>(attemptNumbers, e, System.currentTimeMillis() - startTime);
+      } catch (WrappedException e) {
+        attempt = new Attempt<>(attemptNumbers, e.getException(),
+            System.currentTimeMillis() - startTime);
       }
       // on retry
       final Attempt<T> tAttempt = attempt;

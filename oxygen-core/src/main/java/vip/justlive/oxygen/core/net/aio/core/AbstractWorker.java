@@ -77,12 +77,7 @@ public abstract class AbstractWorker<T> implements Runnable {
    */
   public void stop() {
     stopped = true;
-    lock.lock();
-    try {
-      queue.clear();
-    } finally {
-      lock.unlock();
-    }
+    queue.clear();
   }
 
   @Override

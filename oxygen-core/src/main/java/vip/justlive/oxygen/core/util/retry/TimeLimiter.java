@@ -54,7 +54,6 @@ public interface TimeLimiter<V> {
    *
    * @param callable Callable
    * @return result
-   * @throws Exception any exception from this invocation
    */
-  V call(Callable<V> callable) throws Exception;
+  V call(Callable<V> callable);
 }

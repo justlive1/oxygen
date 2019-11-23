@@ -15,12 +15,7 @@ package vip.justlive.oxygen.cache.store;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
-import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ClassUtils;
 
 /**
  * 缓存接口
@@ -28,8 +23,6 @@ import vip.justlive.oxygen.core.util.ClassUtils;
  * @author wubo
  */
 public interface Cache {
-
-  Map<String, Cache> CACHES = new ConcurrentHashMap<>(4, 1);
 
   /**
    * 获取缓存对象
@@ -143,6 +136,46 @@ public interface Cache {
   void remove(String... keys);
 
   /**
+   * Increment the element value (must be a Number) by 1.
+   *
+   * @param key Element key
+   * @return The new value
+   */
+  default long incr(String key) {
+    return incr(key, 1);
+  }
+
+  /**
+   * Increment the element value (must be a Number).
+   *
+   * @param key Element key
+   * @param by The incr value
+   * @return The new value
+   */
+  long incr(String key, int by);
+
+  /**
+   * Decrement the element value (must be a Number) by 1.
+   *
+   * @param key Element key
+   * @return The new value
+   */
+  default long decr(String key) {
+    return decr(key, 1);
+  }
+
+  /**
+   * Decrement the element value (must be a Number).
+   *
+   * @param key Element key
+   * @param by The decr value
+   * @return The new value
+   */
+  default long decr(String key, int by) {
+    return incr(key, -by);
+  }
+
+  /**
    * Clear the cache
    */
   void clear();
@@ -163,10 +196,10 @@ public interface Cache {
    * @return cache
    */
   static Cache cache(String name) {
-    if (!CACHES.containsKey(name)) {
-      CACHES.putIfAbsent(name, createCache(name));
+    if (!CacheStore.CACHES.containsKey(name)) {
+      CacheStore.CACHES.putIfAbsent(name, CacheStore.createCache(name));
     }
-    return CACHES.get(name);
+    return CacheStore.CACHES.get(name);
   }
 
   /**
@@ -175,36 +208,18 @@ public interface Cache {
    * @return 缓存名称集合
    */
   static Collection<String> cacheNames() {
-    return CACHES.keySet();
+    return CacheStore.CACHES.keySet();
   }
 
   /**
    * 清除缓存
    */
   static void clearAll() {
-    for (Cache cache : CACHES.values()) {
+    for (Cache cache : CacheStore.CACHES.values()) {
       cache.clear();
     }
-    CACHES.clear();
+    CacheStore.CACHES.clear();
   }
 
-  /**
-   * 创建cache
-   *
-   * @param name 缓存名称
-   * @return cache
-   */
-  static Cache createCache(String name) {
-    CoreConf config = ConfigFactory.load(CoreConf.class);
-    if (config.getCacheImplClass() != null && config.getCacheImplClass().length() > 0) {
-      try {
-        Class<?> clazz = ClassUtils.forName(config.getCacheImplClass());
-        return (Cache) clazz.getConstructor(String.class).newInstance(name);
-      } catch (Exception e) {
-        throw Exceptions.wrap(e);
-      }
-    } else {
-      return new LocalCacheImpl(name);
-    }
-  }
+
 }

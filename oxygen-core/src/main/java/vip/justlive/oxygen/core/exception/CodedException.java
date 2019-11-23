@@ -32,22 +32,26 @@ public class CodedException extends RuntimeException {
   private final transient Object[] args;
   private final transient Object data;
 
-  CodedException(Throwable throwable, ErrorCode errorCode, Object[] args) {
+  public CodedException(Throwable throwable, ErrorCode errorCode, Object[] args) {
     this(throwable, errorCode, args, null);
   }
 
-  CodedException(Throwable throwable, ErrorCode errorCode, Object[] args, Object data) {
+  public CodedException(Throwable throwable, ErrorCode errorCode, Object[] args, Object data) {
     super(throwable);
     this.errorCode = errorCode;
     this.args = args;
     this.data = data;
   }
 
-  CodedException(ErrorCode errorCode, Object[] args) {
+  public CodedException(ErrorCode errorCode) {
+    this(errorCode, null, null);
+  }
+
+  public CodedException(ErrorCode errorCode, Object[] args) {
     this(errorCode, args, null);
   }
 
-  CodedException(ErrorCode errorCode, Object[] args, Object data) {
+  public CodedException(ErrorCode errorCode, Object[] args, Object data) {
     super(errorCode.getMessage());
     this.errorCode = errorCode;
     this.args = args;

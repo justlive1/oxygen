@@ -19,6 +19,7 @@ public class MessageDigestEncoderTest {
 
     encoder.setUseSalt(true);
     String raw = encoder.encode(source);
+    System.out.println(raw);
     assertTrue(encoder.match(source, raw));
 
     DelegateEncoder e = new DelegateEncoder("MD5");

@@ -40,10 +40,6 @@ public class DefaultClassScanner implements ClassScanner {
   private static final String CLASS_PATH_MULTI_SUFFIX = "/**/*" + CLASS_SUFFIX;
 
   /**
-   * 路径匹配器
-   */
-  private PathMatcher matcher = new PathMatcher();
-  /**
    * 扫描包路径
    */
   private ClassLoader loader;
@@ -71,7 +67,7 @@ public class DefaultClassScanner implements ClassScanner {
   }
 
   private void findMatchPath(String location, Set<Class<?>> classes) throws IOException {
-    String rootPath = matcher.getRootDir(location);
+    String rootPath = PathMatcher.getRootDir(location);
     String subPattern = location.substring(rootPath.length());
     Enumeration<URL> urls = this.loader.getResources(Urls.cutRootPath(rootPath));
     while (urls.hasMoreElements()) {
@@ -92,7 +88,7 @@ public class DefaultClassScanner implements ClassScanner {
     } catch (URISyntaxException e) {
       rootDir = new File(rootUrl.getFile());
     }
-    Set<File> matchedFiles = matcher.findMatchedFiles(rootDir, subPattern);
+    Set<File> matchedFiles = PathMatcher.findMatchedFiles(rootDir, subPattern);
     for (File file : matchedFiles) {
       String className = pathToClassName(rootPath, rootDir, file)
           .replace(CLASS_SUFFIX, Strings.EMPTY);
@@ -119,7 +115,7 @@ public class DefaultClassScanner implements ClassScanner {
           entries.hasMoreElements(); ) {
         JarEntry entry = entries.nextElement();
         String entryPath = entry.getName();
-        if (entryPath.startsWith(rootEntryPath) && matcher
+        if (entryPath.startsWith(rootEntryPath) && PathMatcher
             .match(subPattern, entryPath.substring(rootEntryPath.length()))) {
           String className = entryPath.replace(Strings.SLASH, Strings.DOT)
               .replace(CLASS_SUFFIX, Strings.EMPTY);

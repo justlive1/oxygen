@@ -13,10 +13,12 @@
  */
 package vip.justlive.oxygen.aop;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import vip.justlive.oxygen.aop.annotation.Aspect;
 import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
 import vip.justlive.oxygen.aop.interceptor.AnnotationInterceptor;
+import vip.justlive.oxygen.aop.interceptor.MethodInterceptor;
 import vip.justlive.oxygen.aop.proxy.ProxyStore;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.exception.Exceptions;
@@ -58,7 +60,12 @@ public class AopPlugin implements Plugin {
       throw Exceptions.wrap(e);
     }
     for (TYPE type : aspect.type()) {
-      ProxyStore.addInterceptor(type, new AnnotationInterceptor(aspect.annotation(), wrapper));
+      if (aspect.annotation() != Annotation.class) {
+        ProxyStore.addInterceptor(type, new AnnotationInterceptor(aspect.annotation(), wrapper));
+      }
+      if (aspect.method().length() > 0) {
+        ProxyStore.addInterceptor(type, new MethodInterceptor(aspect.method(), wrapper));
+      }
     }
   }
 

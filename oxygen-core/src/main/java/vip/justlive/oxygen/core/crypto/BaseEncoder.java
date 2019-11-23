@@ -49,7 +49,7 @@ public abstract class BaseEncoder implements Encoder {
       value = doEncode(value);
     }
     if (!Strings.EMPTY.equals(salt)) {
-      value = Strings.OPEN_BRACE.concat(salt).concat(Strings.CLOSE_BRACE).concat(value);
+      value = wrapperSalt(salt).concat(value);
     }
     return value;
   }
@@ -96,7 +96,7 @@ public abstract class BaseEncoder implements Encoder {
    * @param raw 包装后的salt
    * @return salt
    */
-  public String extractSalt(String raw) {
+  static String extractSalt(String raw) {
     int start = raw.indexOf(Strings.OPEN_BRACE);
     if (start != 0) {
       return Strings.EMPTY;

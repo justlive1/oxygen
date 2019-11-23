@@ -74,9 +74,8 @@ public class ProxyStore {
       return;
     }
     STORE.forEach((k, v) -> v.clear());
-    PROXIES.forEach(
-        bean -> Stream.of(ClassUtils.getCglibActualClass(bean.getClass()).getDeclaredMethods())
-            .forEach(ProxyStore::handleMethod));
+    PROXIES.forEach(bean -> Stream.of(ClassUtils.getCglibActualClass(bean.getClass()).getMethods())
+        .forEach(ProxyStore::handleMethod));
     STORE.forEach((k, v) -> v.forEach((method, interceptors) -> Collections.sort(interceptors)));
     ready = true;
   }

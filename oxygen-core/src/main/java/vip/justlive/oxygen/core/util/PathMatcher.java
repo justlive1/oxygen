@@ -18,6 +18,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author wubo
  */
 @Slf4j
+@UtilityClass
 public class PathMatcher {
 
   private static final String ANY_REGEX = ".*";
@@ -39,7 +41,7 @@ public class PathMatcher {
    * @param path 路径
    * @return true 是通配符
    */
-  public boolean isPattern(String path) {
+  public static boolean isPattern(String path) {
     return (path.indexOf(Bytes.ANY) != -1 || path.indexOf(Bytes.QUESTION_MARK) != -1);
   }
 
@@ -50,8 +52,8 @@ public class PathMatcher {
    * @param path 路径
    * @return true 匹配上了
    */
-  public boolean match(String pattern, String path) {
-    if (this.isPattern(pattern)) {
+  public static boolean match(String pattern, String path) {
+    if (isPattern(pattern)) {
       Pattern p = PATTERNS.get(pattern);
       if (p == null) {
         p = parsePattern(pattern);
@@ -69,7 +71,7 @@ public class PathMatcher {
    * @param pattern 匹配串
    * @return 正则
    */
-  private Pattern parsePattern(String pattern) {
+  private static Pattern parsePattern(String pattern) {
     char[] chars = pattern.toCharArray();
     int len = chars.length;
     StringBuilder sb = new StringBuilder();
@@ -83,7 +85,8 @@ public class PathMatcher {
     return Pattern.compile(sb.toString());
   }
 
-  private boolean[] parse(boolean pre, boolean dbPre, char[] chars, int i, StringBuilder sb) {
+  private static boolean[] parse(boolean pre, boolean dbPre, char[] chars, int i,
+      StringBuilder sb) {
     if (chars[i] == Bytes.ANY) {
       if (pre) {
         // 第二次遇到*，替换成.*
@@ -119,7 +122,7 @@ public class PathMatcher {
    * @param location 路径
    * @return 根路径
    */
-  public String getRootDir(String location) {
+  public static String getRootDir(String location) {
     int prefixEnd = location.indexOf(Strings.COLON) + 1;
     int rootDirEnd = location.length();
     while (rootDirEnd > prefixEnd && isPattern(location.substring(prefixEnd, rootDirEnd))) {
@@ -138,7 +141,7 @@ public class PathMatcher {
    * @param subPattern 匹配串
    * @return 文件列表
    */
-  public Set<File> findMatchedFiles(File rootDir, String subPattern) {
+  public static Set<File> findMatchedFiles(File rootDir, String subPattern) {
     Set<File> files = new LinkedHashSet<>();
     if (!rootDir.exists() || !rootDir.isDirectory() || !rootDir.canRead()) {
       if (log.isWarnEnabled()) {
@@ -151,7 +154,7 @@ public class PathMatcher {
       fullPattern += Strings.SLASH;
     }
     fullPattern += subPattern.replace(File.separator, Strings.SLASH);
-    this.searchMatchedFiles(fullPattern, rootDir, files);
+    searchMatchedFiles(fullPattern, rootDir, files);
     return files;
   }
 
@@ -162,7 +165,7 @@ public class PathMatcher {
    * @param dir 目录
    * @param files 文件集合
    */
-  private void searchMatchedFiles(String fullPattern, File dir, Set<File> files) {
+  private static void searchMatchedFiles(String fullPattern, File dir, Set<File> files) {
     if (log.isDebugEnabled()) {
       log.debug("search files under dir [{}]", dir);
     }
@@ -176,9 +179,9 @@ public class PathMatcher {
         if (!content.canRead() && log.isDebugEnabled()) {
           log.debug("dir [{}] has no read permission, skip", content);
         } else {
-          this.searchMatchedFiles(fullPattern, content, files);
+          searchMatchedFiles(fullPattern, content, files);
         }
-      } else if (this.match(fullPattern, currentPath)) {
+      } else if (match(fullPattern, currentPath)) {
         files.add(content);
       }
     }

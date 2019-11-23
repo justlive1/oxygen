@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.aop;
 
+import java.lang.reflect.Method;
 import vip.justlive.oxygen.aop.annotation.Aspect;
 import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
 import vip.justlive.oxygen.ioc.annotation.Bean;
@@ -22,13 +23,12 @@ import vip.justlive.oxygen.ioc.annotation.Inject;
  * @author wubo
  */
 @Bean
-public class Conf {
+public class Conf extends BaseConf {
 
-  private final LogService logService;
 
   @Inject
   public Conf(LogService logService) {
-    this.logService = logService;
+    super(logService);
   }
 
   @Aspect(annotation = Log.class, type = {TYPE.BEFORE, TYPE.AFTER, TYPE.CATCHING}, order = 1)
@@ -36,14 +36,7 @@ public class Conf {
     System.out.println("aop all log");
   }
 
-  @Aspect(annotation = Log.class, type = TYPE.BEFORE)
-  public boolean log1(Invocation invocation) {
-    System.out.println("aop before log1 " + invocation.getMethod());
-    logService.log();
-    return true;
-  }
-
-  @Aspect(annotation = Log.class, type = TYPE.AFTER)
+  @Aspect(method = "vip.justlive.**.print", type = TYPE.AFTER)
   public void log2(Invocation invocation) {
     System.out.println("aop after log2 " + invocation.getMethod());
     logService.log();
@@ -54,9 +47,11 @@ public class Conf {
     System.out.println("aop catching log3 " + invocation.getMethod());
     logService.log();
   }
+  
 
-  @Log
-  public void print() {
-    System.out.println("print");
+  public static void main(String[] args) {
+    for(Method method :Conf.class.getMethods()){
+      System.out.println(method.getName() + method.getAnnotation(Aspect.class));
+    }
   }
 }

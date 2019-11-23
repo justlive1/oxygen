@@ -1,0 +1,69 @@
+/*
+ * Copyright (C) 2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package vip.justlive.oxygen.core.util;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
+import vip.justlive.oxygen.core.template.SimpleTemplateEngine;
+
+/**
+ * 一个简单的公式计算器
+ *
+ * @author wubo
+ */
+public class Calculator {
+
+  private static final String TEMPLATE = "#{var $result = %s; $out.write('' + $result); }";
+  private static final SimpleTemplateEngine ENGINE = new SimpleTemplateEngine();
+
+  /**
+   * 计算
+   *
+   * @param formula 公式
+   * @return 结果
+   */
+  public static BigDecimal calculate(String formula) {
+    return calculate(formula, null);
+  }
+
+  /**
+   * 计算
+   *
+   * @param formula 公式
+   * @param data 变量参数
+   * @return 结果
+   */
+  public static BigDecimal calculate(String formula, Object data) {
+    Map<String, Object> attrs = new HashMap<>(4);
+    if (data != null) {
+      attrs.putAll(MoreObjects.beanToMap(data));
+    }
+    return new BigDecimal(ENGINE.render(String.format(TEMPLATE, formula), attrs));
+  }
+
+  /**
+   * 计算
+   *
+   * @param formula 公式
+   * @param data 变量参数
+   * @param scale 精度
+   * @return 结果
+   */
+  public static BigDecimal calculate(String formula, Object data, int scale) {
+    return calculate(formula, data).setScale(scale, RoundingMode.HALF_DOWN);
+  }
+}

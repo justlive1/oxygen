@@ -11,17 +11,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.aop;
 
-import vip.justlive.oxygen.ioc.annotation.Bean;
+package vip.justlive.oxygen.core.crypto;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author wubo
  */
-@Bean
-public class LogService {
+public class MacEncoderTest {
 
-  public void log() {
-    System.out.println("log service log.");
+  @Test
+  public void t0() {
+
+    String algorithm = "HmacSHA256";
+    String secret = "123xcef";
+    String source = "123456qweasd";
+    MacEncoder encoder = new MacEncoder(algorithm, secret);
+    String result = encoder.encode(source);
+
+    Assert.assertEquals("fafea2c76d82df6d21edb318754afe57f25a62b05ad4fa9f427a0b4cb9b498d7", result);
+
+    encoder.useBase64(true);
+    result = encoder.encode(source);
+    Assert.assertEquals("+v6ix22C320h7bMYdUr+V/JaYrBa1PqfQnoLTLm0mNc=", result);
+
   }
 }

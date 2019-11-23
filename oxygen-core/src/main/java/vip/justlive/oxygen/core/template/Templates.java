@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core.template;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +29,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.FileUtils;
+import vip.justlive.oxygen.core.util.IOUtils;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 
 /**
@@ -54,16 +56,9 @@ public class Templates {
    * @return template
    */
   public static String template(String path) {
-    try {
-      SourceResource sourceResource = new SimpleResourceLoader(path);
-      try (InputStream is = sourceResource.getInputStream()) {
-        File savedFile = new File(BASE_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
-        Path templatePath = savedFile.toPath();
-        Files.copy(is, templatePath);
-        savedFile.deleteOnExit();
-        CACHE.put(path, templatePath);
-        return new String(Files.readAllBytes(templatePath), StandardCharsets.UTF_8);
-      }
+    SourceResource sourceResource = new SimpleResourceLoader(path);
+    try (InputStream is = sourceResource.getInputStream()) {
+      return IOUtils.toString(is, StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw Exceptions.wrap(e);
     }
@@ -76,12 +71,19 @@ public class Templates {
    * @return template
    */
   public static String cachedTemplate(String path) {
-    Path templatePath = CACHE.get(path);
-    if (templatePath == null) {
-      return template(path);
-    }
     try {
-      return new String(Files.readAllBytes(templatePath), StandardCharsets.UTF_8);
+      Path templatePath = CACHE.get(path);
+      if (templatePath != null) {
+        return new String(Files.readAllBytes(templatePath), StandardCharsets.UTF_8);
+      }
+
+      String template = template(path);
+      File savedFile = new File(BASE_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
+      templatePath = savedFile.toPath();
+      Files.copy(new ByteArrayInputStream(template.getBytes(StandardCharsets.UTF_8)), templatePath);
+      savedFile.deleteOnExit();
+      CACHE.put(path, templatePath);
+      return template;
     } catch (IOException e) {
       throw Exceptions.wrap(e);
     }

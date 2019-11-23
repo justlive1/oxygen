@@ -71,6 +71,9 @@ public class Exceptions {
     if (e instanceof CodedException) {
       return (CodedException) e;
     }
+    if (e instanceof Exception) {
+      return new WrappedException((Exception) e, errorCode);
+    }
     return new CodedException(e, errorCode, null);
   }
 

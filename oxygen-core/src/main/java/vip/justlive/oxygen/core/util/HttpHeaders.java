@@ -29,6 +29,7 @@ public class HttpHeaders {
   public static final String ACCEPT = "Accept";
   public static final String ACCEPT_CHARSET = "Accept-Charset";
   public static final String ACCEPT_ENCODING = "Accept-Encoding";
+  public static final String ALLOW = "Allow";
   public static final String CACHE_CONTROL = "Cache-Control";
   public static final String CHARSET = "charset";
   public static final String CONNECTION = "Connection";

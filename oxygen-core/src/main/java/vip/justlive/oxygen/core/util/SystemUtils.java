@@ -17,6 +17,7 @@ package vip.justlive.oxygen.core.util;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
+import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
@@ -67,9 +68,8 @@ public class SystemUtils {
     if (!isValidPort(port)) {
       return false;
     }
-    try {
-      ServerSocketFactory.getDefault().createServerSocket(port, 1, InetAddress.getByName(LOCAL_IP))
-          .close();
+    try (ServerSocket ignored = ServerSocketFactory.getDefault()
+        .createServerSocket(port, 1, InetAddress.getByName(LOCAL_IP))) {
       return true;
     } catch (Exception e) {
       return false;

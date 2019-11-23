@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
@@ -42,13 +42,13 @@ public class FixedTimeLimiter<V> implements TimeLimiter<V> {
   }
 
   @Override
-  public V call(Callable<V> callable) throws Exception {
+  public V call(Callable<V> callable) {
     Future<V> future = executorService.submit(callable);
     try {
       return future.get(timeout, timeUnit);
-    } catch (InterruptedException | TimeoutException e) {
+    } catch (Exception e) {
       future.cancel(true);
-      throw e;
+      throw Exceptions.wrap(e);
     }
   }
 }

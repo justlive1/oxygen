@@ -33,8 +33,7 @@ public class MessageDigestEncoder extends BaseEncoder {
 
   @Override
   protected String doEncode(String source) {
-    byte[] bytes = create().digest(StandardCharsets.UTF_8.encode(source).array());
-    return Hex.encodeToString(bytes);
+    return Hex.encodeToString(create().digest(source.getBytes(StandardCharsets.UTF_8)));
   }
 
   private MessageDigest create() {

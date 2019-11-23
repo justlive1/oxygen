@@ -70,7 +70,7 @@ public class FreemarkerResultHandler implements ResultHandler {
     resolver.resolve(response, data.getPath(), data.getData());
   }
 
-  class FreemarkerResolver {
+  static class FreemarkerResolver {
 
     final Configuration cfg;
 

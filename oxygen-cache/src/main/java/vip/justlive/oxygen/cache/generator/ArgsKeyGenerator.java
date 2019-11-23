@@ -17,8 +17,8 @@ import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.MoreObjects;
-import vip.justlive.oxygen.core.util.ReflectUtils;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
@@ -68,7 +68,7 @@ public class ArgsKeyGenerator implements KeyGenerator {
         return null;
       }
       field = matcher.group(1);
-      value = ReflectUtils.getValue(value, field);
+      value = ClassUtils.getValue(value, field);
       index = matcher.end();
     }
     return value;

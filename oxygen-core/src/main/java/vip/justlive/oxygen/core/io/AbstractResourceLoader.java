@@ -52,11 +52,6 @@ public abstract class AbstractResourceLoader {
   protected ClassLoader loader;
 
   /**
-   * 路径匹配器
-   */
-  protected PathMatcher matcher = new PathMatcher();
-
-  /**
    * 资源列表
    */
   protected List<SourceResource> resources = new ArrayList<>();
@@ -85,7 +80,7 @@ public abstract class AbstractResourceLoader {
   /**
    * 是否已初始化过
    */
-  protected volatile boolean ready;
+  volatile boolean ready;
 
   /**
    * 初始化
@@ -157,9 +152,9 @@ public abstract class AbstractResourceLoader {
    * @return 资源列表
    * @throws IOException io异常
    */
-  protected List<SourceResource> resolveAllClassPathResource(String location) throws IOException {
+  private List<SourceResource> resolveAllClassPathResource(String location) throws IOException {
     List<SourceResource> list = new LinkedList<>();
-    if (matcher.isPattern(location)) {
+    if (PathMatcher.isPattern(location)) {
       list.addAll(this.findMatchPath(location, true));
     } else {
       Enumeration<URL> res = loader.getResources(Urls.cutRootPath(location));
@@ -181,9 +176,9 @@ public abstract class AbstractResourceLoader {
    * @return 资源列表
    * @throws IOException io异常
    */
-  protected List<SourceResource> resolveClassPathResource(String location) throws IOException {
+  private List<SourceResource> resolveClassPathResource(String location) throws IOException {
     List<SourceResource> list = new LinkedList<>();
-    if (matcher.isPattern(location)) {
+    if (PathMatcher.isPattern(location)) {
       list.addAll(this.findMatchPath(location, false));
     } else {
       list.add(new ClassPathResource(location, loader));
@@ -198,9 +193,9 @@ public abstract class AbstractResourceLoader {
    * @return 资源列表
    * @throws IOException io异常
    */
-  protected List<SourceResource> resolveFileSystemResource(String location) throws IOException {
+  private List<SourceResource> resolveFileSystemResource(String location) throws IOException {
     List<SourceResource> list = new LinkedList<>();
-    if (matcher.isPattern(location)) {
+    if (PathMatcher.isPattern(location)) {
       list.addAll(this.findMatchPath(location, false));
     } else {
       list.add(new FileSystemResource(location.substring(Strings.FILE_PREFIX.length())));
@@ -216,9 +211,9 @@ public abstract class AbstractResourceLoader {
    * @return 资源列表
    * @throws IOException io异常
    */
-  protected List<SourceResource> findMatchPath(String location, boolean multi) throws IOException {
+  private List<SourceResource> findMatchPath(String location, boolean multi) throws IOException {
     List<SourceResource> all = new LinkedList<>();
-    String rootPath = matcher.getRootDir(location);
+    String rootPath = PathMatcher.getRootDir(location);
     String subPattern = location.substring(rootPath.length());
     List<SourceResource> rootResources;
     if (multi) {
@@ -251,7 +246,7 @@ public abstract class AbstractResourceLoader {
    * @return 资源列表
    * @throws IOException io异常
    */
-  protected List<SourceResource> findJarMatchPath(SourceResource resource, URL rootUrl,
+  private List<SourceResource> findJarMatchPath(SourceResource resource, URL rootUrl,
       String subPattern) throws IOException {
     List<SourceResource> all = new LinkedList<>();
     JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl);
@@ -288,7 +283,7 @@ public abstract class AbstractResourceLoader {
       String entryPath = entry.getName();
       if (entryPath.startsWith(rootEntryPath)) {
         String relativePath = entryPath.substring(rootEntryPath.length());
-        if (matcher.match(subPattern, relativePath)) {
+        if (PathMatcher.match(subPattern, relativePath)) {
           all.add(resource.createRelative(relativePath));
         }
       }
@@ -303,10 +298,10 @@ public abstract class AbstractResourceLoader {
    * @return 资源列表
    * @throws IOException io异常
    */
-  protected List<SourceResource> findFileMatchPath(SourceResource resource, String subPattern)
+  private List<SourceResource> findFileMatchPath(SourceResource resource, String subPattern)
       throws IOException {
     List<SourceResource> list = new LinkedList<>();
-    matcher.findMatchedFiles(resource.getFile().getAbsoluteFile(), subPattern)
+    PathMatcher.findMatchedFiles(resource.getFile().getAbsoluteFile(), subPattern)
         .forEach(file -> list.add(new FileSystemResource(file)));
     return list;
   }

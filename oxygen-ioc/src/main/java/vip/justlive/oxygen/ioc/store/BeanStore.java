@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.ioc.store;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import vip.justlive.oxygen.core.Order;
@@ -85,7 +86,7 @@ public interface BeanStore extends Order {
    * 获取类型
    *
    * @param clazz 类型
-   * @return bean
+   * @return bean map
    */
   Map<String, Object> getBeanMap(Class<?> clazz);
 
@@ -94,9 +95,18 @@ public interface BeanStore extends Order {
    *
    * @param clazz 类型
    * @param <T> 泛型
-   * @return bean
+   * @return bean map
    */
   <T> Map<String, T> getCastBeanMap(Class<T> clazz);
+
+  /**
+   * 获取bean列表
+   *
+   * @param clazz 类型
+   * @param <T> 泛型
+   * @return bean list
+   */
+  <T> List<T> getBeanList(Class<T> clazz);
 
   /**
    * 获取beans

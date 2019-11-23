@@ -107,18 +107,6 @@ public class ClassPathResource implements SourceResource {
     return null;
   }
 
-  /**
-   * 获取类加载器
-   *
-   * @return 类加载器
-   */
-  public ClassLoader getClassLoader() {
-    if (this.clazz != null) {
-      return this.clazz.getClassLoader();
-    }
-    return this.classLoader;
-  }
-
   private URL getURL0() {
     if (this.clazz != null) {
       return this.clazz.getResource(this.path);

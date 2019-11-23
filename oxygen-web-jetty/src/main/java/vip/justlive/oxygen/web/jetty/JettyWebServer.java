@@ -50,8 +50,6 @@ public class JettyWebServer implements WebServer {
   private int port;
   private Server server;
 
-  private PathMatcher matcher = new PathMatcher();
-
   @Override
   public void stop() {
     if (server == null) {
@@ -128,7 +126,7 @@ public class JettyWebServer implements WebServer {
 
   private void copyJspFiles(File dir, WebConf webConf) throws IOException {
     String location = Urls.concat(webConf.getJspViewPrefix(), "/**/*.jsp");
-    String rootPath = matcher.getRootDir(location);
+    String rootPath = PathMatcher.getRootDir(location);
     String subPattern = location.substring(rootPath.length());
     Enumeration<URL> urls = ClassUtils.getDefaultClassLoader()
         .getResources(Urls.cutRootPath(rootPath));
@@ -152,7 +150,7 @@ public class JettyWebServer implements WebServer {
           entries.hasMoreElements(); ) {
         JarEntry entry = entries.nextElement();
         String entryPath = entry.getName();
-        if (entryPath.startsWith(rootEntryPath) && matcher
+        if (entryPath.startsWith(rootEntryPath) && PathMatcher
             .match(subPattern, entryPath.substring(rootEntryPath.length()))) {
           log.info("find jsp file [{}]", entryPath);
           File file = mkdirs(dir, entryPath);

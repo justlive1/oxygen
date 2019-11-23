@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.core.util.retry;
 
 import java.util.concurrent.Callable;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * 无超时限制
@@ -23,7 +24,11 @@ import java.util.concurrent.Callable;
 public class NoTimeLimiter<V> implements TimeLimiter<V> {
 
   @Override
-  public V call(Callable<V> callable) throws Exception {
-    return callable.call();
+  public V call(Callable<V> callable) {
+    try {
+      return callable.call();
+    } catch (Exception e) {
+      throw Exceptions.wrap(e);
+    }
   }
 }

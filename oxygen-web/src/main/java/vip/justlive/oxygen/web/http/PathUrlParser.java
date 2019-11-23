@@ -16,7 +16,11 @@ package vip.justlive.oxygen.web.http;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.net.http.HttpMethod;
 import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.web.router.OptionsRouteHandler;
 import vip.justlive.oxygen.web.router.Route;
 import vip.justlive.oxygen.web.router.RouteHandler;
 import vip.justlive.oxygen.web.router.Router;
@@ -36,7 +40,13 @@ public class PathUrlParser implements Parser {
 
   @Override
   public void parse(Request request) {
-    RouteHandler handler = Router.lookupStatic(request.getPath());
+    RouteHandler handler;
+    if (request.method == HttpMethod.OPTIONS && !ConfigFactory.load(WebConf.class)
+        .isHandleOptionsRequest()) {
+      handler = OptionsRouteHandler.INSTANCE;
+    } else {
+      handler = Router.lookupStatic(request.getPath());
+    }
     Route route = null;
     if (handler != null) {
       request.routeHandler = handler;

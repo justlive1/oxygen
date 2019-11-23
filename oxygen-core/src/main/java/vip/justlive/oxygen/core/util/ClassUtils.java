@@ -17,8 +17,12 @@ package vip.justlive.oxygen.core.util;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -33,6 +38,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  *
  * @author wubo
  */
+@Slf4j
 @UtilityClass
 public class ClassUtils {
 
@@ -308,11 +314,44 @@ public class ClassUtils {
     if (actualClass == null) {
       return methods;
     }
-    for (Method method : actualClass.getDeclaredMethods()) {
+    for (Method method : getAllMethods(actualClass)) {
       if (method.isAnnotationPresent(annotation)) {
         methods.add(method);
       }
     }
+    return methods;
+  }
+
+  /**
+   * 执行方法
+   *
+   * @param method 方法
+   * @param bean 对象
+   * @param args 参数
+   * @return 结果
+   */
+  public static Object methodInvoke(Method method, Object bean, Object... args) {
+    try {
+      method.setAccessible(true);
+      return method.invoke(bean, args);
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw Exceptions.wrap(e);
+    }
+  }
+
+  /**
+   * 获取类所有方法
+   *
+   * @param clazz 类
+   * @return 方法
+   */
+  public static Set<Method> getAllMethods(Class<?> clazz) {
+    Set<Method> methods = new HashSet<>();
+    Class<?> actualClass = clazz;
+    do {
+      methods.addAll(Arrays.asList(actualClass.getDeclaredMethods()));
+      actualClass = actualClass.getSuperclass();
+    } while (actualClass != null);
     return methods;
   }
 
@@ -352,7 +391,18 @@ public class ClassUtils {
    */
   public static Constructor<?> getConstructorAnnotatedWith(Class<?> clazz,
       Class<? extends Annotation> annotation) {
-    Constructor<?>[] constructors = clazz.getConstructors();
+    return getConstructorAnnotatedWith(clazz.getConstructors(), annotation);
+  }
+
+  /**
+   * 获取被注解的构造方法
+   *
+   * @param constructors 构造方法
+   * @param annotation 注解
+   * @return Constructor
+   */
+  public static Constructor<?> getConstructorAnnotatedWith(Constructor<?>[] constructors,
+      Class<? extends Annotation> annotation) {
     for (Constructor<?> constructor : constructors) {
       if (constructor.isAnnotationPresent(annotation)) {
         return constructor;
@@ -412,6 +462,134 @@ public class ClassUtils {
       }
     }
     return null;
+  }
+
+  /**
+   * 获取当前Class类实例中所有的Field对象（包括父类的Field）
+   *
+   * @param clazz Class类实例
+   * @return 对象类型数组
+   */
+  public static Field[] getAllDeclaredFields(Class<?> clazz) {
+    Field[] fields = clazz.getDeclaredFields();
+    Class<?> superClass = clazz.getSuperclass();
+    if (superClass == null) {
+      return fields;
+    }
+    Field[] superFields = getAllDeclaredFields(superClass);
+    Field[] destFields = new Field[fields.length + superFields.length];
+    System.arraycopy(fields, 0, destFields, 0, fields.length);
+    System.arraycopy(superFields, 0, destFields, fields.length, superFields.length);
+
+    return destFields;
+  }
+
+  /**
+   * 根据属性名，在当前Class类实例的所有Field对象中（包括父类的Field）检索对应的属性值
+   *
+   * @param clazz Class类实例
+   * @param propertyName 属性名
+   * @return Field 对象
+   */
+  public static Field getDeclaredField(Class<?> clazz, String propertyName) {
+    Field[] fields = getAllDeclaredFields(clazz);
+    for (Field field : fields) {
+      if (field.getName().equals(propertyName)) {
+        return field;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * 根据属性名来获取属性的值
+   *
+   * @param object 需要得到属性值的对象
+   * @param propertyName 属性名
+   * @return Object 属性值
+   */
+  public static Object getValue(Object object, String propertyName) {
+    Class<?> clazz = object.getClass();
+    Field field = getDeclaredField(clazz, propertyName);
+    if (field == null) {
+      return null;
+    }
+    if (!field.isAccessible()) {
+      field.setAccessible(true);
+    }
+    try {
+      return field.get(object);
+    } catch (Exception e) {
+      throw Exceptions.wrap(e);
+    }
+  }
+
+  /**
+   * 根据field设置值
+   *
+   * @param object 目标对象
+   * @param field 属性
+   * @param value 值
+   */
+  public static void setValue(Object object, Field field, Object value) {
+    field.setAccessible(true);
+    try {
+      field.set(object, value);
+    } catch (IllegalArgumentException | IllegalAccessException e) {
+      log.error("set value {} to class {} error", value, object.getClass(), e);
+    }
+  }
+
+  /**
+   * 实例化一个类型为clazz的对象。
+   *
+   * @param <T> 实例化对象类型
+   * @param clazz 实例化类型
+   * @return 实例化的对象
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> T newInstance(Class<T> clazz) {
+    if (clazz == Integer.class) {
+      return (T) Integer.valueOf(0);
+    }
+    if (clazz == String.class) {
+      return (T) Strings.EMPTY;
+    }
+    if (clazz == Long.class) {
+      return (T) Long.valueOf(0);
+    }
+    if (clazz == Short.class) {
+      return (T) Short.valueOf((short) 0);
+    }
+    if (clazz == Byte.class) {
+      return (T) Byte.valueOf((byte) 0);
+    }
+    if (clazz == Float.class) {
+      return (T) Float.valueOf(0.0f);
+    }
+    if (clazz == Double.class) {
+      return (T) Double.valueOf(0);
+    }
+    if (clazz == Boolean.class) {
+      return (T) Boolean.FALSE;
+    }
+    if (clazz == BigDecimal.class) {
+      return (T) BigDecimal.ZERO;
+    }
+    if (clazz == java.sql.Date.class) {
+      return (T) new java.sql.Date(System.currentTimeMillis());
+    }
+    if (clazz == java.sql.Timestamp.class) {
+      return (T) new java.sql.Timestamp(System.currentTimeMillis());
+    }
+    if (clazz == java.util.Map.class) {
+      return (T) new HashMap<>(16);
+    }
+    try {
+      return clazz.getConstructor().newInstance();
+    } catch (Exception e) {
+      throw Exceptions.wrap(e, String.format("can not instance new object for class [%s]", clazz));
+    }
   }
 
   private static void recursivelyCollectAnnotations(Set<Annotation> visited,

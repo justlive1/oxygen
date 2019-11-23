@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.ioc.store;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,6 +94,19 @@ public class DefaultBeanStore implements BeanStore {
     Map<String, T> map = new HashMap<>(beanInfos.size());
     beanInfos.forEach(beanInfo -> map.put(beanInfo.getName(), clazz.cast(beanInfo.getBean())));
     return map;
+  }
+
+  @Override
+  public <T> List<T> getBeanList(Class<T> clazz) {
+    List<BeanInfo> beanInfos = beanClassMap.get(clazz);
+    if (beanInfos == null) {
+      return null;
+    }
+    List<T> beans = new ArrayList<>(beanInfos.size());
+    for (BeanInfo beanInfo : beanInfos) {
+      beans.add(clazz.cast(beanInfo.getBean()));
+    }
+    return beans;
   }
 
   @Override

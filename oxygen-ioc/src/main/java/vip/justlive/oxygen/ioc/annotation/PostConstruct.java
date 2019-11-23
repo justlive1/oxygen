@@ -11,17 +11,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.aop;
 
-import vip.justlive.oxygen.ioc.annotation.Bean;
+package vip.justlive.oxygen.ioc.annotation;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * 初始化
+ *
  * @author wubo
  */
-@Bean
-public class LogService {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface PostConstruct {
 
-  public void log() {
-    System.out.println("log service log.");
-  }
 }

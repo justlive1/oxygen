@@ -102,7 +102,7 @@ public class MoreObjects {
       Map<?, ?> beanMap = (Map<?, ?>) bean;
       beanMap.forEach((k, v) -> map.put(k.toString(), v));
     } else {
-      for (Field field : ReflectUtils.getAllDeclaredFields(bean.getClass())) {
+      for (Field field : ClassUtils.getAllDeclaredFields(bean.getClass())) {
         if (Modifier.isStatic(field.getModifiers())) {
           continue;
         }
@@ -194,6 +194,71 @@ public class MoreObjects {
     } else {
       iterable.forEach(new CaughtConsumer<>(consumer));
     }
+  }
+
+  /**
+   * 创建map
+   *
+   * @param <K> 泛型
+   * @param <V> 泛型
+   * @return map
+   */
+  public static <K, V> Map<K, V> mapOf() {
+    return new HashMap<>(2);
+  }
+
+  /**
+   * 创建map
+   *
+   * @param k 键
+   * @param v 值
+   * @param <K> 泛型
+   * @param <V> 泛型
+   * @return map
+   */
+  public static <K, V> Map<K, V> mapOf(K k, V v) {
+    Map<K, V> map = mapOf();
+    map.put(notNull(k), v);
+    return map;
+  }
+
+  /**
+   * 创建map
+   *
+   * @param k1 第一个键
+   * @param v1 第一个值
+   * @param k2 第二个键
+   * @param v2 第二个值
+   * @param <K> 泛型
+   * @param <V> 泛型
+   * @return map
+   */
+  public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2) {
+    Map<K, V> map = mapOf();
+    map.put(notNull(k1), v1);
+    map.put(notNull(k2), v2);
+    return map;
+  }
+
+  /**
+   * 创建map
+   *
+   * @param k1 第一个键
+   * @param v1 第一个值
+   * @param k2 第二个键
+   * @param v2 第二个值
+   * @param k3 第三个键
+   * @param v3 第三个值
+   * @param <K> 泛型
+   * @param <V> 泛型
+   * @return map
+   */
+  public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3) {
+    Map<K, V> map = mapOf();
+    map.put(notNull(k1), v1);
+    map.put(notNull(k2), v2);
+    map.put(notNull(k3), v3);
+    return map;
   }
 
 }

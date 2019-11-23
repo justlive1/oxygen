@@ -41,28 +41,31 @@ public class ConnectionTimeoutUpdater implements Runnable {
       log.debug("current {} connections.", size);
     }
     for (Map.Entry<Long, ChannelContext> entry : context.getChannels().entrySet()) {
-      ChannelContext channelContext = entry.getValue();
-      long last = Math
-          .max(Math.max(channelContext.getLastReceivedAt(), channelContext.getLastSentAt()),
-              channelContext.getCreateAt());
-      boolean isIdle = (channelContext.getLastReceivedAt() < channelContext.getLastSentAt() || (
-          channelContext.getLastSentAt() < 0 && channelContext.getLastReceivedAt() < 0))
-          && last + idleTimeout < now;
-      if (isIdle) {
-        if (log.isDebugEnabled()) {
-          log.debug("Timing out idle connection from {}", channelContext);
-        }
-        channelContext.close();
-        continue;
-      }
+      check(entry.getValue(), now);
+    }
+  }
 
-      if (requestTimeout > 0 && channelContext.getLastReceivedAt() > channelContext.getLastSentAt()
-          && last + requestTimeout < now) {
-        if (log.isDebugEnabled()) {
-          log.debug("Closing channel because of request timeout from {}", channelContext);
-        }
-        channelContext.close();
+  private void check(ChannelContext channelContext, long now) {
+    long last = Math
+        .max(Math.max(channelContext.getLastReceivedAt(), channelContext.getLastSentAt()),
+            channelContext.getCreateAt());
+    boolean isIdle = (channelContext.getLastReceivedAt() < channelContext.getLastSentAt() || (
+        channelContext.getLastSentAt() < 0 && channelContext.getLastReceivedAt() < 0))
+        && last + idleTimeout < now;
+    if (isIdle) {
+      if (log.isDebugEnabled()) {
+        log.debug("Timing out idle connection from {}", channelContext);
       }
+      channelContext.close();
+      return;
+    }
+
+    if (requestTimeout > 0 && channelContext.getLastReceivedAt() > channelContext.getLastSentAt()
+        && last + requestTimeout < now) {
+      if (log.isDebugEnabled()) {
+        log.debug("Closing channel because of request timeout from {}", channelContext);
+      }
+      channelContext.close();
     }
   }
 }
