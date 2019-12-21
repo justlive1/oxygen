@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
+import vip.justlive.oxygen.jdbc.page.Page;
 import vip.justlive.oxygen.jdbc.record.Record;
 
 /**
@@ -42,6 +43,7 @@ public class JdbcTest {
   private void test(String dataSourceName) {
 
     Jdbc.use(dataSourceName);
+    Jdbc.update("drop table if exists option");
     Jdbc.update(
         "create table option (id int primary key, st varchar, it varchar, lo varchar, fl decimal, bl boolean, bd decimal, dt timestamp);");
     Jdbc.update("insert into option values (1, 'st', '1', '1222', 3.5, true, 5.891, CURRENT_TIME)");
@@ -81,6 +83,38 @@ public class JdbcTest {
     Jdbc.closeTx();
 
     Assert.assertEquals(1, Record.count(new Option()));
+  }
+
+  @Test
+  public void testPage() {
+    Jdbc.update("drop table if exists option");
+    Jdbc.update(
+        "create table option (id int primary key, st varchar, it varchar, lo varchar, fl decimal, bl boolean, bd decimal, dt timestamp);");
+    Jdbc.update(
+        "insert into option values (1, 'st1', '1', '1222', 3.5, true, 5.891, CURRENT_TIME)");
+    Jdbc.update(
+        "insert into option values (2, 'st2', '2', '1222', 3.5, true, 5.891, CURRENT_TIME)");
+
+    Page<Option> page = new Page<>(1, 1);
+    List<Option> list = Jdbc.queryForList("select * from option", Option.class, page);
+
+    Assert.assertEquals(1, list.size());
+    Assert.assertEquals("st1", list.get(0).getSt());
+    Assert.assertEquals(new Long(2), page.getTotalNumber());
+
+    list = page.getItems();
+    Assert.assertNotNull(list);
+    Assert.assertEquals(1, list.size());
+    Assert.assertEquals("st1", list.get(0).getSt());
+
+    page = new Page<>(2, 1);
+    page.setSearchCount(false);
+    Record.page(new Option(), page);
+    list = page.getItems();
+    Assert.assertNotNull(list);
+    Assert.assertEquals(1, list.size());
+    Assert.assertEquals("st2", list.get(0).getSt());
+    Assert.assertNull(page.getTotalNumber());
   }
 
 }

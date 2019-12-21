@@ -21,7 +21,6 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 /**
  * aio服务端
@@ -29,7 +28,6 @@ import lombok.Setter;
  * @author wubo
  */
 @Getter
-@Setter
 @RequiredArgsConstructor
 public class Server {
 
@@ -73,9 +71,6 @@ public class Server {
       return;
     }
     groupContext.setStopped(true);
-    synchronized (this) {
-      notifyAll();
-    }
     try {
       serverChannel.close();
     } catch (IOException e) {

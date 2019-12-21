@@ -69,6 +69,10 @@ public class Request implements Serializable {
    */
   private final Map<String, Cookie> cookies = new HashMap<>(4);
   /**
+   * body params
+   */
+  private final Map<String, Object> bodyParams = new HashMap<>(4);
+  /**
    * attributes
    */
   private final transient Map<String, Object> attributes = new HashMap<>(2);

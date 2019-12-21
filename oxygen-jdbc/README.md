@@ -18,6 +18,7 @@ oxygen-jdbc jdbc实现
   │  │- config  //配置数据源目录
   │  │- handler  //处理器目录，包括结果集处理 行处理 列处理
   │  │- interceptor  //拦截器目录，拦截sql执行前后及异常
+  │  │- page  //分页方言
   │  │- record  //基础crud
   │  │- Jdbc.java  //Jdbc核心操作类，提供crud操作
   │  │- JdbcException.java  //jdbc异常封装
@@ -100,6 +101,7 @@ Option opt = new Option()
 Record.insert(opt)
 Record.findById(Option.class, 1)
 Record.find(opt)
+Record.page(opt)
 Record.update(opt)
 Record.deleteById(Option.class, 1)
 Record.delete(opt);
@@ -170,9 +172,9 @@ xxx.xxx.MyColumnHandler
 public class LogSqlJdbcInterceptor implements JdbcInterceptor {
 
   @Override
-  public void before(String sql, List<Object> params) {
+  public void before(SqlCtx ctx) {
     if (log.isDebugEnabled()) {
-      log.debug("execute sql: {} -> params: {}", sql, params);
+      log.debug("execute sql: {} -> params: {}", ctx.getSql(), ctx.getParams());
     }
   }
 }

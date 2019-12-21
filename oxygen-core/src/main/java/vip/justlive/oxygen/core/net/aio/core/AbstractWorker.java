@@ -27,13 +27,12 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public abstract class AbstractWorker<T> implements Runnable {
 
+  private static final int MAX_LOOP = 10;
+
   final ChannelContext channelContext;
   LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>();
   volatile boolean stopped;
-
   private Lock lock = new ReentrantLock(true);
-  private int maxLoop = 10;
-  private int executeCount = 0;
 
   AbstractWorker(ChannelContext channelContext) {
     this.channelContext = channelContext;
@@ -52,9 +51,16 @@ public abstract class AbstractWorker<T> implements Runnable {
   /**
    * 执行任务
    */
-  public synchronized void execute() {
-    if (!stopped && executeCount++ % maxLoop == 0) {
-      channelContext.getGroupContext().getWorkerExecutor().execute(this);
+  public void execute() {
+    if (stopped) {
+      return;
+    }
+    if (lock.tryLock()) {
+      try {
+        channelContext.getGroupContext().getWorkerExecutor().execute(this);
+      } finally {
+        lock.unlock();
+      }
     }
   }
 
@@ -84,12 +90,14 @@ public abstract class AbstractWorker<T> implements Runnable {
   public void run() {
     lock.lock();
     try {
-      for (int i = 0; i < maxLoop; i++) {
+      for (int i = 0; i < MAX_LOOP; i++) {
         loopRun();
       }
     } finally {
-      executeCount = Math.max(executeCount - maxLoop, 0);
       lock.unlock();
+    }
+    if (!queue.isEmpty()) {
+      execute();
     }
   }
 

@@ -13,51 +13,47 @@
  */
 package vip.justlive.oxygen.jdbc.interceptor;
 
-import java.util.List;
+import vip.justlive.oxygen.core.Order;
 
 /**
  * jdbc拦截
  *
  * @author wubo
  */
-public interface JdbcInterceptor {
+public interface JdbcInterceptor extends Order {
 
   /**
    * 前置拦截
    *
-   * @param sql sql
-   * @param params 参数
+   * @param ctx sql上下文
    */
-  default void before(String sql, List<Object> params) {
+  default void before(SqlCtx ctx) {
   }
 
   /**
    * 后置拦截
    *
-   * @param sql sql
-   * @param params 参数
+   * @param ctx sql上下文
    * @param result 转换结果
    */
-  default void after(String sql, List<Object> params, Object result) {
+  default void after(SqlCtx ctx, Object result) {
   }
 
   /**
    * 异常拦截
    *
-   * @param sql sql
-   * @param params 参数
+   * @param ctx sql上下文
    * @param e 异常
    */
-  default void onException(String sql, List<Object> params, Exception e) {
+  default void onException(SqlCtx ctx, Exception e) {
   }
 
   /**
    * finally拦截
    *
-   * @param sql sql
-   * @param params 参数
+   * @param ctx sql上下文
    * @param result 转换结果
    */
-  default void onFinally(String sql, List<Object> params, Object result) {
+  default void onFinally(SqlCtx ctx, Object result) {
   }
 }

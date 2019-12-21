@@ -24,11 +24,6 @@ import lombok.Data;
 public class CoreConf {
 
   /**
-   * 临时文件base目录
-   */
-  @Value("${main.temp.dir:.oxygen}")
-  private String baseTempDir;
-  /**
    * 类扫描路径属性
    */
   @Value("${main.class.scan:}")

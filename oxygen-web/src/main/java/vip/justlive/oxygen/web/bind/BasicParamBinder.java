@@ -13,12 +13,13 @@
  */
 package vip.justlive.oxygen.web.bind;
 
+import com.alibaba.fastjson.JSONObject;
 import java.lang.reflect.Parameter;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
-import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 import vip.justlive.oxygen.web.annotation.Param;
+import vip.justlive.oxygen.web.router.RoutingContext;
 
 /**
  * Param注解参数绑定
@@ -42,16 +43,25 @@ public class BasicParamBinder implements ParamBinder {
     if (param.defaultValue().length() > 0) {
       dataBinder.setDefaultValue(param.defaultValue());
     }
-    dataBinder.setFunc(ctx -> {
-      DefaultConverterService converterService = DefaultConverterService.sharedConverterService();
-      if (converterService.canConverter(String.class, dataBinder.getType())) {
-        return converterService.convert(MoreObjects
-            .firstOrNull(ctx.request().getParam(dataBinder.getName()),
-                dataBinder.getDefaultValue()), dataBinder.getType());
-      }
-      return ctx.bindParam(dataBinder.getType());
-    });
+    dataBinder.setFunc(ctx -> this.func(ctx, dataBinder));
     return dataBinder;
   }
 
+  private Object func(RoutingContext ctx, DataBinder dataBinder) {
+    DefaultConverterService converterService = DefaultConverterService.sharedConverterService();
+    Object value = ctx.request().getParam(dataBinder.getName());
+    if (value == null) {
+      value = ctx.request().getBodyParams().get(dataBinder.getName());
+    }
+    if (value == null) {
+      value = dataBinder.getDefaultValue();
+    }
+    if (value != null && converterService.canConverter(value.getClass(), dataBinder.getType())) {
+      return converterService.convert(value, dataBinder.getType());
+    }
+    if (value instanceof JSONObject) {
+      return ((JSONObject) value).toJavaObject(dataBinder.getType());
+    }
+    return ctx.bindParam(dataBinder.getType());
+  }
 }

@@ -26,9 +26,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.util.Bytes;
+import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 import vip.justlive.oxygen.core.util.Strings;
@@ -147,7 +146,8 @@ class MultipartStream {
   }
 
   private void readFile(byte[] line, MultipartItem item) throws IOException {
-    Path path = createPath();
+    Path path = new File(FileUtils.createTempDir(MultipartItem.class.getSimpleName()),
+        String.valueOf(SnowflakeIdWorker.defaultNextId())).toPath();
     item.setPath(path);
     while (true) {
       Files.write(path, line, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
@@ -157,15 +157,6 @@ class MultipartStream {
       }
       Files.write(path, LINE_SEPARATOR, StandardOpenOption.APPEND);
     }
-  }
-
-  private Path createPath() {
-    File dir = new File(ConfigFactory.load(CoreConf.class).getBaseTempDir(),
-        MultipartItem.class.getSimpleName());
-    if (!dir.exists() && !dir.mkdirs()) {
-      throw new IllegalArgumentException("cannot make directory for " + dir.getAbsolutePath());
-    }
-    return new File(dir, String.valueOf(SnowflakeIdWorker.defaultNextId())).toPath();
   }
 
   static class WrapByteArrayOutputStream extends ByteArrayOutputStream {

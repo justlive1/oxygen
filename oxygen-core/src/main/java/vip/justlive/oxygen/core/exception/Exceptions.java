@@ -33,7 +33,7 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException wrap(Throwable e) {
-    return wrap(e, (String) null);
+    return wrap(e, e.getMessage());
   }
 
 

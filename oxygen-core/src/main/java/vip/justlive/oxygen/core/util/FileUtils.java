@@ -21,6 +21,8 @@ import java.nio.file.Path;
 import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.Bootstrap;
+import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -345,6 +347,64 @@ public class FileUtils {
       return count;
     }
     return 0;
+  }
+
+  /**
+   * 获取配置或系统的临时文件夹目录
+   *
+   * @return temp dir
+   */
+  public static File tempDir() {
+    String tempDir = ConfigFactory.getProperty("main.temp.dir");
+    if (tempDir == null || tempDir.trim().length() == 0) {
+      try {
+        tempDir = System.getProperty("java.io.tmpdir");
+      } catch (Exception e) {
+        tempDir = ".oxygen";
+      }
+    }
+    return new File(tempDir);
+  }
+
+  /**
+   * 获取项目的临时文件根目录,比tempDir多了oxygen/version目录
+   *
+   * @return temp base dir
+   */
+  public static File tempBaseDir() {
+    return new File(tempDir(), Bootstrap.version());
+  }
+
+  /**
+   * 清理项目临时目录
+   *
+   * @return 删除的文件和目录数
+   */
+  public static int cleanTempBaseDir() {
+    return deleteDir(tempBaseDir());
+  }
+
+  /**
+   * 创建临时目录
+   *
+   * @param first 第一层目录
+   * @param children 字目录
+   * @return 目录
+   */
+  public static File createTempDir(String first, String... children) {
+    File dir = new File(tempBaseDir(), first);
+    if (children.length > 0) {
+      for (String child : children) {
+        dir = new File(dir, child);
+      }
+    }
+    if (dir.isDirectory()) {
+      return dir;
+    } else if (dir.exists()) {
+      throw Exceptions.fail("the existed file is not directory: " + first);
+    }
+    mkdirs(dir);
+    return dir;
   }
 
   private static int deletePath(Path path) {

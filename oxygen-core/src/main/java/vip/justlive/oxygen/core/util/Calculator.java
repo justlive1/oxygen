@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.core.template.SimpleTemplateEngine;
 
 /**
@@ -25,6 +26,7 @@ import vip.justlive.oxygen.core.template.SimpleTemplateEngine;
  *
  * @author wubo
  */
+@UtilityClass
 public class Calculator {
 
   private static final String TEMPLATE = "#{var $result = %s; $out.write('' + $result); }";

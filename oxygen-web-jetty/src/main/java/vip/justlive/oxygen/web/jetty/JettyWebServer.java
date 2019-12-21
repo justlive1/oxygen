@@ -29,9 +29,9 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.PathMatcher;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.core.util.Urls;
@@ -107,14 +107,13 @@ public class JettyWebServer implements WebServer {
     webapp.setMaxFormKeys(jettyConf.getMaxFormKeys());
     webapp.setParentLoaderPriority(true);
     webapp.setConfigurationDiscovered(jettyConf.isConfigurationDiscovered());
-    CoreConf conf = ConfigFactory.load(CoreConf.class);
-    webapp.setTempDirectory(new File(conf.getBaseTempDir(), "jetty-temp"));
+    webapp.setTempDirectory(new File(FileUtils.tempBaseDir(), "jetty-temp"));
     URL url = getClass().getResource(Strings.SLASH);
     if (url != null) {
       webapp.setResourceBase(url.toURI().toASCIIString());
     } else {
       // run in jar
-      File dir = new File(conf.getBaseTempDir(), "jetty-jsp");
+      File dir = new File(FileUtils.tempBaseDir(), "jetty-jsp");
       webapp.setResourceBase(dir.getAbsolutePath());
       if (dir.exists() || dir.mkdirs()) {
         copyJspFiles(dir, webConf);

@@ -53,6 +53,7 @@ public class RoutingContextImpl implements RoutingContext {
   public <T> T bindParam(Class<T> clazz) {
     Map<String, Object> map = new HashMap<>(16);
     request.getParams().forEach((k, v) -> map.put(k, v[0]));
+    map.putAll(request.getBodyParams());
     return bind(map, clazz);
   }
 

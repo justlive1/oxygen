@@ -15,6 +15,7 @@
 package vip.justlive.oxygen.core.net.aio;
 
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,7 @@ import vip.justlive.oxygen.core.util.ThreadUtils;
 @Slf4j
 public class AioTest {
 
-  @Test
+  //  @Test
   public void c1000k() throws Exception {
 
     InetSocketAddress address = new InetSocketAddress("localhost", 10086);
@@ -80,5 +81,34 @@ public class AioTest {
     server.stop();
   }
 
+  @Test
+  public void test() throws IOException {
+    InetSocketAddress address = new InetSocketAddress(10087);
+    GroupContext group = new GroupContext(new LengthFrameHandler() {
+      @Override
+      public void handle(Object data, ChannelContext channelContext) {
+        LengthFrame frame = (LengthFrame) data;
+        System.out.println(new String(frame.getBody()));
+      }
+    });
+    Server server = new Server(group);
+    server.start(address);
+
+    group = new GroupContext(new LengthFrameHandler());
+    Client client = new Client(group);
+    client.connect(new InetSocketAddress("localhost", 10087));
+
+    Random r = new Random();
+    for (int i = 0; i < 100; i++) {
+      client.write(new LengthFrame().setBody(String.valueOf(i).getBytes()));
+
+      int rx = r.nextInt(100);
+      if (rx > 50) {
+        ThreadUtils.sleep(rx);
+      }
+    }
+
+    ThreadUtils.sleep(2000);
+  }
 
 }

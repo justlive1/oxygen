@@ -11,34 +11,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.web.http;
 
-import com.alibaba.fastjson.JSON;
-import java.nio.charset.Charset;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+package vip.justlive.oxygen.jdbc.page;
+
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 
 /**
- * json请求解析
+ * oracle 方言
  *
  * @author wubo
  */
-@Bean
-public class JsonBodyParser implements Parser {
+public class OraclePageDialect implements PageDialect {
 
   @Override
-  public int order() {
-    return 100;
+  public String page(Page<?> page, String sql) {
+    return String.format(
+        "select * from (select row_.*, rownum rownum_ from (%s) row_ where rownum <= %s) where rownum_ > %s",
+        sql, page.getPageSize() * page.getPageIndex(), page.getOffset());
   }
 
   @Override
-  public void parse(Request request) {
-    if (request.body == null || request.body.length == 0 || !HttpHeaders.APPLICATION_JSON
-        .equalsIgnoreCase(request.getContentType())) {
-      return;
-    }
-
-    String body = new String(request.body, Charset.forName(request.getEncoding()));
-    request.getBodyParams().putAll(JSON.parseObject(body));
+  public boolean supported(DatabaseMetaData meta) throws SQLException {
+    return "Oracle".equalsIgnoreCase(meta.getDatabaseProductName());
   }
 }

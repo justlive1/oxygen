@@ -27,12 +27,11 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.ExpiringMap;
+import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
 import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
@@ -57,8 +56,7 @@ public class StaticRouteHandler implements RouteHandler {
     } catch (IOException e) {
       log.warn("mime types initial failed ", e);
     }
-    TEMP_DIR = new File(ConfigFactory.load(CoreConf.class).getBaseTempDir(), "static");
-    FileUtils.mkdirs(TEMP_DIR);
+    TEMP_DIR = FileUtils.createTempDir("static");
   }
 
   private final StaticRoute route;
@@ -68,7 +66,8 @@ public class StaticRouteHandler implements RouteHandler {
     this.route = route;
     if (this.route.cachingEnabled()) {
       expiringMap = ExpiringMap.<String, StaticSource>builder().name("Static-Source")
-          .expiration(10, TimeUnit.MINUTES).asyncExpiredListeners(this::cleanExpiredFile).build();
+          .expiringPolicy(ExpiringPolicy.ACCESSED).expiration(10, TimeUnit.MINUTES)
+          .asyncExpiredListeners(this::cleanExpiredFile).build();
     }
   }
 
@@ -139,7 +138,6 @@ public class StaticRouteHandler implements RouteHandler {
       try (InputStream is = sourceResource.getInputStream()) {
         File savedFile = new File(TEMP_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
         Files.copy(is, savedFile.toPath());
-        savedFile.deleteOnExit();
         return new StaticSource(savedFile, path);
       }
     } catch (IOException e) {
@@ -196,11 +194,7 @@ public class StaticRouteHandler implements RouteHandler {
 
     void remove() {
       if (path != null) {
-        try {
-          Files.deleteIfExists(path);
-        } catch (IOException e) {
-          log.error("delete file error", e);
-        }
+        FileUtils.deleteFile(path.toFile());
       }
     }
   }

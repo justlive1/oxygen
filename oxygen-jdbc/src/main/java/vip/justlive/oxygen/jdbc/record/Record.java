@@ -22,6 +22,7 @@ import vip.justlive.oxygen.jdbc.Batch;
 import vip.justlive.oxygen.jdbc.Jdbc;
 import vip.justlive.oxygen.jdbc.JdbcException;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
+import vip.justlive.oxygen.jdbc.page.Page;
 
 /**
  * record utils
@@ -70,12 +71,7 @@ public final class Record {
    * @return list
    */
   public static <T> List<T> find(T obj) {
-    @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>) obj.getClass();
-    Model model = parseClass(clazz);
-    List<Object> params = new LinkedList<>();
-    StringBuilder sb = new StringBuilder(model.getBaseQuery());
-    margeWhere(model, obj, sb, params);
-    return Jdbc.queryForList(sb.toString(), clazz, params);
+    return page(obj, null);
   }
 
   /**
@@ -87,6 +83,26 @@ public final class Record {
    */
   public static <T> List<T> findAll(Class<T> clazz) {
     return Jdbc.queryForList(parseClass(clazz).getBaseQuery(), clazz);
+  }
+
+  /**
+   * 获取分页
+   *
+   * @param obj record
+   * @param page 分页参数
+   * @param <T> 泛型
+   * @return list
+   */
+  public static <T> List<T> page(T obj, Page<T> page) {
+    @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>) obj.getClass();
+    Model model = parseClass(clazz);
+    List<Object> params = new LinkedList<>();
+    StringBuilder sb = new StringBuilder(model.getBaseQuery());
+    margeWhere(model, obj, sb, params);
+    if (page != null) {
+      params.add(page);
+    }
+    return Jdbc.queryForList(sb.toString(), clazz, params);
   }
 
   /**

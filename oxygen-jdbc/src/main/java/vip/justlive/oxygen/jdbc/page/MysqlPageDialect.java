@@ -11,34 +11,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.web.http;
 
-import com.alibaba.fastjson.JSON;
-import java.nio.charset.Charset;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+package vip.justlive.oxygen.jdbc.page;
+
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 
 /**
- * json请求解析
- *
  * @author wubo
  */
-@Bean
-public class JsonBodyParser implements Parser {
+public class MysqlPageDialect implements PageDialect {
 
   @Override
-  public int order() {
-    return 100;
+  public String page(Page<?> page, String sql) {
+    return String.format("select * from (%s) tmp_pg limit %s, %s", sql, page.getOffset(),
+        page.getPageSize());
   }
 
   @Override
-  public void parse(Request request) {
-    if (request.body == null || request.body.length == 0 || !HttpHeaders.APPLICATION_JSON
-        .equalsIgnoreCase(request.getContentType())) {
-      return;
+  public boolean supported(DatabaseMetaData meta) throws SQLException {
+    switch (meta.getDatabaseProductName()) {
+      case "MySQL":
+      case "CUBRID":
+        return true;
+      default:
     }
-
-    String body = new String(request.body, Charset.forName(request.getEncoding()));
-    request.getBodyParams().putAll(JSON.parseObject(body));
+    String driver = meta.getDriverName();
+    if (driver == null) {
+      return false;
+    }
+    return driver.startsWith("MariaDB");
   }
 }

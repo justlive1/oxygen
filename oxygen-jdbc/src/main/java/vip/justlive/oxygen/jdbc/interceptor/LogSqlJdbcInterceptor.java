@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.jdbc.interceptor;
 
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -25,9 +24,14 @@ import lombok.extern.slf4j.Slf4j;
 public class LogSqlJdbcInterceptor implements JdbcInterceptor {
 
   @Override
-  public void before(String sql, List<Object> params) {
+  public int order() {
+    return Integer.MAX_VALUE;
+  }
+
+  @Override
+  public void before(SqlCtx ctx) {
     if (log.isDebugEnabled()) {
-      log.debug("execute sql: {} -> params: {}", sql, params);
+      log.debug("execute sql: {} -> params: {}", ctx.getSql(), ctx.getParams());
     }
   }
 }

@@ -18,7 +18,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Semaphore;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
@@ -26,10 +26,11 @@ import vip.justlive.oxygen.core.util.MoreObjects;
  *
  * @author wubo
  */
+@Slf4j
 public class WriteWorker extends AbstractWorker<Object> {
 
   private final AioHandler aioHandler;
-  private final Semaphore semaphore = new Semaphore(1);
+  private CompletableFuture<Void> writeFuture = CompletableFuture.completedFuture(null);
 
   WriteWorker(ChannelContext channelContext) {
     super(channelContext);
@@ -38,7 +39,7 @@ public class WriteWorker extends AbstractWorker<Object> {
 
   @Override
   public void stop() {
-    semaphore.release();
+    writeFuture.cancel(true);
     super.stop();
   }
 
@@ -57,36 +58,31 @@ public class WriteWorker extends AbstractWorker<Object> {
       buffers.add(buffer);
     }
 
-    try {
-      semaphore.acquire();
-    } catch (InterruptedException e) {
-      AioListener listener = channelContext.getGroupContext().getAioListener();
-      if (listener != null) {
-        MoreObjects.caughtForeach(data, item -> listener.onWriteHandled(channelContext, item, e));
-      }
-      Thread.currentThread().interrupt();
-      return;
-    }
-
     if (channelContext.isClosed()) {
-      semaphore.release();
       return;
     }
 
+    write(Utils.composite(buffers), data);
+  }
+
+  private synchronized void write(ByteBuffer buffer, List<Object> data) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     future.whenComplete((r, e) -> complete(e, data));
+    writeFuture.whenComplete((r, e) -> write(future, buffer, data));
+    writeFuture = future;
+  }
+
+  private void write(CompletableFuture<Void> future, ByteBuffer buffer, List<Object> data) {
     try {
-      WriteHandler.WriteContext ctx = new WriteHandler.WriteContext(future,
-          Utils.composite(buffers));
+      WriteHandler.WriteContext ctx = new WriteHandler.WriteContext(future, buffer);
       channelContext.getChannel().write(ctx.buffer, ctx, channelContext.getWriteHandler());
     } catch (Exception e) {
+      log.error("write error", e);
       complete(e, data);
-      throw e;
     }
   }
 
   private void complete(Throwable exc, List<Object> data) {
-    semaphore.release();
     AioListener listener = channelContext.getGroupContext().getAioListener();
     if (listener != null) {
       MoreObjects.caughtForeach(data, item -> listener.onWriteHandled(channelContext, item, exc));

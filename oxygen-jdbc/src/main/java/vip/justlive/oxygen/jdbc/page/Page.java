@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 justlive1
+ * Copyright (C) 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,40 +11,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.jdbc;
 
-import java.math.BigDecimal;
-import java.util.Date;
+package vip.justlive.oxygen.jdbc.page;
+
+import java.io.Serializable;
+import java.util.List;
 import lombok.Data;
-import vip.justlive.oxygen.jdbc.record.Column;
-import vip.justlive.oxygen.jdbc.record.Table;
 
 /**
+ * page row
+ *
  * @author wubo
  */
 @Data
-@Table
-public class Option {
+public class Page<T> implements Serializable {
 
-  @Column(pk = true)
-  private Long id;
+  private static final long serialVersionUID = -3277571898871978041L;
 
-  @Column
-  private String st;
+  private final int pageIndex;
+  private final int pageSize;
 
-  private Integer it;
+  private boolean searchCount = true;
+  private Long totalNumber;
+  private List<T> items;
 
-  private Long lo;
+  private boolean hasPaged;
 
-  private float fl;
-
-  private boolean bl;
-
-  private BigDecimal bd;
-
-  private Date dt;
-
-  @Column("lo")
-  private Long ll;
-
+  int getOffset() {
+    return (pageIndex - 1) * pageSize;
+  }
 }

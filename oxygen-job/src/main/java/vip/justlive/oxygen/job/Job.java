@@ -63,6 +63,10 @@ public class Job implements Runnable {
         nextDate = cronExpression.next(nextInvalid);
       }
       nextPlannedExecution.set(nextDate.getTime());
+      if (log.isDebugEnabled()) {
+        log.debug("job [{}] will execute after [{}] millis", this,
+            nextPlannedExecution.get() - now.getTime());
+      }
       JobPlugin.executorService
           .schedule(this, nextDate.getTime() - now.getTime(), TimeUnit.MILLISECONDS);
     }

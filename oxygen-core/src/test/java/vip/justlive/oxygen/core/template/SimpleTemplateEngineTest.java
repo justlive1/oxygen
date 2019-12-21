@@ -34,14 +34,14 @@ public class SimpleTemplateEngineTest {
     Map<String, Object> attrs = new HashMap<>();
     attrs.put("a", 1);
     CoreConf conf = new CoreConf();
-    conf.setBaseTempDir("/aaa");
+    conf.setConfigOverridePath("/aaa");
     attrs.put("c", conf);
     attrs.put("b", Arrays.asList(1, 2, 3));
 
-    String template = "<i>${a}</i><i>${1+3}</i><i>${c.baseTempDir}</i>";
+    String template = "<i>${a + 1}</i><i>${1+3}</i><i>${c.configOverridePath}</i>";
 
     String result = engine.render(template, attrs);
-    Assert.assertEquals("<i>1</i><i>4</i><i>/aaa</i>", result);
+    Assert.assertEquals("<i>2</i><i>4</i><i>/aaa</i>", result);
 
     template = "<a>${x,$</a>";
     result = engine.render(template, attrs);
@@ -59,7 +59,6 @@ public class SimpleTemplateEngineTest {
     Map<String, Object> attrs = new HashMap<>();
     attrs.put("a", 1);
     CoreConf conf = new CoreConf();
-    conf.setBaseTempDir("/aaa");
     attrs.put("c", conf);
     attrs.put("b", Arrays.asList(1, 2, 3));
 
@@ -73,9 +72,21 @@ public class SimpleTemplateEngineTest {
   }
 
   @Test
-  public void test2() {
+  public void t2() {
     String template = Templates.template("classpath:template/tpl.txt");
     String value = engine.render(template, MoreObjects.mapOf("a", 1, "b", new int[]{5, 9, 7}));
     System.out.println(value);
+  }
+
+  @Test
+  public void t3() {
+    Map<String, Object> attrs = new HashMap<>();
+    attrs.put("a", 1);
+    attrs.put("b", "text");
+
+    String template = "a + 2 = ${a + 2}; b = ${b.substring(1)};";
+
+    String value = engine.render(template, attrs);
+    Assert.assertEquals("a + 2 = 3; b = ext;", value);
   }
 }

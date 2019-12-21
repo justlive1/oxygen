@@ -43,14 +43,12 @@ public class ReadWorker extends AbstractWorker<ByteBuffer> {
       buffers.add(0, lastByteBuffer);
       lastByteBuffer = null;
     }
-
     ByteBuffer buffer = Utils.composite(buffers);
     while (buffer.hasRemaining()) {
       try {
         int position = buffer.position();
         int limit = buffer.limit();
         int readableSize = limit - position;
-
         Object data = aioHandler.decode(buffer, readableSize, channelContext);
         if (data != null) {
           //解码成功
@@ -59,14 +57,7 @@ public class ReadWorker extends AbstractWorker<ByteBuffer> {
                 buffer.position() - position);
           }
           channelContext.setLastReceivedAt(System.currentTimeMillis());
-          Throwable e = null;
-          try {
-            aioHandler.handle(data, channelContext);
-          } catch (Throwable exc) {
-            e = exc;
-          } finally {
-            this.afterHandled(data, e);
-          }
+          doHandle(data);
         } else {
           //数据不够
           buffer.position(position);
@@ -82,6 +73,17 @@ public class ReadWorker extends AbstractWorker<ByteBuffer> {
         channelContext.close();
         return;
       }
+    }
+  }
+
+  private void doHandle(Object data) {
+    Throwable e = null;
+    try {
+      aioHandler.handle(data, channelContext);
+    } catch (Throwable exc) {
+      e = exc;
+    } finally {
+      this.afterHandled(data, e);
     }
   }
 

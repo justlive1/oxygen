@@ -14,7 +14,6 @@
 
 package vip.justlive.oxygen.core.net.aio.core;
 
-import java.io.IOException;
 import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -33,26 +32,28 @@ public class AcceptHandler implements CompletionHandler<AsynchronousSocketChanne
 
   @Override
   public void completed(AsynchronousSocketChannel channel, Server server) {
-    if (log.isDebugEnabled()) {
-      log.debug("Aio accept {}", channel);
-    }
-    if (!channel.isOpen()) {
-      log.warn("channel has closed {}", channel);
-      return;
-    }
     try {
+      if (log.isDebugEnabled()) {
+        log.debug("Aio accept {}", channel);
+      }
+      if (!channel.isOpen()) {
+        log.warn("channel has closed {}", channel);
+        return;
+      }
       channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
       channel.setOption(StandardSocketOptions.SO_KEEPALIVE, true);
-      ByteBuffer buffer = ByteBuffer.allocate(server.getGroupContext().getBufferCapacity());
-      buffer.order(ByteOrder.BIG_ENDIAN);
+
       ChannelContext channelContext = new ChannelContext(server.getGroupContext(), channel);
       channelContext.start();
+
+      ByteBuffer buffer = ByteBuffer.allocate(server.getGroupContext().getBufferCapacity());
+      buffer.order(ByteOrder.BIG_ENDIAN);
       channel.read(buffer, buffer, channelContext.getReadHandler());
 
       if (server.getGroupContext().getAioListener() != null) {
         server.getGroupContext().getAioListener().onConnected(channelContext);
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("Aio accept completed error", e);
     } finally {
       server.getServerChannel().accept(server, this);

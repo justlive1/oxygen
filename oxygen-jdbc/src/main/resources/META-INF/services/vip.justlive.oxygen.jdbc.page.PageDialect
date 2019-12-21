@@ -1,0 +1,5 @@
+
+vip.justlive.oxygen.jdbc.page.MysqlPageDialect
+vip.justlive.oxygen.jdbc.page.H2PageDialect
+vip.justlive.oxygen.jdbc.page.OraclePageDialect
+vip.justlive.oxygen.jdbc.page.DerbyPageDialect

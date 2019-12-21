@@ -17,9 +17,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.IOUtils;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.core.util.Strings;
@@ -36,7 +38,8 @@ public final class Bootstrap {
 
   private static final List<Plugin> PLUGINS = new ArrayList<>(5);
   private static final AtomicBoolean STATE = new AtomicBoolean(false);
-  private static final Thread SHUTDOWN_HOOK = new Thread(Bootstrap::doClose);
+  private static final Thread SHUTDOWN_HOOK = Executors.defaultThreadFactory()
+      .newThread(Bootstrap::doClose);
   private static final String VERSION;
 
   Bootstrap() {
@@ -185,6 +188,7 @@ public final class Bootstrap {
   private static void doClose() {
     log.info("closing bootstrap ...");
     PLUGINS.forEach(Plugin::stop);
+    FileUtils.cleanTempBaseDir();
     STATE.set(false);
     synchronized (STATE) {
       STATE.notifyAll();

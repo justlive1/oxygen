@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 justlive1
+ * Copyright (C) 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,40 +11,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.jdbc;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import lombok.Data;
-import vip.justlive.oxygen.jdbc.record.Column;
-import vip.justlive.oxygen.jdbc.record.Table;
+package vip.justlive.oxygen.jdbc.page;
+
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 
 /**
+ * 分页方言
+ *
  * @author wubo
  */
-@Data
-@Table
-public class Option {
+public interface PageDialect {
 
-  @Column(pk = true)
-  private Long id;
+  /**
+   * 构造分页sql
+   *
+   * @param page 分页参数
+   * @param sql 原始sql
+   * @return 分页sql
+   */
+  String page(Page<?> page, String sql);
 
-  @Column
-  private String st;
-
-  private Integer it;
-
-  private Long lo;
-
-  private float fl;
-
-  private boolean bl;
-
-  private BigDecimal bd;
-
-  private Date dt;
-
-  @Column("lo")
-  private Long ll;
-
+  /**
+   * 当前方言是否支持
+   *
+   * @param meta 数据库信息
+   * @return is support
+   * @throws SQLException sql异常
+   */
+  boolean supported(DatabaseMetaData meta) throws SQLException;
 }

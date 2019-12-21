@@ -45,7 +45,7 @@ public class Batch {
    * @return batch
    */
   public static Batch use() {
-    return use(Jdbc.PRIMARY_KEY);
+    return use(Jdbc.currentUse());
   }
 
   /**

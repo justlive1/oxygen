@@ -13,11 +13,14 @@
  */
 package vip.justlive.oxygen.jdbc;
 
+import java.util.List;
 import javax.sql.DataSource;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.ioc.IocPlugin;
 import vip.justlive.oxygen.jdbc.config.DataSourceBuilder;
 import vip.justlive.oxygen.jdbc.config.DataSourceConf;
+import vip.justlive.oxygen.jdbc.interceptor.JdbcInterceptor;
 import vip.justlive.oxygen.jdbc.interceptor.LogSqlJdbcInterceptor;
 
 /**
@@ -36,7 +39,13 @@ public class JdbcPlugin implements Plugin {
     if (primary.isLogSql()) {
       Jdbc.addJdbcInterceptor(new LogSqlJdbcInterceptor());
     }
+
     lookupDataSource();
+
+    List<JdbcInterceptor> list = IocPlugin.beanStore().getBeanList(JdbcInterceptor.class);
+    if (list != null) {
+      list.forEach(Jdbc::addJdbcInterceptor);
+    }
   }
 
   @Override

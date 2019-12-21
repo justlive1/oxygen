@@ -527,15 +527,17 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   }
 
   private void runScheduleCleanPolicy() {
-    if (log.isDebugEnabled()) {
-      log.debug("scheduled clean [{}] and now realSize is [{}]", this.name, this.realSize());
+    int size = this.realSize();
+    if (log.isDebugEnabled() && size > 0) {
+      log.debug("scheduled clean [{}] and now realSize is [{}]", this.name, size);
     }
     this.expiredClean();
   }
 
   private void runAccumulateCleanPolicy() {
-    if (log.isDebugEnabled()) {
-      log.debug("accumulate clean [{}] and now realSize is [{}]", this.name, this.realSize());
+    int size = this.realSize();
+    if (log.isDebugEnabled() && size > 0) {
+      log.debug("accumulate clean [{}] and now realSize is [{}]", this.name, size);
     }
     SCHEDULED.execute(this::expiredClean);
   }

@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,6 +27,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
 import vip.justlive.oxygen.jdbc.interceptor.JdbcInterceptor;
+import vip.justlive.oxygen.jdbc.interceptor.PageJdbcInterceptor;
+import vip.justlive.oxygen.jdbc.interceptor.SqlCtx;
+import vip.justlive.oxygen.jdbc.page.Page;
+import vip.justlive.oxygen.jdbc.page.PageDialectHelper;
 
 /**
  * jdbc操作类
@@ -66,6 +71,11 @@ public class Jdbc {
     if (local != null) {
       throw new IllegalArgumentException(String.format("数据源名称[%s]已存在", name));
     }
+    if (!JDBC_INTERCEPTORS.contains(PageJdbcInterceptor.PAGE_JDBC_INTERCEPTOR)) {
+      JDBC_INTERCEPTORS.add(PageJdbcInterceptor.PAGE_JDBC_INTERCEPTOR);
+      Collections.sort(JDBC_INTERCEPTORS);
+    }
+    PageDialectHelper.guess(name, dataSource);
   }
 
   /**
@@ -75,6 +85,7 @@ public class Jdbc {
    */
   public static void addJdbcInterceptor(JdbcInterceptor interceptor) {
     JDBC_INTERCEPTORS.add(interceptor);
+    Collections.sort(JDBC_INTERCEPTORS);
   }
 
   /**
@@ -91,6 +102,15 @@ public class Jdbc {
    */
   public static void use(String dataSourceName) {
     CURRENT_DATASOURCE.set(dataSourceName);
+  }
+
+  /**
+   * 当前线程使用的数据源
+   *
+   * @return dataSourceName
+   */
+  public static String currentUse() {
+    return CURRENT_DATASOURCE.get();
   }
 
   /**
@@ -114,7 +134,13 @@ public class Jdbc {
   public static void shutdown() {
     clearAll();
     JDBC_INTERCEPTORS.clear();
+    DATA_SOURCE_MAP.values().forEach(ds -> {
+      if (ds instanceof AutoCloseable) {
+        close((AutoCloseable) ds);
+      }
+    });
     DATA_SOURCE_MAP.clear();
+    PageDialectHelper.clear();
   }
 
   /**
@@ -404,15 +430,16 @@ public class Jdbc {
     PreparedStatement stmt = null;
     ResultSet rs = null;
     T result = null;
+    SqlCtx ctx = new SqlCtx().setSql(sql).setParams(params);
     try {
-      before(sql, params);
-      stmt = connection.prepareStatement(sql);
-      fillStatement(stmt, params);
+      before(ctx);
+      stmt = connection.prepareStatement(ctx.getSql());
+      fillStatement(stmt, ctx.getParams());
       rs = stmt.executeQuery();
       result = handler.handle(rs);
-      after(sql, params, result);
+      after(ctx, result);
     } catch (Exception e) {
-      onException(sql, params, e);
+      onException(ctx, e);
       throw JdbcException.wrap(e);
     } finally {
       close(rs);
@@ -421,7 +448,7 @@ public class Jdbc {
         close(connection);
         removeThreadLocal(connection);
       }
-      onFinally(sql, params, result);
+      onFinally(ctx, result);
     }
     return result;
   }
@@ -729,14 +756,15 @@ public class Jdbc {
       boolean closeCon) {
     PreparedStatement stmt = null;
     int rows = 0;
+    SqlCtx ctx = new SqlCtx().setSql(sql).setParams(params);
     try {
-      before(sql, params);
-      stmt = connection.prepareStatement(sql);
-      fillStatement(stmt, params);
+      before(ctx);
+      stmt = connection.prepareStatement(ctx.getSql());
+      fillStatement(stmt, ctx.getParams());
       rows = stmt.executeUpdate();
-      after(sql, params, rows);
+      after(ctx, rows);
     } catch (Exception e) {
-      onException(sql, params, e);
+      onException(ctx, e);
       throw JdbcException.wrap(e);
     } finally {
       close(stmt);
@@ -744,7 +772,7 @@ public class Jdbc {
         close(connection);
         removeThreadLocal(connection);
       }
-      onFinally(sql, params, rows);
+      onFinally(ctx, rows);
     }
     return rows;
   }
@@ -752,6 +780,9 @@ public class Jdbc {
   static void fillStatement(PreparedStatement stmt, List<Object> params) throws SQLException {
     if (params != null && !params.isEmpty()) {
       for (int i = 0, len = params.size(); i < len; i++) {
+        if (params.get(i) instanceof Page) {
+          continue;
+        }
         stmt.setObject(i + 1, params.get(i));
       }
     }
@@ -772,28 +803,27 @@ public class Jdbc {
     }
   }
 
-  private static void before(String sql, List<Object> params) {
+  private static void before(SqlCtx ctx) {
     for (JdbcInterceptor interceptor : JDBC_INTERCEPTORS) {
-      interceptor.before(sql, params);
+      interceptor.before(ctx);
     }
   }
 
-  private static void after(String sql, List<Object> params, Object result) {
+  private static void after(SqlCtx ctx, Object result) {
     for (JdbcInterceptor interceptor : JDBC_INTERCEPTORS) {
-      interceptor.after(sql, params, result);
+      interceptor.after(ctx, result);
     }
   }
 
-  private static void onException(String sql, List<Object> params, Exception e) {
+  private static void onException(SqlCtx ctx, Exception e) {
     for (JdbcInterceptor interceptor : JDBC_INTERCEPTORS) {
-      interceptor.onException(sql, params, e);
+      interceptor.onException(ctx, e);
     }
   }
 
-  private static void onFinally(String sql, List<Object> params, Object result) {
+  private static void onFinally(SqlCtx ctx, Object result) {
     for (JdbcInterceptor interceptor : JDBC_INTERCEPTORS) {
-      interceptor.onFinally(sql, params, result);
+      interceptor.onFinally(ctx, result);
     }
   }
-
 }

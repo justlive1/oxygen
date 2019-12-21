@@ -105,6 +105,7 @@ public class ConfigFactory {
    */
   public static void loadProperties(PropertySource source) {
     PROPS.putAll(source.props());
+    FACTORY.clear();
   }
 
   /**

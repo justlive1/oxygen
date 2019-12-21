@@ -23,8 +23,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.SimpleResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
@@ -45,8 +43,7 @@ public class Templates {
   private static final File BASE_DIR;
 
   static {
-    BASE_DIR = new File(ConfigFactory.load(CoreConf.class).getBaseTempDir(), "templates");
-    FileUtils.mkdirs(BASE_DIR);
+    BASE_DIR = FileUtils.createTempDir("templates");
   }
 
   /**
@@ -81,7 +78,6 @@ public class Templates {
       File savedFile = new File(BASE_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
       templatePath = savedFile.toPath();
       Files.copy(new ByteArrayInputStream(template.getBytes(StandardCharsets.UTF_8)), templatePath);
-      savedFile.deleteOnExit();
       CACHE.put(path, templatePath);
       return template;
     } catch (IOException e) {

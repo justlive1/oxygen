@@ -19,6 +19,7 @@ import java.nio.charset.Charset;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.CodedException;
 import vip.justlive.oxygen.core.exception.ErrorCode;
+import vip.justlive.oxygen.core.exception.WrappedException;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.Resp;
 import vip.justlive.oxygen.web.http.Response;
@@ -35,7 +36,11 @@ public class ExceptionHandlerImpl implements ExceptionHandler {
   @Override
   public void handle(RoutingContext ctx, Exception e, int status) {
     if (log.isDebugEnabled()) {
-      log.debug("route handle error", e);
+      Exception re = e;
+      if (e instanceof WrappedException) {
+        re = ((WrappedException) e).getException();
+      }
+      log.debug("route handle error", re);
     }
     Response response = ctx.response();
     Resp resp = null;
@@ -54,7 +59,7 @@ public class ExceptionHandlerImpl implements ExceptionHandler {
       response.getOut()
           .write(JSON.toJSONString(resp).getBytes(Charset.forName(response.getEncoding())));
     } catch (IOException e1) {
-      log.error("error handle ", e1);
+      log.error("exception handle error", e1);
     }
   }
 }
