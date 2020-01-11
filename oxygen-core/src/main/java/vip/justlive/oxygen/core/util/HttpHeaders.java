@@ -61,6 +61,7 @@ public class HttpHeaders {
   public static final String APPLICATION_PDF = "application/pdf";
   public static final String APPLICATION_XML = "application/xml";
   public static final String MULTIPART_FORM_DATA = "multipart/form-data";
+  public static final String MULTIPART_FORM_DATA_BOUNDARY = "multipart/form-data; boundary=";
   public static final String TEXT_PLAIN = "text/plain";
   public static final String TEXT_XML = "text/xml";
   public static final String TEXT_HTML = "text/html";

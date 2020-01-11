@@ -16,7 +16,9 @@ package vip.justlive.oxygen.core.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
@@ -261,4 +263,51 @@ public class MoreObjects {
     return map;
   }
 
+  /**
+   * 取交集
+   *
+   * @param first 第一个集合
+   * @param second 第二个集合
+   * @param others 其他集合
+   * @param <T> 泛型
+   * @return 交集
+   */
+  @SafeVarargs
+  public static <T> Set<T> intersection(Set<T> first, Set<T> second, Set<T>... others) {
+    Set<T> intersection = new HashSet<>();
+    for (T obj : first) {
+      if (second.contains(obj)) {
+        intersection.add(obj);
+      }
+    }
+    if (others == null) {
+      return intersection;
+    }
+    for (Set<T> other : others) {
+      intersection.retainAll(other);
+    }
+    return intersection;
+  }
+
+  /**
+   * 去并集
+   *
+   * @param first 第一个集合
+   * @param second 第二个集合
+   * @param others 其他集合
+   * @param <T> 泛型
+   * @return 并集
+   */
+  @SafeVarargs
+  public static <T> Set<T> union(Set<T> first, Set<T> second, Set<T>... others) {
+    Set<T> union = new HashSet<>(first);
+    union.addAll(second);
+    if (others == null) {
+      return union;
+    }
+    for (Set<T> other : others) {
+      union.addAll(other);
+    }
+    return union;
+  }
 }

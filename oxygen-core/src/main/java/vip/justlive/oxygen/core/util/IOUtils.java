@@ -15,6 +15,7 @@
 package vip.justlive.oxygen.core.util;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,7 +28,7 @@ import lombok.experimental.UtilityClass;
  * @author wubo
  */
 @UtilityClass
-public class IOUtils {
+public class IoUtils {
 
   public static final int BUFFER_SIZE = 4096;
 
@@ -60,14 +61,38 @@ public class IOUtils {
    * @throws IOException io异常
    */
   public static long copy(InputStream input, OutputStream output) throws IOException {
+    return copy(input, (buffer, bytesRead) -> output.write(buffer, 0, bytesRead));
+  }
+
+  /**
+   * copy
+   *
+   * @param input 输入流
+   * @param bytes 字节组
+   * @return 总字节数
+   * @throws IOException io异常
+   */
+  public static long copy(InputStream input, Bytes bytes) throws IOException {
+    return copy(input, (buffer, bytesRead) -> bytes.write(buffer, 0, bytesRead));
+  }
+
+  /**
+   * copy
+   *
+   * @param input 输入流
+   * @param operate 操作单元
+   * @return 总字节数
+   * @throws IOException io异常
+   */
+  public static long copy(InputStream input, CopyOperate operate) throws IOException {
     byte[] buffer = new byte[BUFFER_SIZE];
-    long byteCount = 0;
+    long count = 0;
     int bytesRead;
     while ((bytesRead = input.read(buffer)) != -1) {
-      output.write(buffer, 0, bytesRead);
-      byteCount += bytesRead;
+      operate.copy(buffer, bytesRead);
+      count += bytesRead;
     }
-    return byteCount;
+    return count;
   }
 
   /**
@@ -79,11 +104,7 @@ public class IOUtils {
    */
   public static byte[] toBytes(InputStream input) throws IOException {
     Bytes bytes = new Bytes();
-    byte[] buffer = new byte[BUFFER_SIZE];
-    int bytesRead;
-    while ((bytesRead = input.read(buffer)) != -1) {
-      bytes.write(buffer, 0, bytesRead);
-    }
+    copy(input, bytes);
     return bytes.toArray();
   }
 
@@ -112,5 +133,33 @@ public class IOUtils {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     copy(input, output);
     return output.toString(charset.name());
+  }
+
+  /**
+   * 关闭失败不会抛出异常
+   *
+   * @param closeable 被关闭的对象
+   */
+  public static void close(Closeable closeable) {
+    if (closeable != null) {
+      try {
+        closeable.close();
+      } catch (Exception e) {
+        // ignore
+      }
+    }
+  }
+
+  @FunctionalInterface
+  interface CopyOperate {
+
+    /**
+     * copy
+     *
+     * @param buffer 数据
+     * @param readBytes 数据字节数
+     * @throws IOException io异常
+     */
+    void copy(byte[] buffer, int readBytes) throws IOException;
   }
 }

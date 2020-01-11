@@ -14,6 +14,7 @@
 
 package vip.justlive.oxygen.core.net.http;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import lombok.Data;
@@ -41,6 +42,17 @@ public class HttpRequestTest {
         .charset(StandardCharsets.UTF_8).connectTimeout(1000).readTimeout(1000)
         .followRedirects(false).queryParam(new Body().mobile("1").captcha("2"))
         .jsonBody("{\"a\":1}").addHeader("token", "zzz").execute();
+    Assert.assertEquals(200, response.getCode());
+    Assert.assertNotNull(response.bodyAsString());
+  }
+
+  public void test2() throws IOException {
+    HttpRequest request = HttpRequest.post("http://localhost:8091/hook/upload")
+        .charset(StandardCharsets.UTF_8)
+        .followRedirects(false);
+    request.multipart().add("key", "value").add("f1", new File("/tmp/sse.properties"));
+
+    HttpResponse response = request.execute();
     Assert.assertEquals(200, response.getCode());
     Assert.assertNotNull(response.bodyAsString());
   }

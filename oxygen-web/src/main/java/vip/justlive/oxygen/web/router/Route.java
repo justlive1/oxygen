@@ -18,7 +18,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
-import lombok.Data;
+import java.util.regex.Pattern;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 import vip.justlive.oxygen.core.net.http.HttpMethod;
 
@@ -27,7 +30,8 @@ import vip.justlive.oxygen.core.net.http.HttpMethod;
  *
  * @author wubo
  */
-@Data
+@Getter
+@ToString
 @Accessors(fluent = true)
 public class Route {
 
@@ -49,9 +53,15 @@ public class Route {
   /**
    * 路由处理方式
    */
+  @Setter
   private RouteHandler handler;
 
   private List<String> pathVars = new LinkedList<>();
+
+  @Setter
+  private Route next;
+
+  private Pattern pattern;
 
   Route() {
   }
@@ -83,20 +93,33 @@ public class Route {
       } while (matcher.find(start));
       path = path.replaceAll(REGEX_PATH_VAR, REGEX_PATH_VAR_REPLACE);
       this.regex = true;
+      this.pattern = Pattern.compile(path);
     }
     this.path = path;
     return this;
   }
 
   /**
-   * 添加处理器
+   * 是否匹配
    *
-   * @param handler 处理
-   * @return router
+   * @param path 路径
+   * @param method 方法
+   * @return 匹配的route
    */
-  public Route handler(RouteHandler handler) {
-    this.handler = handler;
-    return this;
+  Route match(String path, HttpMethod method) {
+    Route route = this;
+    while (route != null) {
+      if (regex) {
+        if (pattern.matcher(path).matches() && route.methods.contains(method)) {
+          return route;
+        }
+      } else {
+        if (route.path.equals(path) && route.methods.contains(method)) {
+          return route;
+        }
+      }
+      route = route.next;
+    }
+    return null;
   }
-
 }

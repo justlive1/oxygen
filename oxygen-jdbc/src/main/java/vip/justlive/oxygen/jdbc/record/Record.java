@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.jdbc.record;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,16 +35,15 @@ public final class Record {
   private static final Map<Class<?>, Model> CACHED = new ConcurrentHashMap<>(4);
   private static final String SEAT = " ? ";
   private static final String PARAM_STR = " %s = ? ";
-  private static final String QUERY_FIELD_STR = " %s as %s ";
+  private static final String IN_PARAM_STR = "%s in (%s) ";
   private static final String COMMA = ",";
   private static final String AND = " and ";
   private static final String SET = " set ";
   private static final String INSERT = " insert into %s (%s) values (%s) ";
-  private static final String SELECT = " select ";
   private static final String UPDATE = " update ";
-  private static final String FROM = " from ";
   private static final String WHERE = " where 1 = 1 ";
   private static final String DELETE = "delete from ";
+  private static final String SELECT = " select * from %s" + WHERE;
   private static final String COUNT = "select count(*) from ";
 
   Record() {
@@ -53,14 +53,32 @@ public final class Record {
    * 根据主键获取record
    *
    * @param clazz 类
-   * @param id 注解
+   * @param id 主键
    * @param <T> 泛型
    * @return 记录
    */
   public static <T> T findById(Class<T> clazz, Object id) {
     Model model = parseClass(clazz);
-    String sql = model.getBaseQuery() + AND + String.format(PARAM_STR, model.primary.name);
+    String sql = model.baseQuery + AND + String.format(PARAM_STR, model.primary.name);
     return Jdbc.query(sql, clazz, id);
+  }
+
+  /**
+   * 根据主键获取records
+   *
+   * @param clazz 类
+   * @param ids 主键
+   * @param <T> 泛型
+   * @return 记录
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> List<T> findByIds(Class<T> clazz, List<?> ids) {
+    Model model = parseClass(clazz);
+    List<String> list = new ArrayList<>(ids.size());
+    ids.forEach(id -> list.add(SEAT));
+    String sql = model.baseQuery + AND + String
+        .format(IN_PARAM_STR, model.primary.name, String.join(COMMA, list));
+    return Jdbc.queryForList(sql, clazz, (List<Object>) ids);
   }
 
   /**
@@ -75,6 +93,37 @@ public final class Record {
   }
 
   /**
+   * 根据record属性值获取一个值
+   *
+   * @param obj record
+   * @param <T> 泛型
+   * @return list
+   */
+  public static <T> T findOne(T obj) {
+    return findOne(obj, true);
+  }
+
+  /**
+   * 根据record属性值获取一个值
+   *
+   * @param obj record
+   * @param <T> 泛型
+   * @return list
+   */
+  public static <T> T findOne(T obj, boolean throwEx) {
+    List<T> list = find(obj);
+    int size = list.size();
+    if (size == 0) {
+      return null;
+    } else {
+      if (size > 1 && throwEx) {
+        throw new JdbcException("expect one but found " + size);
+      }
+      return list.get(0);
+    }
+  }
+
+  /**
    * 获取所有集合
    *
    * @param clazz 类型
@@ -82,7 +131,7 @@ public final class Record {
    * @return list
    */
   public static <T> List<T> findAll(Class<T> clazz) {
-    return Jdbc.queryForList(parseClass(clazz).getBaseQuery(), clazz);
+    return Jdbc.queryForList(parseClass(clazz).baseQuery, clazz);
   }
 
   /**
@@ -97,7 +146,7 @@ public final class Record {
     @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>) obj.getClass();
     Model model = parseClass(clazz);
     List<Object> params = new LinkedList<>();
-    StringBuilder sb = new StringBuilder(model.getBaseQuery());
+    StringBuilder sb = new StringBuilder(model.baseQuery);
     margeWhere(model, obj, sb, params);
     if (page != null) {
       params.add(page);
@@ -270,6 +319,7 @@ public final class Record {
     if (model.properties.isEmpty()) {
       throw new IllegalArgumentException(String.format("No @Column is found in class [%s]", clazz));
     }
+    model.baseQuery = String.format(SELECT, model.table);
     CACHED.putIfAbsent(clazz, model);
     return CACHED.get(clazz);
   }
@@ -302,20 +352,6 @@ public final class Record {
     Property primary;
     List<Property> properties;
     String baseQuery;
-
-    String getBaseQuery() {
-      if (baseQuery != null) {
-        return baseQuery;
-      }
-      StringBuilder sb = new StringBuilder(SELECT);
-      for (Property property : properties) {
-        sb.append(String.format(QUERY_FIELD_STR, property.name, property.field.getName()))
-            .append(COMMA);
-      }
-      sb.deleteCharAt(sb.length() - 1).append(FROM).append(table).append(WHERE);
-      baseQuery = sb.toString();
-      return baseQuery;
-    }
 
   }
 

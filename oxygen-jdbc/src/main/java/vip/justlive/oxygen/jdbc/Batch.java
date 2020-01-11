@@ -31,7 +31,7 @@ public class Batch {
 
   private final String dataSourceName;
   private final Map<String, PreparedStatement> psts;
-  private volatile Statement statement;
+  private Statement statement;
 
 
   private Batch(String dataSourceName) {

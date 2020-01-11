@@ -13,12 +13,16 @@
  */
 package vip.justlive.oxygen.web.servlet;
 
+import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration.Dynamic;
-import vip.justlive.oxygen.core.Bootstrap;
-import vip.justlive.oxygen.core.util.Strings;
+import javax.servlet.annotation.HandlesTypes;
+import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
+import vip.justlive.oxygen.core.util.ClassUtils;
 
 /**
  * servlet容器自动初始化
@@ -29,17 +33,36 @@ import vip.justlive.oxygen.core.util.Strings;
  *
  * @author wubo
  */
+@HandlesTypes(WebAppInitializer.class)
 public class ServletWebInitializer implements ServletContainerInitializer {
 
   @Override
   public void onStartup(Set<Class<?>> classes, ServletContext ctx) {
-    Bootstrap.start();
 
-    Dynamic dynamic = ctx
-        .addServlet(DispatcherServlet.class.getSimpleName(), DispatcherServlet.class);
-    dynamic.setLoadOnStartup(0);
-    dynamic.addMapping(Strings.SLASH);
-    dynamic.setAsyncSupported(true);
+    List<WebAppInitializer> initializers = new LinkedList<>();
+    scan(classes, initializers);
+
+    if (initializers.isEmpty()) {
+      ctx.log("No WebAppInitializer types detected by servlet server, scan by class scanner");
+      scan(ClassScannerPlugin.getClasses(), initializers);
+    }
+
+    Collections.sort(initializers);
+
+    ctx.log(initializers.size() + " WebAppInitializer detected on classpath");
+    for (WebAppInitializer initializer : initializers) {
+      initializer.onStartup(ctx);
+    }
   }
 
+  private void scan(Set<Class<?>> classes, List<WebAppInitializer> initializers) {
+    if (classes != null) {
+      for (Class<?> clazz : classes) {
+        if (!clazz.isInterface() && !Modifier.isAbstract(clazz.getModifiers())
+            && WebAppInitializer.class.isAssignableFrom(clazz)) {
+          initializers.add((WebAppInitializer) ClassUtils.newInstance(clazz));
+        }
+      }
+    }
+  }
 }

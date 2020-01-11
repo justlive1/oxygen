@@ -14,14 +14,11 @@
 
 package vip.justlive.oxygen.web.http;
 
-import java.nio.charset.Charset;
 import java.util.Locale;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
 import vip.justlive.oxygen.core.net.http.HttpMethod;
-import vip.justlive.oxygen.core.util.Bytes;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.Strings;
-import vip.justlive.oxygen.core.util.Urls;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
@@ -37,7 +34,6 @@ public class HeaderParser implements Parser {
     request.remoteAddress = Strings.firstOrNull(parseRemoteAddress(request), request.remoteAddress);
     parseHost(request);
     parseContentType(request);
-    parseQueryString(request);
     if (request.contextPath != null && !Strings.SLASH.equals(request.contextPath) && request.path
         .startsWith(request.contextPath)) {
       request.path = request.path.substring(request.contextPath.length());
@@ -89,43 +85,7 @@ public class HeaderParser implements Parser {
       request.port = Integer.parseInt(arr[1]);
     } else {
       request.host = host;
-      request.port = 90;
-    }
-  }
-
-  private void parseQueryString(Request request) {
-    int index = request.getRequestUri().indexOf(Strings.QUESTION_MARK);
-    if (index < 0) {
-      request.path = request.getRequestUri();
-      return;
-    }
-    request.path = request.getRequestUri().substring(0, index);
-    request.queryString = request.getRequestUri().substring(index + 1);
-    index = 0;
-    char[] chars = request.queryString.toCharArray();
-    String key = null;
-    int start = index;
-    while (index < chars.length) {
-      char c = chars[index];
-      if (c == Bytes.OCTOTHORP) {
-        break;
-      } else if (c == Bytes.EQUAL && key == null) {
-        key = Urls.urlDecode(request.queryString.substring(start, index),
-            Charset.forName(request.encoding));
-        start = index + 1;
-      } else if (c == Bytes.AND && key != null) {
-        margeParam(request.getParams(), key,
-            Urls.urlDecode(request.queryString.substring(start, index),
-                Charset.forName(request.encoding)));
-        key = null;
-        start = index + 1;
-      }
-      index++;
-    }
-    if (key != null) {
-      margeParam(request.getParams(), key,
-          Urls.urlDecode(request.queryString.substring(start, index),
-              Charset.forName(request.encoding)));
+      request.port = 80;
     }
   }
 

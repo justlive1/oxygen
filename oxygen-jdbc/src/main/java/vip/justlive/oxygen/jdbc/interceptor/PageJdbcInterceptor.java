@@ -37,7 +37,7 @@ public class PageJdbcInterceptor implements JdbcInterceptor {
       return;
     }
 
-    Page<?> page = (Page) ctx.getParams().get(ctx.getParams().size() - 1);
+    Page<?> page = (Page<?>) ctx.getParams().get(ctx.getParams().size() - 1);
     ctx.setPaged(page.isHasPaged());
     if (page.isHasPaged()) {
       return;

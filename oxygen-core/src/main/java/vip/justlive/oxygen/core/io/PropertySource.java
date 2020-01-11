@@ -42,7 +42,7 @@ public interface PropertySource {
     if (value == null) {
       return null;
     }
-    return PlaceHolderHelper.DEFAULT_HELPER.replacePlaceholders(value, props());
+    return getPlaceholderProperty(value);
   }
 
   /**
@@ -53,10 +53,36 @@ public interface PropertySource {
    * @return 属性值
    */
   default String getProperty(String key, String defaultValue) {
-    String value = props().getProperty(key, defaultValue);
+    String value = getProperty(key);
     if (value == null) {
-      return null;
+      return defaultValue;
     }
-    return PlaceHolderHelper.DEFAULT_HELPER.replacePlaceholders(value, props());
+    return value;
+  }
+
+  /**
+   * 获取占位符属性
+   *
+   * @param placeholder 占位 eg. ${a}
+   * @return 属性值
+   */
+  default String getPlaceholderProperty(String placeholder) {
+    return PlaceHolderHelper.DEFAULT_HELPER.replacePlaceholders(placeholder, props());
+  }
+
+  /**
+   * 是否包含该前缀属性
+   *
+   * @param prefix 前缀
+   * @return true包含
+   */
+  default boolean containPrefix(String prefix) {
+    Properties properties = props();
+    for (Object key : properties.keySet()) {
+      if (key.toString().startsWith(prefix)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

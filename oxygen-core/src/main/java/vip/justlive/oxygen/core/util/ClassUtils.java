@@ -510,14 +510,24 @@ public class ClassUtils {
    */
   public static Object getValue(Object object, String propertyName) {
     Class<?> clazz = object.getClass();
-    Field field = getDeclaredField(clazz, propertyName);
+    return getValue(object, getDeclaredField(clazz, propertyName));
+  }
+
+  /**
+   * 获取属性值
+   *
+   * @param object 需要得到属性值的对象
+   * @param field 字段
+   * @return Object 属性值
+   */
+  public static Object getValue(Object object, Field field) {
     if (field == null) {
       return null;
     }
-    if (!field.isAccessible()) {
-      field.setAccessible(true);
-    }
     try {
+      if (!field.isAccessible()) {
+        field.setAccessible(true);
+      }
       return field.get(object);
     } catch (Exception e) {
       throw Exceptions.wrap(e);
@@ -532,8 +542,10 @@ public class ClassUtils {
    * @param value 值
    */
   public static void setValue(Object object, Field field, Object value) {
-    field.setAccessible(true);
     try {
+      if (!field.isAccessible()) {
+        field.setAccessible(true);
+      }
       field.set(object, value);
     } catch (IllegalArgumentException | IllegalAccessException e) {
       log.error("set value {} to class {} error", value, object.getClass(), e);
@@ -590,6 +602,19 @@ public class ClassUtils {
     } catch (Exception e) {
       throw Exceptions.wrap(e, String.format("can not instance new object for class [%s]", clazz));
     }
+  }
+
+  /**
+   * 是否java内置类
+   *
+   * @param type 类型
+   * @return true为内置类
+   */
+  public static boolean isJavaInternalType(Class<?> type) {
+    if (type != null) {
+      return type.getClassLoader() == null;
+    }
+    return false;
   }
 
   private static void recursivelyCollectAnnotations(Set<Annotation> visited,

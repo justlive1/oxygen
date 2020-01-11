@@ -15,7 +15,7 @@ package vip.justlive.oxygen.web.router;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import vip.justlive.oxygen.core.util.Resp;
 import vip.justlive.oxygen.web.annotation.Mapping;
 import vip.justlive.oxygen.web.annotation.Param;
@@ -48,7 +48,7 @@ public class CommonRouter {
   @Mapping("/localDate")
   public Resp localDate(@Param(value = "offset", defaultValue = "0") Integer offset) {
     return Resp.success(
-        LocalDate.now().plusDays(offset).atStartOfDay(ZoneOffset.systemDefault()).toInstant()
+        LocalDate.now().plusDays(offset).atStartOfDay(ZoneId.systemDefault()).toInstant()
             .toEpochMilli());
   }
 
@@ -61,7 +61,7 @@ public class CommonRouter {
   @Mapping("/localDateTime")
   public Resp localDateTime(@Param(value = "offset", defaultValue = "0") Integer offset) {
     return Resp.success(
-        LocalDateTime.now().plusDays(offset).atZone(ZoneOffset.systemDefault()).toInstant()
+        LocalDateTime.now().plusDays(offset).atZone(ZoneId.systemDefault()).toInstant()
             .toEpochMilli());
   }
 

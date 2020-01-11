@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +40,8 @@ public class DefaultClassScanner implements ClassScanner {
 
   private static final String CLASS_SUFFIX = ".class";
   private static final String CLASS_PATH_MULTI_SUFFIX = "/**/*" + CLASS_SUFFIX;
+
+  private static final Map<String, Set<Class<?>>> CACHE = new HashMap<>(2);
 
   /**
    * 扫描包路径
@@ -67,17 +71,23 @@ public class DefaultClassScanner implements ClassScanner {
   }
 
   private void findMatchPath(String location, Set<Class<?>> classes) throws IOException {
-    String rootPath = PathMatcher.getRootDir(location);
-    String subPattern = location.substring(rootPath.length());
-    Enumeration<URL> urls = this.loader.getResources(Urls.cutRootPath(rootPath));
-    while (urls.hasMoreElements()) {
-      URL rootUrl = urls.nextElement();
-      if (Urls.URL_PROTOCOL_FILE.equals(rootUrl.getProtocol())) {
-        this.findFileMatchPath(rootPath, rootUrl, subPattern, classes);
-      } else if (Urls.isJarURL(rootUrl)) {
-        this.findJarMatchPath(rootUrl, subPattern, classes);
+    Set<Class<?>> result = CACHE.get(location);
+    if (result == null) {
+      result = new HashSet<>(2);
+      String rootPath = PathMatcher.getRootDir(location);
+      String subPattern = location.substring(rootPath.length());
+      Enumeration<URL> urls = this.loader.getResources(Urls.cutRootPath(rootPath));
+      while (urls.hasMoreElements()) {
+        URL rootUrl = urls.nextElement();
+        if (Urls.URL_PROTOCOL_FILE.equals(rootUrl.getProtocol())) {
+          this.findFileMatchPath(rootPath, rootUrl, subPattern, result);
+        } else if (Urls.isJarURL(rootUrl)) {
+          this.findJarMatchPath(rootUrl, subPattern, result);
+        }
       }
+      CACHE.put(location, result);
     }
+    classes.addAll(result);
   }
 
   private void findFileMatchPath(String rootPath, URL rootUrl, String subPattern,

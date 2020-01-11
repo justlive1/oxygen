@@ -121,10 +121,10 @@ public class JobPlugin implements Plugin {
   }
 
   private void addFixedDelayJob(Job job, String fixedDelay, String initialDelay) {
-    long fixedDelayVal = Long.parseLong(ConfigFactory.getProperty(fixedDelay, fixedDelay));
+    long fixedDelayVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(fixedDelay));
     long initialDelayVal = 0;
     if (initialDelay.length() > 0) {
-      initialDelayVal = Long.parseLong(ConfigFactory.getProperty(initialDelay, initialDelay));
+      initialDelayVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(initialDelay));
     }
     job.configFixedDelay(fixedDelayVal, initialDelayVal);
     executorService
@@ -133,10 +133,10 @@ public class JobPlugin implements Plugin {
   }
 
   private void addFixedRateJob(Job job, String fixedRate, String initialDelay) {
-    long fixedRateVal = Long.parseLong(ConfigFactory.getProperty(fixedRate, fixedRate));
+    long fixedRateVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(fixedRate));
     long initialDelayVal = 0;
     if (initialDelay.length() > 0) {
-      initialDelayVal = Long.parseLong(ConfigFactory.getProperty(initialDelay, initialDelay));
+      initialDelayVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(initialDelay));
     }
     job.configFixedRate(fixedRateVal, initialDelayVal);
     executorService.scheduleAtFixedRate(job, initialDelayVal, fixedRateVal, TimeUnit.MILLISECONDS);
@@ -144,7 +144,7 @@ public class JobPlugin implements Plugin {
   }
 
   private void addCronJob(Job job, String cron) {
-    job.configCron(ConfigFactory.getProperty(cron, cron));
+    job.configCron(ConfigFactory.getPlaceholderProperty(cron));
     job.scheduleCron();
     SCHEDULED_JOBS.add(job);
   }

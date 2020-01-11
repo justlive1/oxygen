@@ -13,18 +13,17 @@
  */
 package vip.justlive.oxygen.jdbc.handler;
 
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.WeakHashMap;
 import vip.justlive.oxygen.jdbc.JdbcException;
+import vip.justlive.oxygen.jdbc.record.Column;
 
 /**
  * 基本行处理器
@@ -34,9 +33,12 @@ import vip.justlive.oxygen.jdbc.JdbcException;
 public class BasicRowHandler implements RowHandler {
 
   private static final BasicRowHandler INSTANCE = new BasicRowHandler();
-  private static final int PROPERTY_NOT_FOUND = -1;
   private static final Iterable<ColumnHandler> COLUMN_HANDLERS = ServiceLoader
       .load(ColumnHandler.class);
+  private static final Iterable<PropertyHandler> PROPERTY_HANDLERS = ServiceLoader
+      .load(PropertyHandler.class);
+
+  private WeakHashMap<Class<?>, Map<String, Field>> cache = new WeakHashMap<>(4);
 
   /**
    * 获取单例
@@ -81,43 +83,35 @@ public class BasicRowHandler implements RowHandler {
   @Override
   public <T> T toBean(ResultSet rs, Class<T> type) {
     try {
-      PropertyDescriptor[] props = Introspector.getBeanInfo(type).getPropertyDescriptors();
       ResultSetMetaData rsmd = rs.getMetaData();
       int cols = rsmd.getColumnCount();
-      int[] propertyArray = new int[cols + 1];
-      Arrays.fill(propertyArray, PROPERTY_NOT_FOUND);
-
-      Map<String, Integer> indexMap = new HashMap<>(8);
+      String[] columns = new String[cols + 1];
       for (int col = 1; col <= cols; col++) {
-        String columnName = getColumnName(rsmd, col);
-        indexMap.put(columnName.toLowerCase(), col);
+        columns[col] = getColumnName(rsmd, col).toLowerCase();
       }
 
-      fillPropertyArray(propertyArray, indexMap, props);
-      return fillBeanProperty(rs, type, props, propertyArray);
+      return fillBeanProperty(rs, type, columns);
     } catch (Exception e) {
       throw JdbcException.wrap(e);
     }
   }
 
-  private <T> T fillBeanProperty(ResultSet rs, Class<T> type, PropertyDescriptor[] props,
-      int[] propertyArray)
+  private <T> T fillBeanProperty(ResultSet rs, Class<T> type, String[] columns)
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, SQLException {
     T bean = type.getConstructor().newInstance();
-    for (int i = 1; i < propertyArray.length; i++) {
-      if (propertyArray[i] == PROPERTY_NOT_FOUND) {
+    Map<String, Field> fields = getBeanInfo(type);
+    for (int i = 1; i < columns.length; i++) {
+      Field field = fields.get(columns[i]);
+      if (field == null) {
         continue;
       }
-
-      PropertyDescriptor prop = props[propertyArray[i]];
-      Class<?> propType = prop.getPropertyType();
-
+      Class<?> propType = field.getType();
       Object value = null;
       if (propType != null) {
         value = this.processColumn(rs, i, propType);
       }
       if (value != null) {
-        this.setValue(bean, prop, value);
+        this.setValue(bean, field, value);
       }
     }
     return bean;
@@ -138,13 +132,21 @@ public class BasicRowHandler implements RowHandler {
     return value;
   }
 
-  private void setValue(Object target, PropertyDescriptor prop, Object value)
-      throws InvocationTargetException, IllegalAccessException {
-    Method setter = prop.getWriteMethod();
-    if (setter == null || setter.getParameterTypes().length != 1) {
+  private void setValue(Object target, Field field, Object value) throws IllegalAccessException {
+    field.setAccessible(true);
+    Class<?> type = field.getType();
+    if (type == null || type.isInstance(value)) {
+      field.set(target, value);
       return;
     }
-    setter.invoke(target, value);
+
+    for (PropertyHandler handler : PROPERTY_HANDLERS) {
+      if (handler.supported(type, value)) {
+        value = handler.cast(type, value);
+        break;
+      }
+    }
+    field.set(target, value);
   }
 
   private String getColumnName(ResultSetMetaData rsmd, int index) throws SQLException {
@@ -155,15 +157,28 @@ public class BasicRowHandler implements RowHandler {
     return columnName;
   }
 
-
-  private void fillPropertyArray(int[] propertyArray, Map<String, Integer> integerMap,
-      PropertyDescriptor[] props) {
-    for (int i = 0; i < props.length; i++) {
-      String propertyName = props[i].getName();
-      Integer index = integerMap.get(propertyName.toLowerCase());
-      if (index != null) {
-        propertyArray[index] = i;
-      }
+  private Map<String, Field> getBeanInfo(Class<?> clazz) {
+    Map<String, Field> fields = cache.get(clazz);
+    if (fields != null) {
+      return fields;
     }
+    synchronized (this) {
+      fields = new HashMap<>(4);
+      Class<?> type = clazz;
+      while (type != null && type != Object.class) {
+        for (Field field : type.getDeclaredFields()) {
+          String name = field.getName();
+          Column column = field.getAnnotation(Column.class);
+          if (column != null && column.value().length() > 0) {
+            name = column.value();
+          }
+          fields.put(name, field);
+        }
+        type = type.getSuperclass();
+      }
+      cache.put(clazz, fields);
+    }
+    return fields;
   }
+
 }

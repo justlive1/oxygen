@@ -15,15 +15,19 @@
 package vip.justlive.oxygen.core.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.net.http.HttpRequest;
+import vip.justlive.oxygen.core.net.http.HttpResponse;
 
 /**
  * 文件工具类
@@ -33,6 +37,16 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 @Slf4j
 @UtilityClass
 public class FileUtils {
+
+  private static final Properties MIME_TYPES = new Properties();
+
+  static {
+    try {
+      MIME_TYPES.load(FileUtils.class.getResourceAsStream("/mime-types.properties"));
+    } catch (IOException e) {
+      log.warn("mime types initial failed ", e);
+    }
+  }
 
   /**
    * 创建目录
@@ -405,6 +419,54 @@ public class FileUtils {
     }
     mkdirs(dir);
     return dir;
+  }
+
+  /**
+   * 通过文件名称解析扩展名得到媒体类型
+   *
+   * @param filename 文件名
+   * @return mime-type
+   */
+  public static String parseMimeType(String filename) {
+    return getMimeType(extension(filename));
+  }
+
+  /**
+   * 通过扩展名得到媒体类型
+   *
+   * @param extension 扩展名
+   * @return mime-type
+   */
+  public static String getMimeType(String extension) {
+    return MIME_TYPES.getProperty(extension);
+  }
+
+  /**
+   * 下载文件
+   *
+   * @param url 文件地址
+   * @return 文件
+   * @throws IOException io异常
+   */
+  public static File download(String url) throws IOException {
+    File file = new File(FileUtils.tempBaseDir(),
+        SnowflakeIdWorker.defaultNextId() + Strings.DOT + FileUtils.extension(url));
+    download(url, file);
+    return file;
+  }
+
+  /**
+   * 下载文件
+   *
+   * @param url 文件地址
+   * @param file 文件
+   * @throws IOException io异常
+   */
+  public static void download(String url, File file) throws IOException {
+    try (HttpResponse response = HttpRequest.get(url)
+        .execute(); FileOutputStream out = new FileOutputStream(file)) {
+      IoUtils.copy(response.getBody(), out);
+    }
   }
 
   private static int deletePath(Path path) {

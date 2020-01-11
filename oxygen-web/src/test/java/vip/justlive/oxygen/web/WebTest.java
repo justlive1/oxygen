@@ -36,8 +36,10 @@ public class WebTest {
     int port = SystemUtils.findAvailablePort();
 
     Router.router().method(HttpMethod.GET).path("/a").handler(ctx -> ctx.response().write(msg));
+    Router.router().method(HttpMethod.POST).path("/a")
+        .handler(ctx -> ctx.response().write(msg + "!"));
     Server server = Server.server();
-    new Thread(() -> server.listen(port)).start();
+    server.listen(port);
 
     ThreadUtils.sleep(3000);
 
@@ -47,16 +49,20 @@ public class WebTest {
       Assert.fail();
     }
 
+    try (HttpResponse response = HttpRequest.post("http://localhost:" + port + "/a").execute()) {
+      Assert.assertEquals(msg + "!", response.bodyAsString());
+    } catch (Exception e) {
+      Assert.fail();
+    }
+
     try (HttpResponse response = HttpRequest.post("http://localhost:" + port + "/b/123")
         .execute()) {
       Assert.assertEquals("123", response.bodyAsString());
     } catch (Exception e) {
-      e.printStackTrace();
       Assert.fail();
     }
 
     server.stop();
-
   }
 
 }

@@ -15,13 +15,17 @@
 package vip.justlive.oxygen.core.net.aio;
 
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 import vip.justlive.oxygen.core.net.aio.core.AioListener;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
 import vip.justlive.oxygen.core.net.aio.core.Client;
@@ -29,6 +33,7 @@ import vip.justlive.oxygen.core.net.aio.core.GroupContext;
 import vip.justlive.oxygen.core.net.aio.core.Server;
 import vip.justlive.oxygen.core.net.aio.protocol.LengthFrame;
 import vip.justlive.oxygen.core.net.aio.protocol.LengthFrameHandler;
+import vip.justlive.oxygen.core.util.SystemUtils;
 import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
@@ -83,12 +88,33 @@ public class AioTest {
 
   @Test
   public void test() throws IOException {
-    InetSocketAddress address = new InetSocketAddress(10087);
+
+    LoggerContext ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
+    ctx.getLogger("root").setLevel(Level.INFO);
+
+    log.info("no use future...");
+    System.setProperty("aio.write.future", "false");
+    run();
+
+    log.info("use future...");
+    System.setProperty("aio.write.future", "true");
+    run();
+  }
+
+  private void run() throws IOException {
+    int port = SystemUtils.findAvailablePort();
+    InetSocketAddress address = new InetSocketAddress(port);
+    AtomicLong current = new AtomicLong();
+    int max = 10000;
     GroupContext group = new GroupContext(new LengthFrameHandler() {
       @Override
       public void handle(Object data, ChannelContext channelContext) {
         LengthFrame frame = (LengthFrame) data;
-        System.out.println(new String(frame.getBody()));
+        int p = Integer.parseInt(new String(frame.getBody()));
+        if (p == max - 1) {
+          current.set(System.currentTimeMillis());
+        }
+        channelContext.write(frame);
       }
     });
     Server server = new Server(group);
@@ -96,19 +122,25 @@ public class AioTest {
 
     group = new GroupContext(new LengthFrameHandler());
     Client client = new Client(group);
-    client.connect(new InetSocketAddress("localhost", 10087));
+    client.connect(new InetSocketAddress("localhost", port));
 
-    Random r = new Random();
-    for (int i = 0; i < 100; i++) {
-      client.write(new LengthFrame().setBody(String.valueOf(i).getBytes()));
-
-      int rx = r.nextInt(100);
-      if (rx > 50) {
-        ThreadUtils.sleep(rx);
-      }
+    for (int i = 0; i < 5; i++) {
+      a(max, client, current);
     }
 
-    ThreadUtils.sleep(2000);
+    client.close();
+    server.stop();
   }
 
+  private void a(int max, Client client, AtomicLong current) {
+    long now = System.currentTimeMillis();
+
+    for (int i = 0; i < max; i++) {
+      client.write(new LengthFrame().setBody(String.valueOf(i).getBytes()));
+    }
+
+    ThreadUtils.sleep(3000);
+
+    System.out.printf("last %s ,duration %s \n", current, current.get() - now);
+  }
 }

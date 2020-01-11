@@ -35,7 +35,11 @@ public class WebConf {
    */
   @Value("${server.contextPath:}")
   private String contextPath;
-
+  /**
+   * request默认编码
+   */
+  @Value("${web.request.charset:utf-8}")
+  private String charset;
   /**
    * 是否处理options请求，默认不返回数据
    */

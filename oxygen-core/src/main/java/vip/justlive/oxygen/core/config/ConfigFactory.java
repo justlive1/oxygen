@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.core.config;
 
-import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
@@ -23,9 +22,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import vip.justlive.oxygen.core.convert.DefaultConverterService;
-import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.io.PropertiesLoader;
 import vip.justlive.oxygen.core.io.PropertySource;
 import vip.justlive.oxygen.core.util.ClassUtils;
@@ -51,17 +47,10 @@ public class ConfigFactory {
    */
   private static final PropertySource SOURCE_WRAPPER = ConfigFactory::props;
   /**
-   * 用于生成临时编号
-   */
-  private static final AtomicLong ATOMIC = new AtomicLong();
-  /**
-   * 临时编号前缀
-   */
-  private static final String TMP_PREFIX = "ConfigFactory.tmp.%s";
-  /**
    * 解析过的locations
    */
   private static final Set<String> PARSED_LOCATIONS = new HashSet<>(4);
+  private static final Binder BINDER = new Binder(SOURCE_WRAPPER);
 
   private ConfigFactory() {
   }
@@ -119,6 +108,16 @@ public class ConfigFactory {
   }
 
   /**
+   * 获取占位符属性
+   *
+   * @param placeholder 占位 eg. ${a}
+   * @return 属性值
+   */
+  public static String getPlaceholderProperty(String placeholder) {
+    return SOURCE_WRAPPER.getPlaceholderProperty(placeholder);
+  }
+
+  /**
    * 获取配置属性，可设置默认值
    *
    * @param key 属性键值
@@ -154,7 +153,7 @@ public class ConfigFactory {
       return clazz.cast(map.get(prefix));
     }
 
-    T val = parse(clazz, prefix);
+    T val = BINDER.bind(clazz, prefix);
     Object other = map.putIfAbsent(prefix, val);
     if (other != null) {
       val = clazz.cast(other);
@@ -188,7 +187,7 @@ public class ConfigFactory {
    */
   public static void load(Object bean, String prefix) {
     if (bean != null) {
-      parse(bean, prefix);
+      BINDER.bind(bean, prefix);
     }
   }
 
@@ -208,73 +207,6 @@ public class ConfigFactory {
    */
   public static Set<String> keys() {
     return PROPS.stringPropertyNames();
-  }
-
-  /**
-   * 解析
-   *
-   * @param clazz 类
-   * @param prefix 前綴
-   * @param <T> 泛型类
-   * @return 配置类
-   */
-  protected static <T> T parse(Class<T> clazz, String prefix) {
-    T obj;
-    try {
-      obj = clazz.getConstructor().newInstance();
-    } catch (Exception e) {
-      throw Exceptions.wrap(e);
-    }
-    Class<?> actualClass = ClassUtils.getCglibActualClass(clazz);
-    if (Strings.DOT.equals(prefix) && actualClass.isAnnotationPresent(ValueConfig.class)) {
-      prefix = actualClass.getAnnotation(ValueConfig.class).value();
-    }
-    return clazz.cast(parse(obj, prefix));
-  }
-
-  protected static Object parse(Object obj, String prefix) {
-    Class<?> clazz = obj.getClass();
-    Field[] fields = ClassUtils.getAllDeclaredFields(clazz);
-    for (Field field : fields) {
-      if (field.isAnnotationPresent(Value.class)) {
-        Value val = field.getAnnotation(Value.class);
-        Object value = getProperty(val.value(), field.getType());
-        if (value != null) {
-          ClassUtils.setValue(obj, field, value);
-        }
-      } else if (prefix != null) {
-        StringBuilder name = new StringBuilder(prefix);
-        if (name.length() > 0) {
-          name.append(Strings.DOT);
-        }
-        name.append(field.getName());
-        Object value = getProperty(name.toString(), field.getType(), false);
-        if (value != null) {
-          ClassUtils.setValue(obj, field, value);
-        }
-      }
-    }
-    return obj;
-  }
-
-  private static Object getProperty(String key, Class<?> type) {
-    return getProperty(key, type, true);
-  }
-
-  private static Object getProperty(String key, Class<?> type, boolean wrap) {
-    String value;
-    if (wrap) {
-      String tmpKey = String.format(TMP_PREFIX, ATOMIC.getAndIncrement());
-      PROPS.setProperty(tmpKey, key);
-      value = getProperty(tmpKey);
-      PROPS.remove(tmpKey);
-    } else {
-      value = getProperty(key);
-    }
-    if (value == null || value.getClass() == type) {
-      return value;
-    }
-    return DefaultConverterService.sharedConverterService().convert(value, type);
   }
 
   private static Properties props() {

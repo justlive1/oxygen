@@ -71,13 +71,12 @@ public class ClassScannerPlugin implements Plugin {
     return store.methods;
   }
 
-  @Override
-  public int order() {
-    return Integer.MIN_VALUE;
-  }
-
-  @Override
-  public void start() {
+  /**
+   * 获取加载到的类
+   *
+   * @return classes
+   */
+  public static Set<Class<?>> getClasses() {
     CoreConf config = ConfigFactory.load(CoreConf.class);
     ClassScanner scanner = new DefaultClassScanner();
     Set<String> pkgs = new HashSet<>(2);
@@ -85,7 +84,17 @@ public class ClassScannerPlugin implements Plugin {
       pkgs.addAll(Arrays.asList(config.getClassScan()));
     }
     pkgs.add("vip.justlive.oxygen");
-    CLASSES.addAll(scanner.scan(pkgs.toArray(new String[0])));
+    return scanner.scan(pkgs.toArray(new String[0]));
+  }
+
+  @Override
+  public int order() {
+    return Integer.MIN_VALUE;
+  }
+
+  @Override
+  public void start() {
+    CLASSES.addAll(getClasses());
   }
 
   @Override

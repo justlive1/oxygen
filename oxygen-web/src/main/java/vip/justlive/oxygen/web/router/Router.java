@@ -89,13 +89,12 @@ public class Router {
    */
   public static Route lookup(HttpMethod method, String path) {
     Route route = SIMPLE_HANDLERS.get(path);
-    if (route != null && route.methods().contains(method)) {
+    if (route != null && (route = route.match(path, method)) != null) {
       return route;
     }
-    for (Map.Entry<String, Route> entry : REGEX_HANDLERS.entrySet()) {
-      if (Pattern.compile(entry.getKey()).matcher(path).matches() && entry.getValue().methods()
-          .contains(method)) {
-        return entry.getValue();
+    for (Route rt : REGEX_HANDLERS.values()) {
+      if ((route = rt.match(path, method)) != null) {
+        return route;
       }
     }
     return null;
@@ -150,7 +149,12 @@ public class Router {
       exist = SIMPLE_HANDLERS.putIfAbsent(route.path(), route);
     }
     if (exist != null) {
-      throw Exceptions.fail(String.format("path [%s] already exists", route.path()));
+      Set<HttpMethod> temp = new HashSet<>(exist.methods());
+      temp.addAll(route.methods());
+      if (temp.size() < exist.methods().size() + route.methods().size()) {
+        throw Exceptions.fail(String.format("path [%s] already exists", route.path()));
+      }
+      exist.next(route);
     }
     if (log.isDebugEnabled()) {
       log.debug("build route: {}", route);

@@ -11,33 +11,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.jdbc;
+
+package vip.justlive.oxygen.jdbc.handler;
 
 /**
- * jdbc包装异常
+ * 属性转换处理
  *
  * @author wubo
  */
-public class JdbcException extends RuntimeException {
-
-  private static final long serialVersionUID = 1L;
-
-  public JdbcException(Throwable e) {
-    super(e);
-  }
-
-  public JdbcException(String msg) {
-    super(msg);
-  }
+public interface PropertyHandler {
 
   /**
-   * 封装异常
+   * 是否支持该类型处理
    *
-   * @param e 异常
-   * @return jdbcException
+   * @param type type
+   * @param value value
+   * @return true is supported
    */
-  public static JdbcException wrap(Throwable e) {
-    return new JdbcException(e);
-  }
+  boolean supported(Class<?> type, Object value);
 
+  /**
+   * 类型转换
+   *
+   * @param type type
+   * @param value value
+   * @return 数据
+   */
+  Object cast(Class<?> type, Object value);
 }

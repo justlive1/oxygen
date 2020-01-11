@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -92,7 +92,7 @@ public class SimpleTemplateEngine implements TemplateEngine {
           SCRIPT_PARSER.parse(template, text -> VARS_PARSER.parse(text, a -> {
             data.add(a);
             return String.format("$out.write($data[%s]);", data.size() - 1);
-          }, b -> String.format("$out.write(''+(%s));", b)), Function.identity()));
+          }, b -> String.format("$out.write(''+(%s));", b)), UnaryOperator.identity()));
       if (COMPILABLE != null) {
         compiledScript = COMPILABLE.compile(parsed);
       } else {

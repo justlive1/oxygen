@@ -23,17 +23,17 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.io.SimpleResourceLoader;
+import vip.justlive.oxygen.core.io.FirstResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.ExpiringMap;
 import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
 import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.HttpHeaders;
+import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.web.http.Request;
@@ -48,14 +48,8 @@ import vip.justlive.oxygen.web.http.Response;
 public class StaticRouteHandler implements RouteHandler {
 
   private static final File TEMP_DIR;
-  private static final Properties MIME_TYPES = new Properties();
 
   static {
-    try {
-      MIME_TYPES.load(StaticRouteHandler.class.getResourceAsStream("/mime-types.properties"));
-    } catch (IOException e) {
-      log.warn("mime types initial failed ", e);
-    }
     TEMP_DIR = FileUtils.createTempDir("static");
   }
 
@@ -83,14 +77,14 @@ public class StaticRouteHandler implements RouteHandler {
     Request req = ctx.request();
     Response resp = ctx.response();
     resp.setContentType(source.getContentType());
-    String browserETag = req.getHeader(HttpHeaders.IF_NONE_MATCH);
     String ifModifiedSince = req.getHeader(HttpHeaders.IF_MODIFIED_SINCE);
     ZonedDateTime last = Instant.ofEpochMilli(source.lastModified()).atZone(ZoneId.systemDefault());
     String eTag = source.eTag();
     resp.setHeader(HttpHeaders.ETAG, eTag);
     try {
-      if (eTag.equals(browserETag) && ifModifiedSince != null && !ZonedDateTime
-          .parse(ifModifiedSince, DateTimeFormatter.RFC_1123_DATE_TIME).isBefore(last)) {
+      if (eTag.equals(req.getHeader(HttpHeaders.IF_NONE_MATCH)) && ifModifiedSince != null
+          && !ZonedDateTime.parse(ifModifiedSince, DateTimeFormatter.RFC_1123_DATE_TIME)
+          .isBefore(last)) {
         resp.setStatus(304);
         return;
       }
@@ -129,16 +123,23 @@ public class StaticRouteHandler implements RouteHandler {
 
   private StaticSource findMappedSource(String path, String basePath) {
     try {
-      SourceResource sourceResource = new SimpleResourceLoader(
-          basePath + path.substring(route.prefix().length()));
+      SourceResource sourceResource = new FirstResourceLoader(
+          basePath + path.substring(route.prefix().length())).getResource();
+      if (sourceResource == null) {
+        return null;
+      }
       File file = sourceResource.getFile();
       if (file != null && file.isDirectory()) {
         return null;
       }
+      if (file != null) {
+        return new StaticSource(file, path, false);
+      }
+      // cache files in jar
       try (InputStream is = sourceResource.getInputStream()) {
         File savedFile = new File(TEMP_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
         Files.copy(is, savedFile.toPath());
-        return new StaticSource(savedFile, path);
+        return new StaticSource(savedFile, path, true);
       }
     } catch (IOException e) {
       // not found or error happens ignore
@@ -164,12 +165,14 @@ public class StaticRouteHandler implements RouteHandler {
     private final Path path;
     private final String contentType;
     private final String requestPath;
+    private final boolean temp;
 
-    StaticSource(File file, String requestPath) {
+    StaticSource(File file, String requestPath, boolean temp) {
       this.path = file.toPath();
       this.requestPath = requestPath;
-      String suffix = requestPath.substring(requestPath.lastIndexOf(Strings.DOT) + 1);
-      contentType = MIME_TYPES.getProperty(suffix, HttpHeaders.APPLICATION_OCTET_STREAM);
+      this.contentType = MoreObjects
+          .firstNonNull(FileUtils.parseMimeType(requestPath), HttpHeaders.APPLICATION_OCTET_STREAM);
+      this.temp = temp;
     }
 
     /**
@@ -193,7 +196,7 @@ public class StaticRouteHandler implements RouteHandler {
     }
 
     void remove() {
-      if (path != null) {
+      if (temp && path != null) {
         FileUtils.deleteFile(path.toFile());
       }
     }

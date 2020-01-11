@@ -22,7 +22,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
-import vip.justlive.oxygen.core.util.IOUtils;
+import vip.justlive.oxygen.core.util.IoUtils;
 import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
@@ -87,13 +87,13 @@ public class HttpResponse implements Closeable {
    * @throws IOException io异常
    */
   public String bodyAsString(Charset charset) throws IOException {
-    return IOUtils.toString(body, charset);
+    return IoUtils.toString(body, charset);
   }
 
   @Override
   public void close() throws IOException {
     if (this.body != null) {
-      IOUtils.drain(this.body);
+      IoUtils.drain(this.body);
       this.body.close();
     }
   }

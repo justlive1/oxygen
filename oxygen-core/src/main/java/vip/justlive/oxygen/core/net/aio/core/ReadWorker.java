@@ -17,6 +17,7 @@ package vip.justlive.oxygen.core.net.aio.core;
 import java.nio.ByteBuffer;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.util.AbstractQueueWorker;
 
 /**
  * 读操作worker
@@ -24,16 +25,18 @@ import lombok.extern.slf4j.Slf4j;
  * @author wubo
  */
 @Slf4j
-public class ReadWorker extends AbstractWorker<ByteBuffer> {
+public class ReadWorker extends AbstractQueueWorker<ByteBuffer> {
 
   private final AioHandler aioHandler;
+  private final ChannelContext channelContext;
   /**
    * 上一次遗留buffer
    */
   private ByteBuffer lastByteBuffer = null;
 
   ReadWorker(ChannelContext channelContext) {
-    super(channelContext);
+    super(channelContext.getGroupContext().getWorkerExecutor());
+    this.channelContext = channelContext;
     this.aioHandler = channelContext.getGroupContext().getAioHandler();
   }
 

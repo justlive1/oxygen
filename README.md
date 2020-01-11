@@ -587,6 +587,8 @@ web.view.jsp.prefix=WEB-INF
 web.view.thymeleaf.prefix=/templates
 # thymeleaf 视图后缀
 web.view.thymeleaf.suffix=.html
+# freemarker 路径前缀
+web.view.freemarker.prefix=/templates
 # 内置简单视图处理 路径前缀
 web.view.simple.prefix=/templates
 # 内置简单视图处理 视图后缀

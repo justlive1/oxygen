@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.FileUtils;
-import vip.justlive.oxygen.core.util.IOUtils;
+import vip.justlive.oxygen.core.util.IoUtils;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.core.util.Strings;
 
@@ -48,7 +48,7 @@ public final class Bootstrap {
   static {
     String version;
     try {
-      version = IOUtils
+      version = IoUtils
           .toString(Bootstrap.class.getResourceAsStream("/vip/justlive/oxygen/core/Version"));
     } catch (Exception e) {
       version = "oxygen/unknown";

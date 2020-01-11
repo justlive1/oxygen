@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.jdbc;
 
+import java.util.Arrays;
 import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
@@ -71,7 +72,12 @@ public class JdbcTest {
     option.setFl(0.2f);
     Record.insert(option);
 
+    Record.findOne(option);
+
+    Assert.assertEquals(2, Record.findByIds(Option.class, Arrays.asList(1, 123)).size());
+
     Assert.assertEquals(2, Record.count(new Option()));
+    Assert.assertEquals(1, Record.find(option).size());
     Assert.assertEquals(2, Record.findAll(Option.class).size());
 
     Record.deleteById(Option.class, 123);
@@ -115,6 +121,7 @@ public class JdbcTest {
     Assert.assertEquals(1, list.size());
     Assert.assertEquals("st2", list.get(0).getSt());
     Assert.assertNull(page.getTotalNumber());
+
   }
 
 }

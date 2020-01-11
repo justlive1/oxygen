@@ -101,8 +101,7 @@ public class ChannelContext {
     if (closed) {
       return;
     }
-    writeWorker.add(data);
-    writeWorker.execute();
+    writeWorker.addThenExecute(data);
   }
 
   void read(ByteBuffer buffer) {
@@ -113,8 +112,7 @@ public class ChannelContext {
     ret.put(buffer);
     ret.flip();
 
-    readWorker.add(ret);
-    readWorker.execute();
+    readWorker.addThenExecute(ret);
   }
 
   /**
@@ -145,8 +143,6 @@ public class ChannelContext {
       readWorker.stop();
       writeWorker.stop();
       Utils.close(channel);
-      readWorker.queue.clear();
-      writeWorker.queue.clear();
       clearAttrs();
     }
   }

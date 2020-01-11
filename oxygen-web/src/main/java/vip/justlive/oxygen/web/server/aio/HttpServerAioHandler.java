@@ -46,6 +46,7 @@ import vip.justlive.oxygen.web.router.RoutingContextImpl;
 @RequiredArgsConstructor
 public class HttpServerAioHandler implements AioHandler {
 
+  private static final int MAX = 2048;
   private final String contextPath;
 
   @Override
@@ -88,7 +89,13 @@ public class HttpServerAioHandler implements AioHandler {
 
     // 响应体
     if (body.length > 0) {
+      if (log.isDebugEnabled() && body.length > MAX) {
+        log.debug("http response [{}*mask*]", bytes.toString());
+      }
       bytes.write(body);
+      if (log.isDebugEnabled() && body.length <= MAX) {
+        log.debug("http response [{}]", bytes.toString());
+      }
     }
     return ByteBuffer.wrap(bytes.toArray());
   }
@@ -108,7 +115,7 @@ public class HttpServerAioHandler implements AioHandler {
       Request request = builder.build(channelContext);
       if (log.isDebugEnabled()) {
         log.debug("Received Http [{}]",
-            new String(buffer.array(), index, buffer.position(), StandardCharsets.ISO_8859_1));
+            new String(buffer.array(), index, buffer.position(), StandardCharsets.UTF_8));
       }
       return request;
     }

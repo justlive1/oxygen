@@ -25,7 +25,7 @@ import vip.justlive.oxygen.core.util.MoreObjects;
  */
 public class DefaultConverterService implements ConverterService, ConverterRegistry {
 
-  private static volatile DefaultConverterService sharedConverterService;
+  private static DefaultConverterService sharedConverterService;
 
   /**
    * 转换器集合

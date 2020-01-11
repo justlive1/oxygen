@@ -14,15 +14,22 @@
 package vip.justlive.oxygen.web.http;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
-import vip.justlive.oxygen.core.util.IOUtils;
+import vip.justlive.oxygen.core.util.Bytes;
+import vip.justlive.oxygen.core.util.IoUtils;
+import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.Urls;
 import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.web.WebConf;
 
 /**
  * 请求基础解析
@@ -39,10 +46,54 @@ public class GeneralParser implements Parser {
 
   @Override
   public void parse(Request request) {
+    parseUri(request);
     if (request.getAttribute(Request.ORIGINAL_REQUEST) instanceof ChannelContext) {
+      parseQueryString(request);
       return;
     }
     new ServletParser().parse(request);
+  }
+
+  private void parseUri(Request request) {
+    int index = request.getRequestUri().indexOf(Strings.QUESTION_MARK);
+    if (index < 0) {
+      request.path = request.getRequestUri();
+      return;
+    }
+    request.path = request.getRequestUri().substring(0, index);
+    request.queryString = request.getRequestUri().substring(index + 1);
+  }
+
+  private void parseQueryString(Request request) {
+    if (request.queryString == null) {
+      return;
+    }
+    int index = 0;
+    char[] chars = request.queryString.toCharArray();
+    String key = null;
+    int start = index;
+    while (index < chars.length) {
+      char c = chars[index];
+      if (c == Bytes.OCTOTHORP) {
+        break;
+      } else if (c == Bytes.EQUAL && key == null) {
+        key = Urls.urlDecode(request.queryString.substring(start, index),
+            Charset.forName(request.encoding));
+        start = index + 1;
+      } else if (c == Bytes.AND && key != null) {
+        margeParam(request.getParams(), key,
+            Urls.urlDecode(request.queryString.substring(start, index),
+                Charset.forName(request.encoding)));
+        key = null;
+        start = index + 1;
+      }
+      index++;
+    }
+    if (key != null) {
+      margeParam(request.getParams(), key,
+          Urls.urlDecode(request.queryString.substring(start, index),
+              Charset.forName(request.encoding)));
+    }
   }
 
   private class ServletParser {
@@ -52,6 +103,13 @@ public class GeneralParser implements Parser {
       request.contextPath = req.getContextPath();
       request.secure = req.isSecure();
       request.remoteAddress = req.getRemoteAddr();
+      try {
+        req.setCharacterEncoding(ConfigFactory.load(WebConf.class).getCharset());
+      } catch (UnsupportedEncodingException e) {
+        //ignore
+      }
+
+      req.getParameterMap().forEach((k, v) -> margeParam(request.getParams(), k, v));
 
       Enumeration<String> headerNames = req.getHeaderNames();
       while (headerNames.hasMoreElements()) {
@@ -67,7 +125,7 @@ public class GeneralParser implements Parser {
       try {
         ServletInputStream in = req.getInputStream();
         if (in != null) {
-          request.body = IOUtils.toBytes(req.getInputStream());
+          request.body = IoUtils.toBytes(req.getInputStream());
         }
       } catch (IOException e) {
         throw Exceptions.wrap(e);

@@ -17,7 +17,7 @@ package vip.justlive.oxygen.core.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -32,15 +32,15 @@ public class TokenParser {
 
   private final String openToken;
   private final String closeToken;
-  private final Function<String, String> textHandler;
-  private final Function<String, String> tokenHandler;
+  private final UnaryOperator<String> textHandler;
+  private final UnaryOperator<String> tokenHandler;
 
   public TokenParser(String openToken, String closeToken) {
-    this(openToken, closeToken, Function.identity(), Function.identity());
+    this(openToken, closeToken, UnaryOperator.identity(), UnaryOperator.identity());
   }
 
-  public TokenParser(String openToken, String closeToken, Function<String, String> tokenHandler) {
-    this(openToken, closeToken, Function.identity(), tokenHandler);
+  public TokenParser(String openToken, String closeToken, UnaryOperator<String> tokenHandler) {
+    this(openToken, closeToken, UnaryOperator.identity(), tokenHandler);
   }
 
   /**
@@ -60,7 +60,7 @@ public class TokenParser {
    * @param tokenHandler token处理逻辑
    * @return 处理后的文本
    */
-  public String parse(String text, Function<String, String> tokenHandler) {
+  public String parse(String text, UnaryOperator<String> tokenHandler) {
     return parse(text, textHandler, tokenHandler);
   }
 
@@ -72,15 +72,15 @@ public class TokenParser {
    * @param tokenHandler token处理逻辑
    * @return 处理后的文本
    */
-  public String parse(String text, Function<String, String> textHandler,
-      Function<String, String> tokenHandler) {
+  public String parse(String text, UnaryOperator<String> textHandler,
+      UnaryOperator<String> tokenHandler) {
     MoreObjects.notNull(textHandler, "textHandler cannot be null");
     MoreObjects.notNull(tokenHandler, "tokenHandler cannot be null");
     final List<Pair<String, Boolean>> statements = new ArrayList<>(2);
     parse0(text, statements);
     StringBuilder sb = new StringBuilder();
     for (Pair<String, Boolean> statement : statements) {
-      if (statement.getValue()) {
+      if (statement.getValue() != null && statement.getValue()) {
         sb.append(tokenHandler.apply(statement.getKey()));
       } else {
         sb.append(textHandler.apply(statement.getKey()));

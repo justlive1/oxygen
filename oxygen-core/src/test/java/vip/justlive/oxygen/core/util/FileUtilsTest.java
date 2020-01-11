@@ -18,6 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Predicate;
@@ -131,5 +132,14 @@ public class FileUtilsTest {
     FileUtils.touch(Paths.get("/tmp/a/8/a.log"));
 
     FileUtils.delete(new File("/tmp/a"));
+  }
+
+  @Test
+  public void testDownload() throws IOException {
+    File file = new File("/tmp/baidu.png");
+    FileUtils.download("https://www.baidu.com/img/bd_logo1.png", file);
+    FileUtils.deleteFile(file);
+    file = FileUtils.download("https://www.baidu.com/img/bd_logo1.png");
+    FileUtils.deleteFile(file);
   }
 }

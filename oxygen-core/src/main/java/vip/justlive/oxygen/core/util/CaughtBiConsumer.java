@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,34 +14,35 @@
 
 package vip.justlive.oxygen.core.util;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
- * 捕获异常的consumer
+ * 捕获异常的bi-consumer
  *
  * @param <T> 泛型
+ * @param <U> 泛型
  * @author wubo
  */
 @Slf4j
 @Getter
 @RequiredArgsConstructor
-public class CaughtConsumer<T> implements Consumer<T> {
+public class CaughtBiConsumer<T, U> implements BiConsumer<T, U> {
 
-  private final Consumer<T> consumer;
+  private final BiConsumer<T, U> consumer;
   private final boolean thrown;
 
-  public CaughtConsumer(Consumer<T> consumer) {
+  public CaughtBiConsumer(BiConsumer<T, U> consumer) {
     this(consumer, false);
   }
 
   @Override
-  public void accept(T t) {
+  public void accept(T t, U u) {
     try {
-      consumer.accept(t);
+      consumer.accept(t, u);
     } catch (Exception e) {
       if (thrown) {
         throw Exceptions.wrap(e);
@@ -51,7 +52,7 @@ public class CaughtConsumer<T> implements Consumer<T> {
   }
 
   @Override
-  public CaughtConsumer<T> andThen(Consumer<? super T> after) {
-    return new CaughtConsumer<>(Consumer.super.andThen(after), thrown);
+  public CaughtBiConsumer<T, U> andThen(BiConsumer<? super T, ? super U> after) {
+    return new CaughtBiConsumer<>(BiConsumer.super.andThen(after), thrown);
   }
 }
