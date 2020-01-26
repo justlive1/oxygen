@@ -33,7 +33,10 @@ public class Exceptions {
    * @return 包装异常
    */
   public static CodedException wrap(Throwable e) {
-    return wrap(e, e.getMessage());
+    if (e instanceof CodedException) {
+      return (CodedException) e;
+    }
+    return new WrappedException(e);
   }
 
 
@@ -71,10 +74,7 @@ public class Exceptions {
     if (e instanceof CodedException) {
       return (CodedException) e;
     }
-    if (e instanceof Exception) {
-      return new WrappedException((Exception) e, errorCode);
-    }
-    return new CodedException(e, errorCode, null);
+    return new WrappedException(e, errorCode);
   }
 
   /**

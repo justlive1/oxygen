@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 justlive1
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,21 +11,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.job;
 
+package vip.justlive.oxygen.core.util;
 
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.Bootstrap;
 
 /**
  * @author wubo
  */
-public class JobPluginTest {
+public class SnowflakeIdWorkerTest {
+
 
   @Test
   public void test() {
-    Bootstrap.start();
-    Assert.assertEquals(4, JobPlugin.currentJobSize());
+    SnowflakeIdWorker.defaultNextId();
+
+    long curr = System.currentTimeMillis();
+    long id = SnowflakeIdWorker.defaultNextId();
+    Assert.assertEquals(curr, SnowflakeIdWorker.getCreatedAt(id));
+
+    SnowflakeIdWorker worker = new SnowflakeIdWorker(3, 12);
+    id = worker.nextId();
+    Assert.assertEquals(3, SnowflakeIdWorker.getWorkerId(id));
+    Assert.assertEquals(12, SnowflakeIdWorker.getDataCenterId(id));
   }
+
 }

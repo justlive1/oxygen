@@ -16,6 +16,7 @@ package vip.justlive.oxygen.jdbc;
 import java.math.BigDecimal;
 import java.util.Date;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import vip.justlive.oxygen.jdbc.record.Column;
 import vip.justlive.oxygen.jdbc.record.Table;
 
@@ -23,6 +24,7 @@ import vip.justlive.oxygen.jdbc.record.Table;
  * @author wubo
  */
 @Data
+@Accessors(chain = true)
 @Table
 public class Option {
 

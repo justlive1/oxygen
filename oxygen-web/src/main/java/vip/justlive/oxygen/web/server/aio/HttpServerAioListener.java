@@ -36,4 +36,18 @@ public class HttpServerAioListener implements AioListener {
       channelContext.close();
     }
   }
+
+  @Override
+  public void onConnected(ChannelContext channelContext) {
+    if (log.isDebugEnabled()) {
+      log.debug("channel connected {}", channelContext);
+    }
+  }
+
+  @Override
+  public void onClosed(ChannelContext channelContext) {
+    if (log.isDebugEnabled()) {
+      log.debug("channel closed {}", channelContext);
+    }
+  }
 }

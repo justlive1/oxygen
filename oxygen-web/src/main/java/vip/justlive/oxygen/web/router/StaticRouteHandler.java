@@ -104,7 +104,7 @@ public class StaticRouteHandler implements RouteHandler {
 
   }
 
-  private StaticSource findStaticResource(String path) {
+  private synchronized StaticSource findStaticResource(String path) {
     if (route.cachingEnabled() && expiringMap.containsKey(path)) {
       return expiringMap.get(path);
     }
@@ -115,8 +115,8 @@ public class StaticRouteHandler implements RouteHandler {
         break;
       }
     }
-    if (source != null && route.cachingEnabled() && expiringMap.putIfAbsent(path, source) != null) {
-      source.remove();
+    if (source != null && route.cachingEnabled()) {
+      expiringMap.put(path, source);
     }
     return source;
   }

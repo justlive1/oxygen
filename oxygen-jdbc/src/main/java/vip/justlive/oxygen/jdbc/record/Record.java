@@ -176,7 +176,7 @@ public final class Record {
    * @param <T> 泛型
    * @return updated
    */
-  public static <T> int update(T obj) {
+  public static <T> int updateById(T obj) {
     Model model = parseClass(obj.getClass());
     List<Object> params = new LinkedList<>();
     try {

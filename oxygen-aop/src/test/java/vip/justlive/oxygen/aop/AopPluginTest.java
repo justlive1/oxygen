@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.aop;
 
+import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.ioc.IocPlugin;
@@ -25,6 +26,8 @@ public class AopPluginTest {
   @Test
   public void test() {
     Bootstrap.start();
-    IocPlugin.beanStore().getBean(Conf.class).print();
+    Conf conf = IocPlugin.beanStore().getBean(Conf.class);
+    Assert.assertNotNull(conf);
+    conf.print();
   }
 }

@@ -52,10 +52,17 @@ public class CodedException extends RuntimeException {
   }
 
   public CodedException(ErrorCode errorCode, Object[] args, Object data) {
-    super(errorCode.getMessage());
     this.errorCode = errorCode;
     this.args = args;
     this.data = data;
+  }
+
+  @Override
+  public String getMessage() {
+    if (errorCode != null) {
+      return errorCode.toString();
+    }
+    return super.getMessage();
   }
 
   @Override

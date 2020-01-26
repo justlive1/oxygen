@@ -16,6 +16,7 @@ package vip.justlive.oxygen.cache;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import vip.justlive.oxygen.aop.Invocation;
 import vip.justlive.oxygen.aop.annotation.Aspect;
@@ -23,11 +24,10 @@ import vip.justlive.oxygen.aop.annotation.Aspect.TYPE;
 import vip.justlive.oxygen.cache.annotation.Cacheable;
 import vip.justlive.oxygen.cache.generator.ArgsKeyGenerator;
 import vip.justlive.oxygen.cache.generator.DefaultKeyGenerator;
-import vip.justlive.oxygen.cache.store.Cache;
-import vip.justlive.oxygen.cache.store.LocalCacheImpl;
+import vip.justlive.oxygen.core.cache.Cache;
+import vip.justlive.oxygen.core.cache.LocalCacheImpl;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.ioc.annotation.Bean;
-import vip.justlive.oxygen.ioc.annotation.Inject;
 
 /**
  * cache切面
@@ -35,17 +35,12 @@ import vip.justlive.oxygen.ioc.annotation.Inject;
  * @author wubo
  */
 @Bean
+@RequiredArgsConstructor
 public class CacheAspect {
 
   static final Cache CACHE = new LocalCacheImpl("Aspect-Cache");
   private final DefaultKeyGenerator defaultKeyGenerator;
   private final ArgsKeyGenerator argsKeyGenerator;
-
-  @Inject
-  public CacheAspect(DefaultKeyGenerator defaultKeyGenerator, ArgsKeyGenerator argsKeyGenerator) {
-    this.defaultKeyGenerator = defaultKeyGenerator;
-    this.argsKeyGenerator = argsKeyGenerator;
-  }
 
   @Aspect(annotation = Cacheable.class, type = TYPE.BEFORE)
   public boolean cacheRead(Invocation invocation) {

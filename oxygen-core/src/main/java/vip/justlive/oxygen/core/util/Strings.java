@@ -41,6 +41,7 @@ public class Strings {
   public static final String QUESTION_MARK = "?";
   public static final String SEMICOLON = ";";
   public static final String SLASH = "/";
+  public static final String BACKSLASH = "\\";
   public static final String UNDERSCORE = "_";
   public static final String UNKNOWN = "unknown";
   public static final String FILE_PREFIX = "file:";

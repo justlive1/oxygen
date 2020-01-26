@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import vip.justlive.oxygen.core.io.PropertiesLoader;
 import vip.justlive.oxygen.core.io.PropertySource;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.Strings;
 
 /**
@@ -94,6 +95,18 @@ public class ConfigFactory {
    */
   public static void loadProperties(PropertySource source) {
     PROPS.putAll(source.props());
+    FACTORY.clear();
+  }
+
+  /**
+   * 设置配置属性
+   *
+   * @param key 键
+   * @param value 值
+   */
+  public static void setProperty(String key, String value) {
+    MoreObjects.notNull(key, "key can not be null");
+    PROPS.setProperty(key, value);
     FACTORY.clear();
   }
 

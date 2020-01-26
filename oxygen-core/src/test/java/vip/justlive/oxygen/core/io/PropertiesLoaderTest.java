@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.exception.CodedException;
 
@@ -72,6 +73,7 @@ public class PropertiesLoaderTest {
     PropertiesLoader loader = new PropertiesLoader("classpath:/xxx.properties");
     loader.ignoreNotFound = true;
     loader.init();
+    Assert.assertTrue(loader.props().isEmpty());
   }
 
   void makeFile() {

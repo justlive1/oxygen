@@ -67,15 +67,16 @@ public class JdbcTest {
     option = Record.findById(Option.class, 1);
     Assert.assertEquals(Long.valueOf(1222), option.getLl());
 
-    option = new Option();
-    option.setId(123L);
-    option.setFl(0.2f);
+    option = new Option().setId(123L).setSt("0.2f");
     Record.insert(option);
 
-    Record.findOne(option);
+    Assert.assertEquals(option, Record.findOne(option));
 
+    option.setSt("22x");
+    Record.updateById(option);
+
+    Assert.assertEquals("22x", Record.findById(Option.class, 123).getSt());
     Assert.assertEquals(2, Record.findByIds(Option.class, Arrays.asList(1, 123)).size());
-
     Assert.assertEquals(2, Record.count(new Option()));
     Assert.assertEquals(1, Record.find(option).size());
     Assert.assertEquals(2, Record.findAll(Option.class).size());

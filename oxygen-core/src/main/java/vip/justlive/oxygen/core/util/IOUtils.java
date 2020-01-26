@@ -30,7 +30,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class IoUtils {
 
-  public static final int BUFFER_SIZE = 4096;
+  private static final int BUFFER_SIZE = 4096;
 
   /**
    * 读完流且不处理

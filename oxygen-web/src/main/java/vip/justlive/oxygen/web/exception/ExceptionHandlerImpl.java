@@ -36,7 +36,7 @@ public class ExceptionHandlerImpl implements ExceptionHandler {
   @Override
   public void handle(RoutingContext ctx, Exception e, int status) {
     if (log.isDebugEnabled()) {
-      Exception re = e;
+      Throwable re = e;
       if (e instanceof WrappedException) {
         re = ((WrappedException) e).getException();
       }

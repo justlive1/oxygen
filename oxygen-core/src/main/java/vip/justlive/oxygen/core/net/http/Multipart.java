@@ -105,18 +105,14 @@ public class Multipart {
         .write(Bytes.LF);
     bytes.write(String.format(FORM_FILE_DATA, part.getName(), part.getFilename()), charset)
         .write(Bytes.CR).write(Bytes.LF);
-    bytes.write(HttpHeaders.CONTENT_TYPE).write(Bytes.COLON).write(Bytes.SPACE)
-        .write(MoreObjects.firstNonNull(
-            FileUtils.parseMimeType(part.getFilename()), HttpHeaders.APPLICATION_OCTET_STREAM));
+    bytes.write(HttpHeaders.CONTENT_TYPE).write(Bytes.COLON).write(Bytes.SPACE).write(MoreObjects
+        .firstNonNull(FileUtils.parseMimeType(part.getFilename()),
+            HttpHeaders.APPLICATION_OCTET_STREAM));
     bytes.write(Bytes.CR).write(Bytes.LF).write(Bytes.CR).write(Bytes.LF);
-    InputStream input = null;
-    try {
-      input = Files.newInputStream(part.getFile().toPath());
+    try (InputStream input = Files.newInputStream(part.getFile().toPath())) {
       IoUtils.copy(input, bytes);
     } catch (IOException e) {
       throw Exceptions.wrap(e);
-    } finally {
-      IoUtils.close(input);
     }
     bytes.write(Bytes.CR).write(Bytes.LF);
   }

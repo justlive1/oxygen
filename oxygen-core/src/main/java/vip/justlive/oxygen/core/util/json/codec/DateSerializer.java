@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,31 +11,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.exception;
+
+package vip.justlive.oxygen.core.util.json.codec;
+
+import java.util.Date;
 
 /**
- * 不带堆栈的异常
+ * date 序列化
  *
  * @author wubo
  */
-public class NoStackException extends CodedException {
+public class DateSerializer implements Serializer {
 
-  private static final long serialVersionUID = 1L;
-
-  public NoStackException(ErrorCode errorCode) {
-    super(errorCode);
-  }
-
-  public NoStackException(ErrorCode errorCode, Object[] args) {
-    super(errorCode, args);
-  }
-
-  public NoStackException(ErrorCode errorCode, Object[] args, Object data) {
-    super(errorCode, args, data);
+  @Override
+  public boolean supported(Class<?> type, Object value) {
+    return value != null && Date.class.isAssignableFrom(type);
   }
 
   @Override
-  public synchronized Throwable fillInStackTrace() {
-    return this;
+  public void serialize(Object value, StringBuilder buf) {
+    Date date = (Date) value;
+    buf.append(date.getTime());
   }
 }

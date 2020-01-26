@@ -1,4 +1,1 @@
-a = ${a}
-#{for (var i in b){ var x = b[i]; }
- b[${i}]=${x}
-#{\}}
+a = ${a};#{for (var i in b){ var x = b[i]; }b[${i}]=${x};#{\}}

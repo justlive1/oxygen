@@ -13,6 +13,8 @@
  */
 package vip.justlive.oxygen.core.util;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * 雪花算法id
  *
@@ -43,7 +45,7 @@ public class SnowflakeIdWorker {
    * @param workerId 工作机器ID,数据范围为0~31
    * @param dataCenterId 数据中心ID,数据范围为0~31
    */
-  public SnowflakeIdWorker(int workerId, int dataCenterId) {
+  public SnowflakeIdWorker(long workerId, long dataCenterId) {
     if (workerId > MAX_WORKER_ID || workerId < 0) {
       throw new IllegalArgumentException(
           String.format("worker Id can't be greater than %d or less than 0", MAX_WORKER_ID));
@@ -67,7 +69,37 @@ public class SnowflakeIdWorker {
   }
 
   /**
-   * 获取id
+   * 根据生成的ID，获取生成时间
+   *
+   * @param id 算法生成的id
+   * @return 生成的时间
+   */
+  public static long getCreatedAt(long id) {
+    return (id >> TIMESTAMP_LEFT_SHIFT & ~(-1L << 41L)) + START_TIME;
+  }
+
+  /**
+   * 根据生成的ID，获取机器id
+   *
+   * @param id 算法生成的id
+   * @return 所属机器的id
+   */
+  public static long getWorkerId(long id) {
+    return id >> WORKER_ID_SHIFT & MAX_WORKER_ID;
+  }
+
+  /**
+   * 根据生成的ID，获取数据中心id
+   *
+   * @param id 算法生成的id
+   * @return 所属数据中心
+   */
+  public static long getDataCenterId(long id) {
+    return id >> DATA_CENTER_ID_SHIFT & MAX_DATA_CENTER_ID;
+  }
+
+  /**
+   * 获取id0
    *
    * @return id
    */
@@ -81,7 +113,7 @@ public class SnowflakeIdWorker {
               lastTimestamp - timestamp));
     }
 
-    // 解决跨毫秒生成ID序列号始终为偶数的缺陷:如果是同一时间生成的，则进行毫秒内序列
+    // 如果是同一时间生成的，则进行毫秒内序列
     if (lastTimestamp == timestamp) {
       // 通过位与运算保证计算的结果范围始终是 0-4095
       sequence = (sequence + 1) & SEQUENCE_MASK;
@@ -112,9 +144,11 @@ public class SnowflakeIdWorker {
 
   private static class InstanceHolder {
 
-    static final SnowflakeIdWorker INSTANCE = new SnowflakeIdWorker(0, 0);
+    static final SnowflakeIdWorker INSTANCE = new SnowflakeIdWorker(0,
+        ThreadLocalRandom.current().nextLong(MAX_DATA_CENTER_ID));
 
     private InstanceHolder() {
     }
   }
+
 }

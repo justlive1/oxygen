@@ -26,13 +26,13 @@ public class WrappedException extends CodedException {
   private static final long serialVersionUID = 3109011947026387897L;
 
   @Getter
-  private final Exception exception;
+  private final Throwable exception;
 
-  public WrappedException(Exception exception) {
+  public WrappedException(Throwable exception) {
     this(exception, null);
   }
 
-  public WrappedException(Exception exception, ErrorCode errorCode) {
+  public WrappedException(Throwable exception, ErrorCode errorCode) {
     super(errorCode);
     this.exception = exception;
   }
@@ -40,5 +40,10 @@ public class WrappedException extends CodedException {
   @Override
   public String getMessage() {
     return String.format("Wrapper of [%s]", exception);
+  }
+
+  @Override
+  public synchronized Throwable fillInStackTrace() {
+    return this;
   }
 }

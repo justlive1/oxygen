@@ -64,35 +64,39 @@ public class Retryer<T> {
     long attemptNumbers = 0;
     while (true) {
       attemptNumbers++;
-      Attempt<T> attempt;
-      try {
-        T value = timeLimiter.call(callable);
-        attempt = new Attempt<>(attemptNumbers, value, System.currentTimeMillis() - startTime);
-      } catch (WrappedException e) {
-        attempt = new Attempt<>(attemptNumbers, e.getException(),
-            System.currentTimeMillis() - startTime);
-      }
+      final Attempt<T> attempt = attempt(callable, attemptNumbers, startTime);
       // on retry
-      final Attempt<T> tAttempt = attempt;
-      retryListeners.forEach(listener -> listener.accept(tAttempt));
+      retryListeners.forEach(listener -> listener.accept(attempt));
       // should retry
-      if (!retryPredicate.test(tAttempt)) {
-        if (tAttempt.hasException()) {
-          failListeners.forEach(listener -> listener.accept(tAttempt));
+      if (!retryPredicate.test(attempt)) {
+        if (attempt.hasException()) {
+          failListeners.forEach(listener -> listener.accept(attempt));
           return null;
         } else {
-          successListeners.forEach(listener -> listener.accept(tAttempt));
-          return tAttempt.getResult();
+          successListeners.forEach(listener -> listener.accept(attempt));
+          return attempt.getResult();
         }
       }
       // should stop
-      if (stopPredicate.test(tAttempt)) {
-        failListeners.forEach(listener -> listener.accept(tAttempt));
+      if (stopPredicate.test(attempt)) {
+        failListeners.forEach(listener -> listener.accept(attempt));
         return null;
       }
       // block
-      blockConsumer.accept(tAttempt);
+      blockConsumer.accept(attempt);
     }
+  }
+
+  Attempt<T> attempt(Callable<T> callable, long attemptNumbers, long startTime) {
+    Attempt<T> attempt;
+    try {
+      T value = timeLimiter.call(callable);
+      attempt = new Attempt<>(attemptNumbers, value, System.currentTimeMillis() - startTime);
+    } catch (WrappedException e) {
+      attempt = new Attempt<>(attemptNumbers, (Exception) e.getException(),
+          System.currentTimeMillis() - startTime);
+    }
+    return attempt;
   }
 
 }

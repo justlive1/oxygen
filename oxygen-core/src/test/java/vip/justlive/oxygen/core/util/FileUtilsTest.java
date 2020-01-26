@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Predicate;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class FileUtilsTest {
@@ -131,15 +132,20 @@ public class FileUtilsTest {
     FileUtils.touch(Paths.get("/tmp/a/8/a.log"));
     FileUtils.touch(Paths.get("/tmp/a/8/a.log"));
 
+    Assert.assertTrue(new File("/tmp/a/8/a.log").exists());
+
     FileUtils.delete(new File("/tmp/a"));
+
   }
 
   @Test
   public void testDownload() throws IOException {
     File file = new File("/tmp/baidu.png");
     FileUtils.download("https://www.baidu.com/img/bd_logo1.png", file);
+    Assert.assertTrue(file.exists());
     FileUtils.deleteFile(file);
     file = FileUtils.download("https://www.baidu.com/img/bd_logo1.png");
     FileUtils.deleteFile(file);
+
   }
 }

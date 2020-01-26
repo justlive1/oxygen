@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,15 +12,13 @@
  * the License.
  */
 
-package vip.justlive.oxygen.cache.store;
+package vip.justlive.oxygen.core.cache;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
-import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
  * cache store
@@ -28,9 +26,11 @@ import vip.justlive.oxygen.core.util.ClassUtils;
  * @author wubo
  */
 @UtilityClass
-class CacheStore {
+public class CacheStore {
 
   static final Map<String, Cache> CACHES = new ConcurrentHashMap<>(4, 1);
+  private static final AtomicReference<CacheFactory> CACHE_FACTORY = new AtomicReference<>(
+      new ClassCacheFactory());
 
   /**
    * 创建cache
@@ -39,16 +39,19 @@ class CacheStore {
    * @return cache
    */
   static Cache createCache(String name) {
-    CoreConf config = ConfigFactory.load(CoreConf.class);
-    if (config.getCacheImplClass() != null && config.getCacheImplClass().length() > 0) {
-      try {
-        Class<?> clazz = ClassUtils.forName(config.getCacheImplClass());
-        return (Cache) clazz.getConstructor(String.class).newInstance(name);
-      } catch (Exception e) {
-        throw Exceptions.wrap(e);
-      }
-    } else {
-      return new LocalCacheImpl(name);
+    return CACHE_FACTORY.get().create(name);
+  }
+
+  /**
+   * 设置缓存工厂
+   *
+   * @param cacheFactory 缓存工厂
+   */
+  public static void setCacheFactory(CacheFactory cacheFactory) {
+    MoreObjects.notNull(cacheFactory, "cache factory can not be null");
+    if (CACHE_FACTORY.get() != cacheFactory) {
+      CACHES.clear();
     }
+    CACHE_FACTORY.set(cacheFactory);
   }
 }

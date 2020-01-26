@@ -14,7 +14,7 @@
 package vip.justlive.oxygen.cache;
 
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.cache.store.Cache;
+import vip.justlive.oxygen.core.cache.Cache;
 import vip.justlive.oxygen.core.Plugin;
 
 /**

@@ -44,33 +44,26 @@ public class AsyncRetryer<T> extends Retryer<T> {
   private Runnable createRunner(Callable<T> callable, long startTime, long attemptNumbers,
       CompletableFuture<T> future) {
     return () -> {
-      Attempt<T> attempt;
-      try {
-        T value = timeLimiter.call(callable);
-        attempt = new Attempt<>(attemptNumbers, value, System.currentTimeMillis() - startTime);
-      } catch (Exception e) {
-        attempt = new Attempt<>(attemptNumbers, e, System.currentTimeMillis() - startTime);
-      }
+      Attempt<T> attempt = attempt(callable, attemptNumbers, startTime);
       // on retry
-      final Attempt<T> tAttempt = attempt;
-      retryListeners.forEach(listener -> listener.accept(tAttempt));
+      retryListeners.forEach(listener -> listener.accept(attempt));
       // should retry
-      if (!retryPredicate.test(tAttempt)) {
-        if (tAttempt.hasException()) {
-          failListeners.forEach(listener -> listener.accept(tAttempt));
-          future.completeExceptionally(tAttempt.getException());
+      if (!retryPredicate.test(attempt)) {
+        if (attempt.hasException()) {
+          failListeners.forEach(listener -> listener.accept(attempt));
+          future.completeExceptionally(attempt.getException());
         } else {
-          successListeners.forEach(listener -> listener.accept(tAttempt));
-          future.complete(tAttempt.getResult());
+          successListeners.forEach(listener -> listener.accept(attempt));
+          future.complete(attempt.getResult());
         }
       }
       if (future.isDone()) {
         return;
       }
       // should stop
-      if (stopPredicate.test(tAttempt)) {
-        failListeners.forEach(listener -> listener.accept(tAttempt));
-        future.completeExceptionally(tAttempt.getException());
+      if (stopPredicate.test(attempt)) {
+        failListeners.forEach(listener -> listener.accept(attempt));
+        future.completeExceptionally(attempt.getException());
       }
       // block
       scheduledExecutorService

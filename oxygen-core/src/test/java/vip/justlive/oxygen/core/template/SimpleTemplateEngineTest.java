@@ -75,7 +75,7 @@ public class SimpleTemplateEngineTest {
   public void t2() {
     String template = Templates.template("classpath:template/tpl.txt");
     String value = engine.render(template, MoreObjects.mapOf("a", 1, "b", new int[]{5, 9, 7}));
-    System.out.println(value);
+    Assert.assertEquals("a = 1;b[0]=5;b[1]=9;b[2]=7;", value);
   }
 
   @Test

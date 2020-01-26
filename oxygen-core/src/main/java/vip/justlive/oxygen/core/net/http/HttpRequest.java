@@ -27,6 +27,7 @@ import lombok.Getter;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.json.Json;
 
 /**
  * http request
@@ -179,7 +180,7 @@ public class HttpRequest {
    * @param body 请求体
    * @return request
    */
-  public HttpRequest jsonBody(String body) {
+  public HttpRequest jsonBody(Object body) {
     this.body = body;
     this.func = this::jsonBodyConvert;
     this.headers.put(HttpHeaders.CONTENT_TYPE, HttpHeaders.APPLICATION_JSON);
@@ -288,7 +289,11 @@ public class HttpRequest {
     if (json == null) {
       return new byte[0];
     }
-    return json.toString().getBytes(charset);
+    if (json instanceof String) {
+      return ((String) json).getBytes(charset);
+    } else {
+      return Json.toJson(json).getBytes(charset);
+    }
   }
 
   private byte[] multipartConvert(Object body) {
