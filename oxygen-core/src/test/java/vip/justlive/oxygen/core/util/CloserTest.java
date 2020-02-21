@@ -15,6 +15,7 @@ public class CloserTest {
   @Test
   public void test() {
     AtomicInteger count = new AtomicInteger();
+    @SuppressWarnings("resource")
     Closer closer = new Closer();
     try {
       closer.register(new CloseAction(count, 2)).check();
@@ -22,7 +23,7 @@ public class CloserTest {
     } catch (IllegalArgumentException e) {
       closer.thrown(e);
     } finally {
-      closer.closeUnchecked();
+      closer.closeQuietly();
     }
     Assert.assertEquals(7, count.get());
   }

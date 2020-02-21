@@ -24,6 +24,7 @@ import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
+import vip.justlive.oxygen.web.servlet.DispatcherServlet;
 
 /**
  * jsp 视图处理
@@ -56,17 +57,18 @@ public class JspViewResultHandler implements ResultHandler {
     if (request.getAttribute(Request.ORIGINAL_REQUEST) instanceof ChannelContext) {
       throw Exceptions.fail("Not servlet container, jsp unsupported");
     }
-    new JspRender().render(request, data);
+    new JspRender().render(request, ctx.response(), data);
   }
 
   private class JspRender {
 
-    void render(Request request, ViewResult data) {
+    void render(Request request, Response response, ViewResult data) {
       HttpServletRequest req = (HttpServletRequest) request.getAttribute(Request.ORIGINAL_REQUEST);
       HttpServletResponse resp = (HttpServletResponse) request
           .getAttribute(Response.ORIGINAL_RESPONSE);
       data.getData().forEach(req::setAttribute);
       String path = Urls.concat(jspPrefix, data.getPath());
+      DispatcherServlet.copyResponse(response, resp);
       try {
         req.getRequestDispatcher(path).forward(req, resp);
       } catch (Exception e) {

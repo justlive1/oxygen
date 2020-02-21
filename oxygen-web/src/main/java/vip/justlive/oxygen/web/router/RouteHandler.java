@@ -36,13 +36,23 @@ public interface RouteHandler {
   }
 
   /**
-   * 处理500异常
+   * 可处理的异常
+   *
+   * @param ctx 上下文
+   * @param e 异常
+   */
+  static void exception(RoutingContext ctx, Exception e) {
+    IocPlugin.beanStore().getBean(ExceptionHandler.class).handle(ctx, e, 500);
+  }
+
+  /**
+   * 无法处理的异常
    *
    * @param ctx 上下文
    * @param e 异常
    */
   static void error(RoutingContext ctx, Exception e) {
-    IocPlugin.beanStore().getBean(ExceptionHandler.class).handle(ctx, e, 500);
+    IocPlugin.beanStore().getBean(ExceptionHandler.class).error(ctx, e);
   }
 
   /**

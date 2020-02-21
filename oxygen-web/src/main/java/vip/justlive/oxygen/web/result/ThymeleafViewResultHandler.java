@@ -74,7 +74,7 @@ public class ThymeleafViewResultHandler implements ResultHandler {
     response.write(resolver.resolve(ctx.request(), data.getPath(), data.getData()));
   }
 
-  class ThymeleafResolver {
+  static class ThymeleafResolver {
 
     private final TemplateEngine templateEngine;
 
@@ -98,7 +98,7 @@ public class ThymeleafViewResultHandler implements ResultHandler {
       return templateEngine.process(path, context);
     }
 
-    class WebContentBuilder {
+    static class WebContentBuilder {
 
       WebContext build(Request request, Locale locale, Map<String, Object> data) {
         HttpServletRequest req = (HttpServletRequest) request
@@ -112,7 +112,7 @@ public class ThymeleafViewResultHandler implements ResultHandler {
     /**
      * 资源模板解析
      */
-    class ResourceTemplateResolver extends StringTemplateResolver {
+    static class ResourceTemplateResolver extends StringTemplateResolver {
 
       private final String prefix;
 

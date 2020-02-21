@@ -25,12 +25,12 @@ public class ToStringSerializer implements Serializer {
   private static final List<Class<?>> WRAPPED = new ArrayList<>();
 
   static {
-    NON_WRAPPED.add(Number.class);
-    NON_WRAPPED.addAll(ClassUtils.allPrimitiveTypes());
-    NON_WRAPPED.addAll(ClassUtils.allWrapperTypes());
-    WRAPPED.addAll(Arrays
-        .asList(Temporal.class, Charset.class, Pattern.class, Locale.class, URI.class, URL.class,
-            UUID.class, Enum.class, Currency.class, ZoneId.class));
+    addNonWrappedType(Number.class);
+    ClassUtils.allPrimitiveTypes().forEach(ToStringSerializer::addNonWrappedType);
+    ClassUtils.allWrapperTypes().forEach(ToStringSerializer::addNonWrappedType);
+    Arrays.asList(Temporal.class, Charset.class, Pattern.class, Locale.class, URI.class, URL.class,
+        UUID.class, Enum.class, Currency.class, ZoneId.class)
+        .forEach(ToStringSerializer::addWrappedType);
   }
 
   /**

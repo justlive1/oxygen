@@ -31,4 +31,11 @@ public interface ExceptionHandler {
    */
   void handle(RoutingContext ctx, Exception e, int status);
 
+  /**
+   * 无法处理的异常
+   *
+   * @param ctx 上下文
+   * @param e 异常
+   */
+  void error(RoutingContext ctx, Throwable e);
 }

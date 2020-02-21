@@ -213,8 +213,8 @@ public class Strings {
     Set<Integer> bChar = b.chars().boxed().collect(Collectors.toSet());
 
     // 统计字频
-    Map<Integer, Integer> aMap = new HashMap<>();
-    Map<Integer, Integer> bMap = new HashMap<>();
+    Map<Integer, Integer> aMap = new HashMap<>(16);
+    Map<Integer, Integer> bMap = new HashMap<>(16);
     for (Integer a1 : aChar) {
       aMap.put(a1, aMap.getOrDefault(a1, 0) + 1);
     }

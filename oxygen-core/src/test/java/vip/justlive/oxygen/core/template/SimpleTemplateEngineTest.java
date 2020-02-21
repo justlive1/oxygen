@@ -31,7 +31,7 @@ public class SimpleTemplateEngineTest {
   @Test
   public void t0() {
 
-    Map<String, Object> attrs = new HashMap<>();
+    Map<String, Object> attrs = new HashMap<>(4);
     attrs.put("a", 1);
     CoreConf conf = new CoreConf();
     conf.setConfigOverridePath("/aaa");
@@ -56,7 +56,7 @@ public class SimpleTemplateEngineTest {
 
   @Test
   public void t1() {
-    Map<String, Object> attrs = new HashMap<>();
+    Map<String, Object> attrs = new HashMap<>(4);
     attrs.put("a", 1);
     CoreConf conf = new CoreConf();
     attrs.put("c", conf);
@@ -80,7 +80,7 @@ public class SimpleTemplateEngineTest {
 
   @Test
   public void t3() {
-    Map<String, Object> attrs = new HashMap<>();
+    Map<String, Object> attrs = new HashMap<>(4);
     attrs.put("a", 1);
     attrs.put("b", "text");
 

@@ -13,16 +13,15 @@
  */
 package vip.justlive.oxygen.web.exception;
 
-import com.alibaba.fastjson.JSON;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.CodedException;
 import vip.justlive.oxygen.core.exception.ErrorCode;
 import vip.justlive.oxygen.core.exception.WrappedException;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.Resp;
+import vip.justlive.oxygen.core.util.json.Json;
 import vip.justlive.oxygen.web.http.Response;
+import vip.justlive.oxygen.web.result.Result;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
 /**
@@ -40,9 +39,25 @@ public class ExceptionHandlerImpl implements ExceptionHandler {
       if (e instanceof WrappedException) {
         re = ((WrappedException) e).getException();
       }
-      log.debug("route handle error", re);
+      log.debug("Route handle error", re);
     }
+    Resp resp = resp(e);
+    ctx.response().setResult(Result.json(resp));
+  }
+
+  @Override
+  public void error(RoutingContext ctx, Throwable e) {
+    log.error("Handler processing failed", e);
     Response response = ctx.response();
+    response.setContentType(HttpHeaders.APPLICATION_JSON);
+    response.setStatus(500);
+    response.write(Json.toJson(resp(e)));
+  }
+
+  private Resp resp(Throwable e) {
+    if (e instanceof WrappedException) {
+      e = ((WrappedException) e).getException();
+    }
     Resp resp = null;
     if (e instanceof CodedException) {
       ErrorCode errorCode = ((CodedException) e).getErrorCode();
@@ -53,13 +68,6 @@ public class ExceptionHandlerImpl implements ExceptionHandler {
     if (resp == null) {
       resp = Resp.error(e.toString());
     }
-    response.setContentType(HttpHeaders.APPLICATION_JSON);
-    response.setStatus(status);
-    try {
-      response.getOut()
-          .write(JSON.toJSONString(resp).getBytes(Charset.forName(response.getEncoding())));
-    } catch (IOException e1) {
-      log.error("exception handle error", e1);
-    }
+    return resp;
   }
 }

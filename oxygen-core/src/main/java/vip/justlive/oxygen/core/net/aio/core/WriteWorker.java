@@ -55,8 +55,6 @@ public class WriteWorker extends AbstractQueueWorker<Object> {
   public void stop() {
     if (this.useFuture) {
       writeFuture.cancel(true);
-    } else {
-      semaphore.release();
     }
     super.stop();
   }

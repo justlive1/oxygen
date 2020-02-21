@@ -53,8 +53,8 @@ public class PageJdbcInterceptor implements JdbcInterceptor {
     ctx.setSql(PageDialectHelper.get().page(page, ctx.getSql()));
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
-  @SuppressWarnings("unchecked")
   public void after(SqlCtx ctx, Object result) {
     if (ctx.isPaged() || ctx.getParams() == null || ctx.getParams().isEmpty() || !(ctx.getParams()
         .get(ctx.getParams().size() - 1) instanceof Page)) {

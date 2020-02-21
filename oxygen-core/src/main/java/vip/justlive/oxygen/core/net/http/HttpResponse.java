@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
 import vip.justlive.oxygen.core.util.IoUtils;
-import vip.justlive.oxygen.core.util.MoreObjects;
 
 /**
  * http response
@@ -44,7 +43,12 @@ public class HttpResponse implements Closeable {
     this.connection = connection;
     this.code = connection.getResponseCode();
     this.message = connection.getResponseMessage();
-    this.body = MoreObjects.firstNonNull(connection.getErrorStream(), connection.getInputStream());
+    InputStream in = connection.getErrorStream();
+    if (in == null) {
+      this.body = connection.getInputStream();
+    } else {
+      this.body = in;
+    }
     this.charset = charset;
   }
 

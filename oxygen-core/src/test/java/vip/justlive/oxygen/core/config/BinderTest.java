@@ -88,12 +88,27 @@ public class BinderTest {
 
   }
 
+  @Test
+  public void testArray() {
+    Properties prop = new Properties();
+    prop.setProperty("f1", "1");
+    prop.setProperty("f2", "2");
+    prop.setProperty("f3", "3,1");
+
+    Binder binder = new Binder(() -> prop);
+    Obj obj = binder.bind(Obj.class);
+    Assert.assertNotNull(obj.f3);
+    Assert.assertEquals(2, obj.f3.length);
+    Assert.assertEquals(new Integer(3), obj.f3[0]);
+  }
+
   @Data
   static class Obj {
 
     private String f1;
     @Value("${12}")
     private String f2;
+    private Integer[] f3;
   }
 
   @Data

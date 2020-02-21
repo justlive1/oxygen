@@ -56,7 +56,7 @@ public interface Parser extends Order {
       newValues = values;
     } else {
       newValues = new String[oldValues.length + values.length];
-      System.arraycopy(oldValues, 0, newValues, 0, newValues.length);
+      System.arraycopy(oldValues, 0, newValues, 0, oldValues.length);
     }
     map.put(key, newValues);
   }

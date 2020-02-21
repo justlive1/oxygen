@@ -24,7 +24,7 @@ public class ReferenceSerializer implements Serializer {
   public void serialize(Object value, StringBuilder buf) {
     Object obj;
     if (value instanceof AtomicReference) {
-      obj = ((AtomicReference) value).get();
+      obj = ((AtomicReference<?>) value).get();
     } else {
       obj = ((Reference<?>) value).get();
     }

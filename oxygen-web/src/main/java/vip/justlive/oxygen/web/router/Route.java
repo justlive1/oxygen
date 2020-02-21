@@ -35,8 +35,9 @@ import vip.justlive.oxygen.core.net.http.HttpMethod;
 @Accessors(fluent = true)
 public class Route {
 
+  private static final Pattern REGEX_PATH_GROUP = Pattern.compile("\\{(\\w+)[}]");
   public static final String REGEX_PATH_VAR = "\\{\\w+}";
-  public static final String REGEX_PATH_VAR_REPLACE = "(\\\\w+)";
+  public static final String REGEX_PATH_VAR_REPLACE = "([^/?]*)";
 
   /**
    * 方法
@@ -84,7 +85,7 @@ public class Route {
    * @return router
    */
   public Route path(String path) {
-    Matcher matcher = Router.REGEX_PATH_GROUP.matcher(path);
+    Matcher matcher = REGEX_PATH_GROUP.matcher(path);
     int start = 0;
     if (matcher.find(start)) {
       do {

@@ -56,7 +56,7 @@ public class Closer implements Closeable {
 
   @Override
   public void close() throws IOException {
-    closeUnchecked();
+    closeQuietly();
     if (thrown instanceof IOException) {
       throw (IOException) thrown;
     }
@@ -68,7 +68,7 @@ public class Closer implements Closeable {
   /**
    * 关闭
    */
-  public void closeUnchecked() {
+  public void closeQuietly() {
     while (!stack.isEmpty()) {
       try {
         stack.pop().close();

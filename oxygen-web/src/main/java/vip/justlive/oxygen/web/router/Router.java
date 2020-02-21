@@ -35,7 +35,6 @@ import vip.justlive.oxygen.core.net.http.HttpMethod;
 @UtilityClass
 public class Router {
 
-  static final Pattern REGEX_PATH_GROUP = Pattern.compile("\\{(\\w+)[}]");
   private static final Map<String, Route> SIMPLE_HANDLERS = new ConcurrentHashMap<>(4, 1);
   private static final Map<String, Route> REGEX_HANDLERS = new ConcurrentHashMap<>(4, 1);
   private static final Map<String, RouteHandler> STATIC_HANDLERS = new HashMap<>(4, 1);
@@ -154,7 +153,7 @@ public class Router {
       if (temp.size() < exist.methods().size() + route.methods().size()) {
         throw Exceptions.fail(String.format("path [%s] already exists", route.path()));
       }
-      exist.next(route);
+      exist.next(route.next(exist.next()));
     }
     if (log.isDebugEnabled()) {
       log.debug("build route: {}", route);
