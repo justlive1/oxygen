@@ -45,23 +45,18 @@ public class RedirectResultHandler implements ResultHandler {
     response.setStatus(data.getStatus());
 
     StringBuilder sb = new StringBuilder();
-    if (data.getUrl().matches(PROTOCOLS_REGEX)) {
-      sb.append(data.getUrl());
-    } else {
+    if (!data.getUrl().matches(PROTOCOLS_REGEX)) {
       if (request.isSecure()) {
         sb.append(HttpHeaders.HTTPS_PREFIX);
       } else {
         sb.append(HttpHeaders.HTTP_PREFIX);
       }
       sb.append(request.getHost());
-      if (request.getPort() != DEFAULT_HTTP_PORT && request.getPort() != DEFAULT_HTTPS_PORT) {
-        sb.append(Strings.COLON).append(request.getPort());
-      }
       if (!data.getUrl().startsWith(Strings.SLASH)) {
         sb.append(ctx.requestPath()).append(Strings.SLASH);
       }
-      sb.append(data.getUrl());
     }
+    sb.append(data.getUrl());
     response.setHeader(HttpHeaders.LOCATION, sb.toString());
   }
 }

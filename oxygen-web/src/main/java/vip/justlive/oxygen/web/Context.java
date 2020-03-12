@@ -61,80 +61,6 @@ public class Context {
   }
 
   /**
-   * finally中执行
-   *
-   * @param ctx 上下文
-   */
-  public static void invokeFinished(RoutingContext ctx) {
-    for (int i = HOOKS.size() - 1; i >= 0; i--) {
-      HOOKS.get(i).finished(ctx);
-    }
-  }
-
-  /**
-   * 执行后置处理
-   *
-   * @param ctx 上下文
-   */
-  public static void invokeAfter(RoutingContext ctx) {
-    for (int i = HOOKS.size() - 1; i >= 0; i--) {
-      HOOKS.get(i).after(ctx);
-    }
-  }
-
-  /**
-   * 执行前置处理
-   *
-   * @param ctx 上下文
-   * @return 返回false中断处理
-   */
-  public static boolean invokeBefore(RoutingContext ctx) {
-    for (WebHook webHook : HOOKS) {
-      if (!webHook.before(ctx)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * 解析请求
-   *
-   * @param request 请求
-   */
-  public static void parseRequest(Request request) {
-    PARSERS.forEach(parser -> parser.parse(request));
-  }
-
-  /**
-   * 重新保存session
-   *
-   * @param request 请求
-   * @param response 响应
-   */
-  public static void restoreSession(Request request, Response response) {
-    if (request.getSession() != null && !request.getSession().getId()
-        .equals(request.getCookieValue(Session.SESSION_COOKIE_KEY))) {
-      response.setCookie(Session.SESSION_COOKIE_KEY, request.getSession().getId());
-    }
-    SESSION_MANAGER.restoreSession(request.getSession());
-  }
-
-  /**
-   * 处理结果
-   *
-   * @param ctx 上下文
-   */
-  public static void handleResult(RoutingContext ctx) {
-    for (ResultHandler resultHandler : Context.HANDLERS) {
-      if (resultHandler.support(ctx.response().getResult())) {
-        resultHandler.apply(ctx, ctx.response().getResult());
-        break;
-      }
-    }
-  }
-
-  /**
    * dispatch
    *
    * @param ctx 上下文
@@ -160,4 +86,79 @@ public class Context {
       Context.handleResult(ctx);
     }
   }
+
+  /**
+   * finally中执行
+   *
+   * @param ctx 上下文
+   */
+  private static void invokeFinished(RoutingContext ctx) {
+    for (int i = HOOKS.size() - 1; i >= 0; i--) {
+      HOOKS.get(i).finished(ctx);
+    }
+  }
+
+  /**
+   * 执行后置处理
+   *
+   * @param ctx 上下文
+   */
+  private static void invokeAfter(RoutingContext ctx) {
+    for (int i = HOOKS.size() - 1; i >= 0; i--) {
+      HOOKS.get(i).after(ctx);
+    }
+  }
+
+  /**
+   * 执行前置处理
+   *
+   * @param ctx 上下文
+   * @return 返回false中断处理
+   */
+  private static boolean invokeBefore(RoutingContext ctx) {
+    for (WebHook webHook : HOOKS) {
+      if (!webHook.before(ctx)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * 解析请求
+   *
+   * @param request 请求
+   */
+  private static void parseRequest(Request request) {
+    PARSERS.forEach(parser -> parser.parse(request));
+  }
+
+  /**
+   * 重新保存session
+   *
+   * @param request 请求
+   * @param response 响应
+   */
+  private static void restoreSession(Request request, Response response) {
+    if (request.getSession() != null && !request.getSession().getId()
+        .equals(request.getCookieValue(Session.SESSION_COOKIE_KEY))) {
+      response.setCookie(Session.SESSION_COOKIE_KEY, request.getSession().getId());
+    }
+    SESSION_MANAGER.restoreSession(request.getSession());
+  }
+
+  /**
+   * 处理结果
+   *
+   * @param ctx 上下文
+   */
+  private static void handleResult(RoutingContext ctx) {
+    for (ResultHandler resultHandler : Context.HANDLERS) {
+      if (resultHandler.support(ctx.response().getResult())) {
+        resultHandler.apply(ctx, ctx.response().getResult());
+        break;
+      }
+    }
+  }
+
 }

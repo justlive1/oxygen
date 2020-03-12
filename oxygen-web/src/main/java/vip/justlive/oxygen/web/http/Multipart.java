@@ -21,6 +21,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.FileCleaner;
 
 /**
  * multipart请求类型
@@ -38,6 +39,7 @@ public class Multipart implements Serializable {
    * boundary
    */
   private final byte[] boundary;
+  private final FileCleaner cleaner = new FileCleaner();
   private transient Map<String, MultipartItem> data;
 
   public Multipart(String boundary, String encoding) {

@@ -25,6 +25,7 @@ import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
 import vip.justlive.oxygen.core.util.Bytes;
+import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.IoUtils;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.core.util.Urls;
@@ -47,6 +48,7 @@ public class GeneralParser implements Parser {
   @Override
   public void parse(Request request) {
     parseUri(request);
+    parsePath(request);
     if (request.getAttribute(Request.ORIGINAL_REQUEST) instanceof ChannelContext) {
       parseQueryString(request);
       return;
@@ -62,6 +64,35 @@ public class GeneralParser implements Parser {
     }
     request.path = request.getRequestUri().substring(0, index);
     request.queryString = request.getRequestUri().substring(index + 1);
+  }
+
+  private void parsePath(Request request) {
+    if (!Strings.hasText(request.path)) {
+      return;
+    }
+    String path = null;
+    if (request.path.startsWith(HttpHeaders.HTTP_PREFIX)) {
+      path = request.path.substring(HttpHeaders.HTTP_PREFIX.length());
+    } else if (request.path.startsWith(HttpHeaders.HTTPS_PREFIX)) {
+      path = request.path.substring(HttpHeaders.HTTPS_PREFIX.length());
+    }
+
+    if (path != null) {
+      int slash = path.indexOf(Strings.SLASH);
+      if (slash > -1) {
+        request.host = path.substring(0, slash);
+        path = path.substring(slash);
+      } else {
+        request.host = path;
+        path = Strings.SLASH;
+      }
+    } else {
+      path = request.path;
+    }
+    if (path.length() == 0) {
+      path = Strings.SLASH;
+    }
+    request.path = path;
   }
 
   private void parseQueryString(Request request) {

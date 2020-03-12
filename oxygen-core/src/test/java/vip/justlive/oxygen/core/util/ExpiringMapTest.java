@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.util.ExpiringMap.CleanPolicy;
 import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
+import vip.justlive.oxygen.core.util.ExpiringMap.RemovalCause;
 
 public class ExpiringMapTest {
 
@@ -148,11 +149,18 @@ public class ExpiringMapTest {
   @Test
   public void test5() throws InterruptedException {
     List<String> list = new ArrayList<>();
+    List<String> size = new ArrayList<>();
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
         // 默认失效时间 10
         .expiration(30, TimeUnit.MILLISECONDS)
         // 累积1次
-        .accumulateThreshold(1).maxSize(2).asyncExpiredListeners((k, v) -> list.add(k)).build();
+        .accumulateThreshold(1).maxSize(2).asyncExpiredListeners((k, v, cause) -> {
+          list.add(k);
+          if (cause == RemovalCause.SIZE) {
+            size.add(k);
+          }
+        })
+        .build();
 
     expiringMap.put("1", 1);
     expiringMap.put("2", 2);
@@ -166,7 +174,8 @@ public class ExpiringMapTest {
     Assert.assertEquals("1", list.get(0));
     Assert.assertEquals("2", list.get(1));
 
-
+    Assert.assertEquals(1, size.size());
+    Assert.assertEquals("1", size.get(0));
   }
 
 }

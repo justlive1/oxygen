@@ -18,6 +18,7 @@ import java.util.Locale;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
 import vip.justlive.oxygen.core.net.http.HttpMethod;
 import vip.justlive.oxygen.core.util.HttpHeaders;
+import vip.justlive.oxygen.core.util.MoreObjects;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.ioc.annotation.Bean;
 
@@ -78,13 +79,13 @@ public class HeaderParser implements Parser {
   }
 
   private void parseHost(Request request) {
-    String host = request.getHeader(HttpHeaders.HOST_NAME);
-    if (host.contains(Strings.COLON)) {
-      String[] arr = host.split(Strings.COLON);
-      request.host = arr[0];
+    request.host = MoreObjects.firstNonNull(request.host, request.getHeader(HttpHeaders.HOST_NAME));
+    if (request.host.contains(Strings.COLON)) {
+      String[] arr = request.host.split(Strings.COLON);
+      request.domain = arr[0];
       request.port = Integer.parseInt(arr[1]);
     } else {
-      request.host = host;
+      request.domain = request.host;
       request.port = 80;
     }
   }

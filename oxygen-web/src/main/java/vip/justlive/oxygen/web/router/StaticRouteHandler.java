@@ -31,6 +31,7 @@ import vip.justlive.oxygen.core.io.FirstResourceLoader;
 import vip.justlive.oxygen.core.io.SourceResource;
 import vip.justlive.oxygen.core.util.ExpiringMap;
 import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
+import vip.justlive.oxygen.core.util.ExpiringMap.RemovalCause;
 import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.MoreObjects;
@@ -137,7 +138,8 @@ public class StaticRouteHandler implements RouteHandler {
       }
       // cache files in jar
       try (InputStream is = sourceResource.getInputStream()) {
-        File savedFile = new File(TEMP_DIR, String.valueOf(SnowflakeIdWorker.defaultNextId()));
+        File savedFile = new File(TEMP_DIR,
+            SnowflakeIdWorker.defaultNextId() + Strings.DOT + FileUtils.extension(path));
         Files.copy(is, savedFile.toPath());
         return new StaticSource(savedFile, path, true);
       }
@@ -147,9 +149,9 @@ public class StaticRouteHandler implements RouteHandler {
     return null;
   }
 
-  private void cleanExpiredFile(String key, StaticSource source) {
+  private void cleanExpiredFile(String key, StaticSource source, RemovalCause cause) {
     if (log.isDebugEnabled()) {
-      log.debug("static mapping cached source expired for [{}] [{}]", key, source);
+      log.debug("static mapping cached source expired for [{}] [{}] [{}]", key, source, cause);
     }
     if (source != null) {
       source.remove();

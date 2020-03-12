@@ -81,7 +81,7 @@ public class Request implements Serializable {
    */
   byte[] body;
   /**
-   * 主机名
+   * ip:port
    */
   String host;
   /**
@@ -96,6 +96,10 @@ public class Request implements Serializable {
    * 客户端ip
    */
   String remoteAddress;
+  /**
+   * 主机名
+   */
+  String domain;
   /**
    * 端口
    */

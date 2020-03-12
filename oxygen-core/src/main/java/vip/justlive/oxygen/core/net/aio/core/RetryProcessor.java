@@ -51,6 +51,7 @@ public class RetryProcessor implements Runnable {
         hasNext = false;
         log.error("{} client try to connect to {} reached the max attempts [{}]",
             client.getChannelContext(), client.getGroupContext().getServerAddress(), retryAttempts);
+        client.close();
         return;
       }
 

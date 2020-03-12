@@ -21,6 +21,7 @@ public class Strings {
   public static final String AND = "&";
   public static final String ANY = "*";
   public static final String ANY_PATH = "/*";
+  public static final String AT = "@";
   public static final String CLOSE_BRACE = "}";
   public static final String CLOSE_BRACKET = "]";
   public static final String CLOSE_PAREN = ")";

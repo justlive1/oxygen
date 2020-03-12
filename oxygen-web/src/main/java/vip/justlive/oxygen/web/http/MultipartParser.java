@@ -39,7 +39,7 @@ public class MultipartParser implements Parser {
     }
     try {
       MultipartStream multipart = new MultipartStream(new ByteArrayInputStream(request.body),
-          request.getMultipart().getBoundary(), request.getEncoding());
+          request.getMultipart(), request.getEncoding());
       multipart.readMultipartItem();
       multipart.formData.forEach((k, v) -> margeParam(request.getParams(), k, v));
       Map<String, MultipartItem> map = request.getMultipart().getData();
