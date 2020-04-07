@@ -63,8 +63,8 @@ public class PageDialectHelper {
   }
 
   public static PageDialect guess(DataSource dataSource) {
-    try {
-      return guess(dataSource.getConnection());
+    try (Connection connection = dataSource.getConnection()) {
+      return guess(connection);
     } catch (Exception e) {
       throw JdbcException.wrap(e);
     }

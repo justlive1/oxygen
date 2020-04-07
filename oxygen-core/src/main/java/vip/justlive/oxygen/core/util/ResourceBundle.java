@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.core.util;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -144,13 +145,13 @@ public class ResourceBundle extends AbstractResourceLoader implements Plugin {
     for (SourceResource resource : res) {
       this.resources.add(resource);
       String[] arr = resource.path().split(Strings.UNDERSCORE);
-      try {
+      try (Reader reader = getReader(resource)) {
         if (arr.length == 1) {
-          PROPS.load(getReader(resource));
+          PROPS.load(reader);
         } else if (arr.length == 3) {
           I18N.computeIfAbsent(
               arr[1] + Strings.UNDERSCORE + arr[2].substring(0, arr[2].indexOf(Strings.DOT)),
-              k -> new Properties()).load(getReader(resource));
+              k -> new Properties()).load(reader);
         } else {
           log.warn("file [{}] used an illegal name", resource.path());
         }

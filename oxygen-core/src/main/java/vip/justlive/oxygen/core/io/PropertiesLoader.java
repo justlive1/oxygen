@@ -14,6 +14,7 @@
 package vip.justlive.oxygen.core.io;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
@@ -79,11 +80,11 @@ public class PropertiesLoader extends AbstractResourceLoader implements Property
     this.ready = true;
     this.resources.addAll(this.parse(this.locations));
     for (SourceResource resource : this.resources) {
-      try {
+      try (Reader reader = this.getReader(resource)) {
         if (log.isDebugEnabled()) {
           log.debug("loading resource [{}]", resource.path());
         }
-        props.load(this.getReader(resource));
+        props.load(reader);
       } catch (IOException e) {
         if (log.isDebugEnabled()) {
           log.debug("resource [{}] read error", resource.path(), e);

@@ -18,6 +18,7 @@ import java.util.Properties;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
+import vip.justlive.oxygen.core.net.aio.core.Server;
 
 /**
  * @author wubo
@@ -32,6 +33,7 @@ public class BinderTest {
 
     prop.setProperty("lc.f1", "4");
     prop.setProperty("lc.f2", "5");
+    prop.setProperty("lc.f4.port", "5");
 
     prop.setProperty("rp.f1", "6");
     prop.setProperty("rp.f2", "7");
@@ -120,5 +122,7 @@ public class BinderTest {
     private String f2;
 
     private Obj f3;
+    @Ignore
+    private Server f4;
   }
 }

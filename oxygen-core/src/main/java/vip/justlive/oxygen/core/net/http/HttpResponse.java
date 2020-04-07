@@ -100,5 +100,6 @@ public class HttpResponse implements Closeable {
       IoUtils.drain(this.body);
       this.body.close();
     }
+    this.connection.disconnect();
   }
 }

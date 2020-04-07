@@ -112,8 +112,7 @@ public class DefaultClassScanner implements ClassScanner {
 
   private void findJarMatchPath(URL rootUrl, String subPattern, Set<Class<?>> classes)
       throws IOException {
-    JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl);
-    try {
+    try (JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl)) {
       if (log.isDebugEnabled()) {
         log.debug("Looking for matching resources in jar file [" + jarFileInfo.jarFileUrl + "]");
       }
@@ -136,8 +135,6 @@ public class DefaultClassScanner implements ClassScanner {
           }
         }
       }
-    } finally {
-      jarFileInfo.jarFile.close();
     }
   }
 

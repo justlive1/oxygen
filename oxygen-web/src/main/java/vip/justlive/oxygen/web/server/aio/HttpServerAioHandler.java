@@ -158,7 +158,7 @@ public class HttpServerAioHandler implements AioHandler {
         data = new byte[curr - position - 1];
         getData(data, buffer, curr, position);
         position = curr;
-        String line = new String(data);
+        String line = new String(data, StandardCharsets.UTF_8);
         if (method == null) {
           method = line;
         } else if (requestUrl == null) {
@@ -170,7 +170,7 @@ public class HttpServerAioHandler implements AioHandler {
         int curr = buffer.position();
         data = new byte[curr - position - 2];
         getData(data, buffer, curr, position);
-        return new RequestBuilder(method, requestUrl, new String(data));
+        return new RequestBuilder(method, requestUrl, new String(data, StandardCharsets.UTF_8));
       }
     }
     return null;
@@ -192,12 +192,12 @@ public class HttpServerAioHandler implements AioHandler {
       if (name == null && b == Bytes.COLON) {
         data = new byte[curr - position - 1];
         getData(data, buffer, curr, position);
-        name = new String(data);
+        name = new String(data, StandardCharsets.UTF_8);
         position = curr;
       } else if (name != null && lineFinished(buffer, b)) {
         data = new byte[curr - position - 2];
         getData(data, buffer, curr, position);
-        builder.addHeader(name, new String(data).trim());
+        builder.addHeader(name, new String(data, StandardCharsets.UTF_8).trim());
         name = null;
         position = curr;
         if (headerFinished(buffer)) {

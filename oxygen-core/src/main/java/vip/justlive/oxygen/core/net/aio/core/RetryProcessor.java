@@ -37,43 +37,46 @@ public class RetryProcessor implements Runnable {
       return;
     }
 
-    boolean hasNext = true;
     try {
-      if (client.getChannelContext() == null || !client.getChannelContext().isClosed()) {
+      client.getChannels().values().forEach(this::handle);
+    } finally {
+      if (!client.getChannels().isEmpty()) {
+        client.getGroupContext().getScheduledExecutor()
+            .schedule(this, client.getGroupContext().getRetryInterval(), TimeUnit.MILLISECONDS);
+      }
+    }
+  }
+
+  private void handle(ChannelContext channelContext) {
+    try {
+      if (!channelContext.isClosed()) {
         return;
       }
 
-      int retryAttempts = client.getChannelContext().getRetryAttempts() + 1;
-      client.getChannelContext().setRetryAttempts(retryAttempts);
+      int retryAttempts = channelContext.getRetryAttempts() + 1;
+      channelContext.setRetryAttempts(retryAttempts);
 
       if (client.getGroupContext().getRetryMaxAttempts() > 0 && retryAttempts > client
           .getGroupContext().getRetryMaxAttempts()) {
-        hasNext = false;
-        log.error("{} client try to connect to {} reached the max attempts [{}]",
-            client.getChannelContext(), client.getGroupContext().getServerAddress(), retryAttempts);
-        client.close();
+        log.error("{} client try to connect to {} reached the max attempts [{}]", channelContext,
+            channelContext.getServerAddress(), client.getGroupContext().getRetryMaxAttempts());
+        client.close(channelContext);
         return;
       }
 
       if (log.isDebugEnabled()) {
-        log.info("{} client try to connect to {} for {} attempt(s)", client.getChannelContext(),
-            client.getGroupContext().getServerAddress(), retryAttempts);
+        log.info("{} client try to connect to {} for {} attempt(s)", channelContext,
+            channelContext.getServerAddress(), retryAttempts);
       }
 
-      ChannelContext channelContext = client.getChannelContext();
       AsynchronousSocketChannel channel = Utils.create(channelContext.getGroupContext());
       channelContext.setChannel(channel);
-      channel.connect(channelContext.getGroupContext().getServerAddress(), channelContext,
+      channel.connect(channelContext.getServerAddress(), channelContext,
           ConnectHandler.INSTANCE);
+      channelContext.join();
     } catch (IOException e) {
-      log.error("{} client try to connect to {} failed for {} attempt(s)",
-          client.getChannelContext(), client.getChannelContext().getRetryAttempts(),
-          client.getGroupContext().getServerAddress(), e);
-    } finally {
-      if (hasNext) {
-        client.getGroupContext().getScheduledExecutor()
-            .schedule(this, client.getGroupContext().getRetryInterval(), TimeUnit.MILLISECONDS);
-      }
+      log.error("{} client try to connect to {} failed for {} attempt(s)", channelContext,
+          channelContext.getRetryAttempts(), channelContext.getServerAddress(), e);
     }
   }
 }

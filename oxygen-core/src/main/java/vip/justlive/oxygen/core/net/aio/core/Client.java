@@ -18,10 +18,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import vip.justlive.oxygen.core.util.SystemUtils;
-import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
  * aio 客户端
@@ -34,8 +35,9 @@ public class Client {
   private final GroupContext groupContext;
   private final BeatProcessor beatProcessor;
   private final RetryProcessor retryProcessor;
+  private volatile boolean started;
   @Getter
-  private ChannelContext channelContext;
+  private Map<Long, ChannelContext> channels = new ConcurrentHashMap<>(4);
 
   public Client(GroupContext groupContext) {
     this.groupContext = groupContext;
@@ -48,20 +50,22 @@ public class Client {
    *
    * @param host 主机
    * @param port 端口
+   * @return channelContext
    * @throws IOException io异常时抛出
    */
-  public void connect(String host, int port) throws IOException {
-    connect(new InetSocketAddress(host, port));
+  public ChannelContext connect(String host, int port) throws IOException {
+    return connect(new InetSocketAddress(host, port));
   }
 
   /**
    * 连接服务器,本地随机端口
    *
    * @param remote 远程地址
+   * @return channelContext
    * @throws IOException io异常时抛出
    */
-  public void connect(InetSocketAddress remote) throws IOException {
-    connect(remote, new InetSocketAddress(SystemUtils.findAvailablePort()));
+  public ChannelContext connect(InetSocketAddress remote) throws IOException {
+    return connect(remote, new InetSocketAddress(SystemUtils.findAvailablePort()));
   }
 
   /**
@@ -69,19 +73,24 @@ public class Client {
    *
    * @param remote 远程地址
    * @param bind 本机绑定地址
+   * @return channelContext
    * @throws IOException io异常时抛出
    */
-  public void connect(InetSocketAddress remote, InetSocketAddress bind) throws IOException {
-    groupContext.setServerAddress(remote);
+  public ChannelContext connect(InetSocketAddress remote, InetSocketAddress bind)
+      throws IOException {
     AsynchronousChannelGroup channelGroup = AsynchronousChannelGroup
         .withThreadPool(groupContext.getGroupExecutor());
     groupContext.setChannelGroup(channelGroup);
     AsynchronousSocketChannel channel = Utils.create(groupContext, bind);
-    channelContext = new ChannelContext(groupContext, channel, false);
+    ChannelContext channelContext = new ChannelContext(groupContext, channel, false);
+    channelContext.setServerAddress(remote);
     channel.connect(remote, channelContext, ConnectHandler.INSTANCE);
 
-    channelContext.getFuture().join();
-
+    channels.put(channelContext.getId(), channelContext);
+    if (started) {
+      return channelContext;
+    }
+    started = true;
     if (groupContext.getAioHandler().beat(channelContext) != null) {
       groupContext.getScheduledExecutor()
           .schedule(beatProcessor, groupContext.getBeatInterval(), TimeUnit.MILLISECONDS);
@@ -90,27 +99,28 @@ public class Client {
       groupContext.getScheduledExecutor()
           .schedule(retryProcessor, groupContext.getRetryInterval(), TimeUnit.MILLISECONDS);
     }
+    return channelContext;
+  }
+
+  /**
+   * 关闭单个channel
+   *
+   * @param channelContext channel
+   */
+  public void close(ChannelContext channelContext) {
+    channels.remove(channelContext.getId());
+    channelContext.close();
   }
 
   /**
    * 关闭客户端
    */
   public void close() {
-    if (channelContext != null) {
+    for (ChannelContext channelContext : channels.values()) {
       channelContext.close();
-      ThreadUtils.sleep(10);
-      groupContext.close();
     }
+    channels.clear();
+    groupContext.close();
   }
 
-  /**
-   * 向服务端写入数据
-   *
-   * @param data 数据
-   */
-  public void write(Object data) {
-    if (channelContext != null) {
-      channelContext.write(data);
-    }
-  }
 }

@@ -29,8 +29,6 @@ import vip.justlive.oxygen.web.router.RoutingContext;
 public class RedirectResultHandler implements ResultHandler {
 
   private static final String PROTOCOLS_REGEX = "^\\w+://.*";
-  private static final int DEFAULT_HTTP_PORT = 80;
-  private static final int DEFAULT_HTTPS_PORT = 443;
 
   @Override
   public boolean support(Result result) {

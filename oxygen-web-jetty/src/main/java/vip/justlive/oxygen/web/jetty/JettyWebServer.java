@@ -136,8 +136,7 @@ public class JettyWebServer implements WebServer {
   }
 
   private void findJarMatchPath(URL rootUrl, String subPattern, File dir) throws IOException {
-    JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl);
-    try {
+    try (JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl)) {
       if (log.isDebugEnabled()) {
         log.debug("Looking for jsp resources in jar file [" + jarFileInfo.jarFileUrl + "]");
       }
@@ -156,8 +155,6 @@ public class JettyWebServer implements WebServer {
           Files.copy(jarFileInfo.jarFile.getInputStream(entry), file.toPath());
         }
       }
-    } finally {
-      jarFileInfo.jarFile.close();
     }
   }
 

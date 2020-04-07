@@ -168,7 +168,7 @@ public class Bytes {
 
   @Override
   public synchronized String toString() {
-    return new String(buffer, 0, count);
+    return toString(StandardCharsets.UTF_8);
   }
 
   /**

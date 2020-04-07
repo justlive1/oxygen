@@ -77,10 +77,13 @@ public class Binder {
    * @return obj
    */
   public <T> T bind(T obj, String prefix) {
-    if (Strings.EMPTY.equals(prefix) || Strings.DOT.equals(prefix)) {
+    if (!Strings.hasText(prefix) || Strings.DOT.equals(prefix)) {
       prefix = null;
     }
     for (Field field : ClassUtils.getAllDeclaredFields(obj.getClass())) {
+      if (field.isAnnotationPresent(Ignore.class)) {
+        continue;
+      }
       String key = field.getName();
       boolean wrap = false;
       if (field.isAnnotationPresent(Value.class)) {

@@ -39,7 +39,7 @@ public class WrappedException extends CodedException {
 
   @Override
   public String getMessage() {
-    return String.format("Wrapper of [%s]", exception);
+    return String.format("Wrapper of [%s]: %s", exception, exception.getMessage());
   }
 
   @Override

@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,6 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.exception.WrappedException;
 import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.IoUtils;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
@@ -42,18 +44,18 @@ public final class Bootstrap {
       .newThread(Bootstrap::doClose);
   private static final String VERSION;
 
-  Bootstrap() {
-  }
-
   static {
     String version;
-    try {
-      version = IoUtils
-          .toString(Bootstrap.class.getResourceAsStream("/vip/justlive/oxygen/core/Version"));
+    try (InputStream in = Bootstrap.class
+        .getResourceAsStream("/vip/justlive/oxygen/core/Version")) {
+      version = IoUtils.toString(in);
     } catch (Exception e) {
       version = "oxygen/unknown";
     }
     VERSION = version;
+  }
+
+  Bootstrap() {
   }
 
   /**
@@ -197,6 +199,9 @@ public final class Bootstrap {
   }
 
   private static void exceptionHandle(Thread thread, Throwable throwable) {
+    if (throwable instanceof WrappedException) {
+      throwable = ((WrappedException) throwable).getException();
+    }
     log.error("thread [{}] uncaught exception", thread.getName(), throwable);
   }
 }

@@ -98,6 +98,7 @@ public class Utils {
    * @return channel
    * @throws IOException io异常时抛出
    */
+  @SuppressWarnings("squid:S2095")
   public static AsynchronousSocketChannel create(GroupContext groupContext,
       InetSocketAddress address) throws IOException {
     return AsynchronousSocketChannel.open(groupContext.getChannelGroup())

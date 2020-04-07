@@ -39,13 +39,13 @@ public class ConnectHandler implements CompletionHandler<Void, ChannelContext> {
     if (channelContext.getGroupContext().getAioListener() != null) {
       channelContext.getGroupContext().getAioListener().onConnected(channelContext);
     }
-    channelContext.getFuture().complete(null);
+    channelContext.complete();
   }
 
   @Override
   public void failed(Throwable exc, ChannelContext channelContext) {
     log.error("Aio client {} connected error", channelContext, exc);
-    channelContext.getFuture().completeExceptionally(exc);
+    channelContext.completeExceptionally(exc);
     channelContext.close();
   }
 }

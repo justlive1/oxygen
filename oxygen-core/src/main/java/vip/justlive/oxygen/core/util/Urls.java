@@ -276,7 +276,7 @@ public class Urls {
     return s;
   }
 
-  public static class JarFileInfo {
+  public static class JarFileInfo implements AutoCloseable {
 
     public final JarFile jarFile;
     public final String jarFileUrl;
@@ -286,6 +286,13 @@ public class Urls {
       this.jarFile = jarFile;
       this.jarFileUrl = jarFileUrl;
       this.rootEntryPath = rootEntryPath;
+    }
+
+    @Override
+    public void close() throws IOException {
+      if (jarFile != null) {
+        jarFile.close();
+      }
     }
   }
 }

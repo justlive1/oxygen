@@ -32,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class Server {
 
   private final GroupContext groupContext;
+  private InetSocketAddress serverAddress;
   private AsynchronousServerSocketChannel serverChannel;
 
   /**
@@ -51,15 +52,15 @@ public class Server {
    * @param address 地址
    * @throws IOException io异常时抛出
    */
+  @SuppressWarnings("squid:S2095")
   public void start(InetSocketAddress address) throws IOException {
     groupContext.setStopped(false);
     AsynchronousChannelGroup channelGroup = AsynchronousChannelGroup
         .withThreadPool(groupContext.getGroupExecutor());
     groupContext.setChannelGroup(channelGroup);
-    groupContext.setServerAddress(address);
+    serverAddress = address;
     serverChannel = AsynchronousServerSocketChannel.open(channelGroup)
         .setOption(StandardSocketOptions.SO_REUSEADDR, true).bind(address);
-
     serverChannel.accept(this, new AcceptHandler());
   }
 

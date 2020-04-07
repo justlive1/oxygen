@@ -14,7 +14,6 @@
 
 package vip.justlive.oxygen.core.net.aio.core;
 
-import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,10 +53,6 @@ public class GroupContext {
    * buffer大小
    */
   private int bufferCapacity = 8 * 1024;
-  /**
-   * 服务端地址
-   */
-  private InetSocketAddress serverAddress;
   /**
    * 客户端心跳发送间隔
    */

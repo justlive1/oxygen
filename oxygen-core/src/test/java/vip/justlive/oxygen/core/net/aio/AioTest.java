@@ -42,7 +42,7 @@ import vip.justlive.oxygen.core.util.ThreadUtils;
 @Slf4j
 public class AioTest {
 
-  //  @Test
+  //    @Test
   public void c1000k() throws Exception {
 
     InetSocketAddress address = new InetSocketAddress("localhost", 10086);
@@ -58,28 +58,28 @@ public class AioTest {
     server.start(address);
 
     int max = 10000;
-    List<Client> clients = new ArrayList<>(max);
+    List<ChannelContext> clients = new ArrayList<>(max);
+    group = new GroupContext(new LengthFrameHandler() {
+      @Override
+      public Object beat(ChannelContext channelContext) {
+        return null;
+      }
+    });
+    Client client = new Client(group);
     for (int i = 0; i < max; i++) {
-      group = new GroupContext(new LengthFrameHandler() {
-        @Override
-        public Object beat(ChannelContext channelContext) {
-          return null;
-        }
-      });
-      Client client = new Client(group);
-      client.connect(address, new InetSocketAddress(i + 30000));
-      clients.add(client);
+      clients.add(client.connect(address, new InetSocketAddress(i + 30000)));
     }
 
     Random r = new Random();
     for (int i = 0; i < 100; i++) {
-      clients.get(r.nextInt(max)).write(new LengthFrame().setBody(String.valueOf(i).getBytes()));
+      clients.get(r.nextInt(max))
+          .write(new LengthFrame().setBody(String.valueOf(i).getBytes()));
     }
 
     ThreadUtils.sleep(1000);
 
-    clients.forEach(Client::close);
     clients.clear();
+    client.close();
 
     ThreadUtils.sleep(2000);
 
@@ -136,7 +136,8 @@ public class AioTest {
     long now = System.currentTimeMillis();
 
     for (int i = 0; i < max; i++) {
-      client.write(new LengthFrame().setBody(String.valueOf(i).getBytes()));
+      client.getChannels().values().iterator().next()
+          .write(new LengthFrame().setBody(String.valueOf(i).getBytes()));
     }
 
     ThreadUtils.sleep(3000);

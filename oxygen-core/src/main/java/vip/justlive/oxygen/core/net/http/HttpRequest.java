@@ -17,12 +17,16 @@ package vip.justlive.oxygen.core.net.http;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
 import lombok.Getter;
 import vip.justlive.oxygen.core.util.HttpHeaders;
 import vip.justlive.oxygen.core.util.MoreObjects;
@@ -48,6 +52,9 @@ public class HttpRequest {
   private Object body;
   private Multipart multipart;
   private Function<Object, byte[]> func;
+  private Proxy proxy;
+  private SSLSocketFactory sslSocketFactory;
+  private HostnameVerifier hostnameVerifier;
 
   private HttpRequest(String url) {
     this.url = url;
@@ -135,6 +142,39 @@ public class HttpRequest {
    */
   public HttpRequest charset(Charset charset) {
     this.charset = charset;
+    return this;
+  }
+
+  /**
+   * 设置代理
+   *
+   * @param proxy 代理
+   * @return request
+   */
+  public HttpRequest proxy(Proxy proxy) {
+    this.proxy = proxy;
+    return this;
+  }
+
+  /**
+   * 设置ssl工厂
+   *
+   * @param sslSocketFactory factory
+   * @return request
+   */
+  public HttpRequest sslSocketFactory(SSLSocketFactory sslSocketFactory) {
+    this.sslSocketFactory = sslSocketFactory;
+    return this;
+  }
+
+  /**
+   * 设置主机名校验
+   *
+   * @param hostnameVerifier verifier
+   * @return request
+   */
+  public HttpRequest hostnameVerifier(HostnameVerifier hostnameVerifier) {
+    this.hostnameVerifier = hostnameVerifier;
     return this;
   }
 
@@ -241,7 +281,7 @@ public class HttpRequest {
       }
       httpUrl += queryString;
     }
-    HttpURLConnection connection = (HttpURLConnection) new URL(httpUrl).openConnection();
+    HttpURLConnection connection = buildConnection(httpUrl);
     if (this.connectTimeout >= 0) {
       connection.setConnectTimeout(this.connectTimeout);
     }
@@ -255,11 +295,10 @@ public class HttpRequest {
     // add headers
     headers.forEach(connection::addRequestProperty);
     boolean nonOutput = this.method == HttpMethod.GET || (body == null && multipart == null);
+    connection.setDoOutput(!nonOutput);
     if (nonOutput) {
-      connection.setDoOutput(false);
       connection.connect();
     } else {
-      connection.setDoOutput(true);
       byte[] bytes = this.func.apply(body);
       connection.setFixedLengthStreamingMode(bytes.length);
       connection.connect();
@@ -269,6 +308,25 @@ public class HttpRequest {
       }
     }
     return new HttpResponse(connection, charset);
+  }
+
+  private HttpURLConnection buildConnection(String httpUrl) throws IOException {
+    HttpURLConnection connection;
+    if (proxy != null) {
+      connection = (HttpURLConnection) new URL(httpUrl).openConnection(proxy);
+    } else {
+      connection = (HttpURLConnection) new URL(httpUrl).openConnection();
+    }
+    if (connection instanceof HttpsURLConnection) {
+      HttpsURLConnection https = (HttpsURLConnection) connection;
+      if (sslSocketFactory != null) {
+        https.setSSLSocketFactory(sslSocketFactory);
+      }
+      if (hostnameVerifier != null) {
+        https.setHostnameVerifier(hostnameVerifier);
+      }
+    }
+    return connection;
   }
 
   private void setContentType() {

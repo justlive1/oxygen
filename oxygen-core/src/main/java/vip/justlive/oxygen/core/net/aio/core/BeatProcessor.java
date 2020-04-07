@@ -33,22 +33,25 @@ public class BeatProcessor implements Runnable {
       return;
     }
     try {
-      if (client.getChannelContext() == null || client.getChannelContext().isClosed()) {
-        return;
-      }
-
-      long lastActiveAt = Math.max(client.getChannelContext().getLastReceivedAt(),
-          client.getChannelContext().getLastSentAt());
-      if (System.currentTimeMillis() - lastActiveAt >= client.getGroupContext().getBeatInterval()) {
-        Object beat = client.getGroupContext().getAioHandler().beat(client.getChannelContext());
-        if (beat == null) {
-          return;
-        }
-        client.getChannelContext().write(beat);
-      }
+      client.getChannels().values().forEach(this::handle);
     } finally {
       client.getGroupContext().getScheduledExecutor()
           .schedule(this, client.getGroupContext().getBeatInterval(), TimeUnit.MILLISECONDS);
+    }
+  }
+
+  private void handle(ChannelContext channelContext) {
+    if (channelContext.isClosed()) {
+      return;
+    }
+    long lastActiveAt = Math
+        .max(channelContext.getLastReceivedAt(), channelContext.getLastSentAt());
+    if (System.currentTimeMillis() - lastActiveAt >= client.getGroupContext().getBeatInterval()) {
+      Object beat = client.getGroupContext().getAioHandler().beat(channelContext);
+      if (beat == null) {
+        return;
+      }
+      channelContext.write(beat);
     }
   }
 }

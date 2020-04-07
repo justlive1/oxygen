@@ -56,6 +56,10 @@ public enum HttpMethod {
    */
   PATCH,
   /**
+   * connect
+   */
+  CONNECT,
+  /**
    * unknown
    */
   UNKNOWN;

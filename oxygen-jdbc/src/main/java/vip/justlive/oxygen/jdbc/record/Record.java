@@ -107,6 +107,7 @@ public final class Record {
    * 根据record属性值获取一个值
    *
    * @param obj record
+   * @param throwEx 是否抛出异常
    * @param <T> 泛型
    * @return list
    */

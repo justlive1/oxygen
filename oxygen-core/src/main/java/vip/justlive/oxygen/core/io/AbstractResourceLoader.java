@@ -249,12 +249,9 @@ public abstract class AbstractResourceLoader {
   private List<SourceResource> findJarMatchPath(SourceResource resource, URL rootUrl,
       String subPattern) throws IOException {
     List<SourceResource> all = new LinkedList<>();
-    JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl);
-    try {
+    try (JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl)) {
       this.look(resource, subPattern, all, jarFileInfo.jarFile, jarFileInfo.jarFileUrl,
           jarFileInfo.rootEntryPath);
-    } finally {
-      jarFileInfo.jarFile.close();
     }
     return all;
   }

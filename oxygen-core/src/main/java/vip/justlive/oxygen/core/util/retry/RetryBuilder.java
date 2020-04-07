@@ -308,9 +308,14 @@ public class RetryBuilder<T> {
   }
 
   private void waitBlock(long millis) {
+    long last = System.currentTimeMillis() + millis;
+    long remains = millis;
     synchronized (this) {
       try {
-        wait(millis);
+        while (remains > 0) {
+          wait(remains);
+          remains = last - System.currentTimeMillis();
+        }
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }

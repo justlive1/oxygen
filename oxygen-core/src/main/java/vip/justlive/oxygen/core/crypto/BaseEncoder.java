@@ -34,6 +34,24 @@ public abstract class BaseEncoder implements Encoder {
   protected boolean useSalt = false;
   protected int saltKeyLength = 8;
 
+  /**
+   * 去除包装
+   *
+   * @param raw 包装后的salt
+   * @return salt
+   */
+  static String extractSalt(String raw) {
+    int start = raw.indexOf(Strings.OPEN_BRACE);
+    if (start != 0) {
+      return Strings.EMPTY;
+    }
+    int end = raw.indexOf(Strings.CLOSE_BRACE, start);
+    if (end < 0) {
+      return Strings.EMPTY;
+    }
+    return raw.substring(start + 1, end);
+  }
+
   @Override
   public String encode(String source) {
     String salt = Strings.EMPTY;
@@ -48,7 +66,7 @@ public abstract class BaseEncoder implements Encoder {
     for (int i = 0; i < iterations; i++) {
       value = doEncode(value);
     }
-    if (!Strings.EMPTY.equals(salt)) {
+    if (salt.length() > 0) {
       value = wrapperSalt(salt).concat(value);
     }
     return value;
@@ -88,23 +106,5 @@ public abstract class BaseEncoder implements Encoder {
    */
   public String wrapperSalt(String salt) {
     return Strings.OPEN_BRACE.concat(salt).concat(Strings.CLOSE_BRACE);
-  }
-
-  /**
-   * 去除包装
-   *
-   * @param raw 包装后的salt
-   * @return salt
-   */
-  static String extractSalt(String raw) {
-    int start = raw.indexOf(Strings.OPEN_BRACE);
-    if (start != 0) {
-      return Strings.EMPTY;
-    }
-    int end = raw.indexOf(Strings.CLOSE_BRACE, start);
-    if (end < 0) {
-      return Strings.EMPTY;
-    }
-    return raw.substring(start + 1, end);
   }
 }

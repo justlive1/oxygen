@@ -223,7 +223,8 @@ public class ConfigFactory {
   }
 
   private static Properties props() {
-    Properties properties = new Properties(PROPS);
+    Properties properties = new Properties();
+    properties.putAll(PROPS);
     properties.putAll(System.getProperties());
     return properties;
   }

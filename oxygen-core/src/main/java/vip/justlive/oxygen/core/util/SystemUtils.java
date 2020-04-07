@@ -35,11 +35,6 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 public class SystemUtils {
 
   /**
-   * 本地地址
-   */
-  public static final String LOCAL_IP = "127.0.0.1";
-
-  /**
    * 默认最小端口
    */
   public static final int DEFAULT_PORT_RANGE_MIN = 10000;
@@ -69,7 +64,7 @@ public class SystemUtils {
       return false;
     }
     try (ServerSocket ignored = ServerSocketFactory.getDefault()
-        .createServerSocket(port, 1, InetAddress.getByName(LOCAL_IP))) {
+        .createServerSocket(port, 1, InetAddress.getLocalHost())) {
       return true;
     } catch (Exception e) {
       return false;
