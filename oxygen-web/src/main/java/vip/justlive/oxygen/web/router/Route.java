@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -42,7 +42,7 @@ public class Route {
   /**
    * 方法
    */
-  private Set<HttpMethod> methods = new HashSet<>(1, 1f);
+  private final Set<HttpMethod> methods = new HashSet<>(1, 1f);
   /**
    * 请求路径
    */
@@ -57,7 +57,7 @@ public class Route {
   @Setter
   private RouteHandler handler;
 
-  private List<String> pathVars = new LinkedList<>();
+  private final List<String> pathVars = new LinkedList<>();
 
   @Setter
   private Route next;

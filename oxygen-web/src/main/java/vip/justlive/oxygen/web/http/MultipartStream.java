@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -43,20 +43,16 @@ class MultipartStream {
 
   private static final byte[] LINE_SEPARATOR = {Bytes.CR, Bytes.LF};
   private static final byte[] STREAM_TERMINATOR = {Bytes.DASH, Bytes.DASH};
-  private static final File BASE_DIR;
+  private static final File BASE_DIR = FileUtils.createTempDir("multipart");
 
   private final InputStream inputStream;
   private final byte[] boundary;
   private final byte[] endOfBoundary;
   private final Charset charset;
   private final FileCleaner cleaner;
-  Map<String, String> formData;
-  List<MultipartItem> items = new LinkedList<>();
-  private WrapByteArrayOutputStream current = new WrapByteArrayOutputStream();
-
-  static {
-    BASE_DIR = FileUtils.createTempDir("multipart");
-  }
+  final Map<String, String> formData;
+  final List<MultipartItem> items = new LinkedList<>();
+  private final WrapByteArrayOutputStream current = new WrapByteArrayOutputStream();
 
   MultipartStream(InputStream inputStream, Multipart multipart, String encoding)
       throws IOException {

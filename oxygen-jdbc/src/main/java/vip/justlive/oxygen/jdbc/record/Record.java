@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -250,9 +250,8 @@ public final class Record {
    */
   public static <T> int deleteById(Class<T> clazz, Object id) {
     Model model = parseClass(clazz);
-    StringBuilder sb = new StringBuilder(DELETE).append(model.table).append(WHERE).append(AND)
-        .append(String.format(PARAM_STR, model.primary.name));
-    return Jdbc.update(sb.toString(), id);
+    String sql = DELETE + model.table + WHERE + AND + String.format(PARAM_STR, model.primary.name);
+    return Jdbc.update(sql, id);
   }
 
   /**

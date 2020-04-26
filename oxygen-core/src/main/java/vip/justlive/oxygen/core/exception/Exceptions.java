@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -32,7 +32,7 @@ public class Exceptions {
    * @param e 异常
    * @return 包装异常
    */
-  public static CodedException wrap(Throwable e) {
+  public CodedException wrap(Throwable e) {
     if (e instanceof CodedException) {
       return (CodedException) e;
     }
@@ -47,7 +47,7 @@ public class Exceptions {
    * @param message 异常消息
    * @return 包装异常
    */
-  public static CodedException wrap(Throwable e, String message) {
+  public CodedException wrap(Throwable e, String message) {
     return wrap(e, errorMessage(message));
   }
 
@@ -59,7 +59,7 @@ public class Exceptions {
    * @param message 异常消息
    * @return 包装异常
    */
-  public static CodedException wrap(Throwable e, String code, String message) {
+  public CodedException wrap(Throwable e, String code, String message) {
     return wrap(e, errorMessage(code, message));
   }
 
@@ -70,7 +70,7 @@ public class Exceptions {
    * @param errorCode 异常编码包装
    * @return 包装异常
    */
-  public static CodedException wrap(Throwable e, ErrorCode errorCode) {
+  public CodedException wrap(Throwable e, ErrorCode errorCode) {
     if (e instanceof CodedException) {
       return (CodedException) e;
     }
@@ -83,7 +83,7 @@ public class Exceptions {
    * @param message 消息
    * @return 异常编码包装
    */
-  public static ErrorCode errorMessage(String message) {
+  public ErrorCode errorMessage(String message) {
     return new ErrorCode(message);
   }
 
@@ -94,7 +94,7 @@ public class Exceptions {
    * @param message 消息
    * @return 异常编码包装
    */
-  public static ErrorCode errorMessage(String code, String message) {
+  public ErrorCode errorMessage(String code, String message) {
     return new ErrorCode(code, message);
   }
 
@@ -106,7 +106,7 @@ public class Exceptions {
    * @param message 消息
    * @return 异常编码包装
    */
-  public static ErrorCode errorMessage(String module, String code, String message) {
+  public ErrorCode errorMessage(String module, String code, String message) {
     return new ErrorCode(module, code, message);
   }
 
@@ -116,7 +116,7 @@ public class Exceptions {
    * @param message 异常消息
    * @return 包装异常
    */
-  public static CodedException fail(String message) {
+  public CodedException fail(String message) {
     return fail(errorMessage(message));
   }
 
@@ -128,7 +128,7 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fail(String code, String message, Object... args) {
+  public CodedException fail(String code, String message, Object... args) {
     return fail(errorMessage(code, message), args);
   }
 
@@ -139,7 +139,7 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fail(ErrorCode errCode, Object... args) {
+  public CodedException fail(ErrorCode errCode, Object... args) {
     return new NoStackException(errCode, args);
   }
 
@@ -150,7 +150,7 @@ public class Exceptions {
    * @param data 扩展数据
    * @return 包装异常
    */
-  public static CodedException failWithData(String message, Object data) {
+  public CodedException failWithData(String message, Object data) {
     return failWithData(errorMessage(message), data);
   }
 
@@ -163,9 +163,9 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException failWithData(String code, String message, Object data,
+  public CodedException failWithData(String code, String message, Object data,
       Object... args) {
-    return failWithData(errorMessage(code, message), args, data);
+    return failWithData(errorMessage(code, message), data, args);
   }
 
   /**
@@ -176,7 +176,7 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException failWithData(ErrorCode errCode, Object data, Object... args) {
+  public CodedException failWithData(ErrorCode errCode, Object data, Object... args) {
     return new NoStackException(errCode, args, data);
   }
 
@@ -186,7 +186,7 @@ public class Exceptions {
    * @param message 异常消息
    * @return 包装异常
    */
-  public static CodedException fault(String message) {
+  public CodedException fault(String message) {
     return fault(errorMessage(message));
   }
 
@@ -198,7 +198,7 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fault(String code, String message, Object... args) {
+  public CodedException fault(String code, String message, Object... args) {
     return fault(errorMessage(code, message), args);
   }
 
@@ -211,7 +211,7 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fault(Throwable e, String code, String message, Object... args) {
+  public CodedException fault(Throwable e, String code, String message, Object... args) {
     return fault(e, errorMessage(code, message), args);
   }
 
@@ -222,7 +222,7 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fault(ErrorCode errCode, Object... args) {
+  public CodedException fault(ErrorCode errCode, Object... args) {
     return new CodedException(errCode, args);
   }
 
@@ -234,7 +234,7 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException fault(Throwable e, ErrorCode errCode, Object... args) {
+  public CodedException fault(Throwable e, ErrorCode errCode, Object... args) {
     return new CodedException(e, errCode, args);
   }
 
@@ -245,7 +245,7 @@ public class Exceptions {
    * @param data 扩展数据
    * @return 包装异常
    */
-  public static CodedException faultWithData(String message, Object data) {
+  public CodedException faultWithData(String message, Object data) {
     return faultWithData(errorMessage(message), data);
   }
 
@@ -258,9 +258,9 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException faultWithData(String code, String message, Object data,
+  public CodedException faultWithData(String code, String message, Object data,
       Object... args) {
-    return faultWithData(errorMessage(code, message), args, data);
+    return faultWithData(errorMessage(code, message), data, args);
   }
 
   /**
@@ -273,9 +273,9 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException faultWithData(Throwable e, String code, String message, Object data,
+  public CodedException faultWithData(Throwable e, String code, String message, Object data,
       Object... args) {
-    return faultWithData(e, errorMessage(code, message), args, data);
+    return faultWithData(e, errorMessage(code, message), data, args);
   }
 
   /**
@@ -286,7 +286,7 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException faultWithData(ErrorCode errCode, Object data, Object... args) {
+  public CodedException faultWithData(ErrorCode errCode, Object data, Object... args) {
     return new CodedException(errCode, args, data);
   }
 
@@ -299,7 +299,7 @@ public class Exceptions {
    * @param args 参数
    * @return 包装异常
    */
-  public static CodedException faultWithData(Throwable e, ErrorCode errCode, Object data,
+  public CodedException faultWithData(Throwable e, ErrorCode errCode, Object data,
       Object... args) {
     return new CodedException(e, errCode, args, data);
   }

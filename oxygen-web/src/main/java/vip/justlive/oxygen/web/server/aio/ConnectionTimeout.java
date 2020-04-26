@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,11 +14,10 @@
 
 package vip.justlive.oxygen.web.server.aio;
 
-import java.util.Map;
+import java.util.function.LongUnaryOperator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
-import vip.justlive.oxygen.core.net.aio.core.GroupContext;
 
 /**
  * 空闲连接处理
@@ -27,25 +26,15 @@ import vip.justlive.oxygen.core.net.aio.core.GroupContext;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class ConnectionTimeoutUpdater implements Runnable {
+public class ConnectionTimeout implements Runnable, LongUnaryOperator {
 
-  private final GroupContext context;
+  private final ChannelContext channelContext;
   private final long idleTimeout;
   private final long requestTimeout;
 
   @Override
   public void run() {
     long now = System.currentTimeMillis();
-    int size = context.getChannels().size();
-    if (size > 0 && log.isDebugEnabled()) {
-      log.debug("current {} connections.", size);
-    }
-    for (Map.Entry<Long, ChannelContext> entry : context.getChannels().entrySet()) {
-      check(entry.getValue(), now);
-    }
-  }
-
-  private void check(ChannelContext channelContext, long now) {
     long last = Math
         .max(Math.max(channelContext.getLastReceivedAt(), channelContext.getLastSentAt()),
             channelContext.getCreateAt());
@@ -67,5 +56,13 @@ public class ConnectionTimeoutUpdater implements Runnable {
       }
       channelContext.close();
     }
+  }
+
+  @Override
+  public long applyAsLong(long deadline) {
+    if (channelContext.isClosed()) {
+      return Long.MIN_VALUE;
+    }
+    return deadline + idleTimeout;
   }
 }

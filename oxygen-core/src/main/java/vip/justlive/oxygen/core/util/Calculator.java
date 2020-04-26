@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -29,8 +29,8 @@ import vip.justlive.oxygen.core.template.SimpleTemplateEngine;
 @UtilityClass
 public class Calculator {
 
-  private static final String TEMPLATE = "#{var $result = %s; $out.write('' + $result); }";
-  private static final SimpleTemplateEngine ENGINE = new SimpleTemplateEngine();
+  private final String TEMPLATE = "#{var $result = %s; $out.write('' + $result); }";
+  private final SimpleTemplateEngine ENGINE = new SimpleTemplateEngine();
 
   /**
    * 计算
@@ -38,7 +38,7 @@ public class Calculator {
    * @param formula 公式
    * @return 结果
    */
-  public static BigDecimal calculate(String formula) {
+  public BigDecimal calculate(String formula) {
     return calculate(formula, null);
   }
 
@@ -49,7 +49,7 @@ public class Calculator {
    * @param data 变量参数
    * @return 结果
    */
-  public static BigDecimal calculate(String formula, Object data) {
+  public BigDecimal calculate(String formula, Object data) {
     Map<String, Object> attrs = new HashMap<>(4);
     if (data != null) {
       attrs.putAll(MoreObjects.beanToMap(data));
@@ -65,7 +65,7 @@ public class Calculator {
    * @param scale 精度
    * @return 结果
    */
-  public static BigDecimal calculate(String formula, Object data, int scale) {
+  public BigDecimal calculate(String formula, Object data, int scale) {
     return calculate(formula, data).setScale(scale, RoundingMode.HALF_DOWN);
   }
 }

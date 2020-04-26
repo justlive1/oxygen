@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -45,18 +45,18 @@ public class ClassUtils {
   /**
    * 数组类名前缀: "[]"
    */
-  public static final String ARRAY_SUFFIX = "[]";
+  public final String ARRAY_SUFFIX = "[]";
   /**
    * 内部数组类名前缀: "["
    */
-  public static final String INTERNAL_ARRAY_PREFIX = "[";
+  public final String INTERNAL_ARRAY_PREFIX = "[";
   /**
    * 内部非基本数组类名前缀: "[L"
    */
-  public static final String NON_PRIMITIVE_ARRAY_PREFIX = "[L";
+  public final String NON_PRIMITIVE_ARRAY_PREFIX = "[L";
 
-  private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER_TYPE;
-  private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE_TYPE;
+  private final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER_TYPE;
+  private final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE_TYPE;
 
   static {
     Map<Class<?>, Class<?>> primToWrap = new HashMap<>(16);
@@ -76,7 +76,7 @@ public class ClassUtils {
     WRAPPER_TO_PRIMITIVE_TYPE = Collections.unmodifiableMap(wrapToPrim);
   }
 
-  private static void add(Map<Class<?>, Class<?>> forward, Map<Class<?>, Class<?>> backward,
+  private void add(Map<Class<?>, Class<?>> forward, Map<Class<?>, Class<?>> backward,
       Class<?> key, Class<?> value) {
     forward.put(key, value);
     backward.put(value, key);
@@ -87,7 +87,7 @@ public class ClassUtils {
    *
    * @return 基本类型集合
    */
-  public static Set<Class<?>> allPrimitiveTypes() {
+  public Set<Class<?>> allPrimitiveTypes() {
     return PRIMITIVE_TO_WRAPPER_TYPE.keySet();
   }
 
@@ -96,7 +96,7 @@ public class ClassUtils {
    *
    * @return 基本类型包装类集合
    */
-  public static Set<Class<?>> allWrapperTypes() {
+  public Set<Class<?>> allWrapperTypes() {
     return WRAPPER_TO_PRIMITIVE_TYPE.keySet();
   }
 
@@ -107,7 +107,7 @@ public class ClassUtils {
    * @param <T> 泛型
    * @return 包装类
    */
-  public static <T> Class<T> wrap(Class<T> type) {
+  public <T> Class<T> wrap(Class<T> type) {
     MoreObjects.notNull(type);
     // cast is safe: long.class and Long.class are both of type Class<Long>
     @SuppressWarnings("unchecked") Class<T> wrapped = (Class<T>) PRIMITIVE_TO_WRAPPER_TYPE
@@ -122,7 +122,7 @@ public class ClassUtils {
    * @param <T> 泛型
    * @return 基本类型
    */
-  public static <T> Class<T> unwrap(Class<T> type) {
+  public <T> Class<T> unwrap(Class<T> type) {
     MoreObjects.notNull(type);
     // cast is safe: long.class and Long.class are both of type Class<Long>
     @SuppressWarnings("unchecked") Class<T> unwrapped = (Class<T>) WRAPPER_TO_PRIMITIVE_TYPE
@@ -136,7 +136,7 @@ public class ClassUtils {
    * @param type 类型
    * @return true则为基本类型或包装类
    */
-  public static boolean isPrimitive(Class<?> type) {
+  public boolean isPrimitive(Class<?> type) {
     return PRIMITIVE_TO_WRAPPER_TYPE.containsKey(type) || WRAPPER_TO_PRIMITIVE_TYPE
         .containsKey(type);
   }
@@ -146,7 +146,7 @@ public class ClassUtils {
    *
    * @return classloader
    */
-  public static ClassLoader getDefaultClassLoader() {
+  public ClassLoader getDefaultClassLoader() {
     ClassLoader cl = null;
     try {
       cl = Thread.currentThread().getContextClassLoader();
@@ -174,7 +174,7 @@ public class ClassUtils {
    * @param name 类名
    * @return class
    */
-  public static Class<?> forName(String name) {
+  public Class<?> forName(String name) {
     return forName(name, getDefaultClassLoader());
   }
 
@@ -185,7 +185,7 @@ public class ClassUtils {
    * @param classLoader 类加载器
    * @return class
    */
-  public static Class<?> forName(String name, ClassLoader classLoader) {
+  public Class<?> forName(String name, ClassLoader classLoader) {
     // "java.lang.String[]" style arrays
     if (name.endsWith(ARRAY_SUFFIX)) {
       String elementClassName = name.substring(0, name.length() - ARRAY_SUFFIX.length());
@@ -235,7 +235,7 @@ public class ClassUtils {
    * @param className 类名
    * @return true为存在
    */
-  public static boolean isPresent(String className) {
+  public boolean isPresent(String className) {
     return isPresent(className, getDefaultClassLoader());
   }
 
@@ -246,7 +246,7 @@ public class ClassUtils {
    * @param classLoader 类加载器
    * @return true为存在
    */
-  public static boolean isPresent(String className, ClassLoader classLoader) {
+  public boolean isPresent(String className, ClassLoader classLoader) {
     try {
       forName(className, classLoader);
       return true;
@@ -262,7 +262,7 @@ public class ClassUtils {
    * @param object the object to check
    * @return true为是代理对象
    */
-  public static boolean isCglibProxy(Object object) {
+  public boolean isCglibProxy(Object object) {
     return isCglibProxyClass(object.getClass());
   }
 
@@ -272,7 +272,7 @@ public class ClassUtils {
    * @param clazz the class to check
    * @return true为是代理类
    */
-  public static boolean isCglibProxyClass(Class<?> clazz) {
+  public boolean isCglibProxyClass(Class<?> clazz) {
     return (clazz != null && isCglibProxyClassName(clazz.getName()));
   }
 
@@ -282,7 +282,7 @@ public class ClassUtils {
    * @param className the class name to check
    * @return true为是代理类
    */
-  public static boolean isCglibProxyClassName(String className) {
+  public boolean isCglibProxyClassName(String className) {
     return (className != null && className.contains(Strings.DOUBLE_DOLLAR));
   }
 
@@ -292,7 +292,7 @@ public class ClassUtils {
    * @param clazz 代理类
    * @return 类
    */
-  public static Class<?> getCglibActualClass(Class<?> clazz) {
+  public Class<?> getCglibActualClass(Class<?> clazz) {
     Class<?> actualClass = clazz;
     while (isCglibProxyClass(actualClass)) {
       actualClass = actualClass.getSuperclass();
@@ -307,7 +307,7 @@ public class ClassUtils {
    * @param annotation 注解
    * @return methods
    */
-  public static Set<Method> getMethodsAnnotatedWith(Class<?> clazz,
+  public Set<Method> getMethodsAnnotatedWith(Class<?> clazz,
       Class<? extends Annotation> annotation) {
     Set<Method> methods = new HashSet<>();
     Class<?> actualClass = getCglibActualClass(clazz);
@@ -330,7 +330,7 @@ public class ClassUtils {
    * @param args 参数
    * @return 结果
    */
-  public static Object methodInvoke(Method method, Object bean, Object... args) {
+  public Object methodInvoke(Method method, Object bean, Object... args) {
     try {
       method.setAccessible(true);
       return method.invoke(bean, args);
@@ -347,7 +347,7 @@ public class ClassUtils {
    * @param clazz 类
    * @return 方法
    */
-  public static Set<Method> getAllMethods(Class<?> clazz) {
+  public Set<Method> getAllMethods(Class<?> clazz) {
     Set<Method> methods = new HashSet<>();
     Class<?> actualClass = clazz;
     do {
@@ -364,7 +364,7 @@ public class ClassUtils {
    * @param args 参数
    * @return class[]
    */
-  public static Class<?>[] getConstructorArgsTypes(Class<?> clazz, Object... args) {
+  public Class<?>[] getConstructorArgsTypes(Class<?> clazz, Object... args) {
     for (Constructor<?> constructor : clazz.getConstructors()) {
       if (constructor.getParameterCount() != args.length) {
         continue;
@@ -392,7 +392,7 @@ public class ClassUtils {
    * @return Constructor
    */
   @SuppressWarnings("squid:S1452")
-  public static Constructor<?> getConstructorAnnotatedWith(Class<?> clazz,
+  public Constructor<?> getConstructorAnnotatedWith(Class<?> clazz,
       Class<? extends Annotation> annotation) {
     return getConstructorAnnotatedWith(clazz.getConstructors(), annotation);
   }
@@ -405,7 +405,7 @@ public class ClassUtils {
    * @return Constructor
    */
   @SuppressWarnings("squid:S1452")
-  public static Constructor<?> getConstructorAnnotatedWith(Constructor<?>[] constructors,
+  public Constructor<?> getConstructorAnnotatedWith(Constructor<?>[] constructors,
       Class<? extends Annotation> annotation) {
     for (Constructor<?> constructor : constructors) {
       if (constructor.isAnnotationPresent(annotation)) {
@@ -421,7 +421,7 @@ public class ClassUtils {
    * @param annotation 注解类
    * @return true为内置注解类
    */
-  public static boolean isInJavaLangAnnotationPackage(Class<? extends Annotation> annotation) {
+  public boolean isInJavaLangAnnotationPackage(Class<? extends Annotation> annotation) {
     return (annotation != null && annotation.getName().startsWith("java.lang.annotation"));
   }
 
@@ -432,7 +432,7 @@ public class ClassUtils {
    * @param annotation 注解
    * @return true表示存在注解
    */
-  public static boolean isAnnotationPresent(Class<?> clazz,
+  public boolean isAnnotationPresent(Class<?> clazz,
       Class<? extends Annotation> annotation) {
     return getAnnotation(clazz, annotation) != null;
   }
@@ -446,7 +446,7 @@ public class ClassUtils {
    * @return 注解
    */
   @SuppressWarnings("unchecked")
-  public static <A extends Annotation> A getAnnotation(Class<?> clazz, Class<A> annotation) {
+  public <A extends Annotation> A getAnnotation(Class<?> clazz, Class<A> annotation) {
     A anno = clazz.getAnnotation(annotation);
     if (anno != null) {
       return anno;
@@ -474,7 +474,7 @@ public class ClassUtils {
    * @param clazz Class类实例
    * @return 对象类型数组
    */
-  public static Field[] getAllDeclaredFields(Class<?> clazz) {
+  public Field[] getAllDeclaredFields(Class<?> clazz) {
     Field[] fields = clazz.getDeclaredFields();
     Class<?> superClass = clazz.getSuperclass();
     if (superClass == null) {
@@ -495,7 +495,7 @@ public class ClassUtils {
    * @param propertyName 属性名
    * @return Field 对象
    */
-  public static Field getDeclaredField(Class<?> clazz, String propertyName) {
+  public Field getDeclaredField(Class<?> clazz, String propertyName) {
     Field[] fields = getAllDeclaredFields(clazz);
     for (Field field : fields) {
       if (field.getName().equals(propertyName)) {
@@ -512,7 +512,7 @@ public class ClassUtils {
    * @param propertyName 属性名
    * @return Object 属性值
    */
-  public static Object getValue(Object object, String propertyName) {
+  public Object getValue(Object object, String propertyName) {
     Class<?> clazz = object.getClass();
     return getValue(object, getDeclaredField(clazz, propertyName));
   }
@@ -524,7 +524,7 @@ public class ClassUtils {
    * @param field 字段
    * @return Object 属性值
    */
-  public static Object getValue(Object object, Field field) {
+  public Object getValue(Object object, Field field) {
     if (field == null) {
       return null;
     }
@@ -545,7 +545,7 @@ public class ClassUtils {
    * @param field 属性
    * @param value 值
    */
-  public static void setValue(Object object, Field field, Object value) {
+  public void setValue(Object object, Field field, Object value) {
     try {
       if (!field.isAccessible()) {
         field.setAccessible(true);
@@ -564,7 +564,7 @@ public class ClassUtils {
    * @return 实例化的对象
    */
   @SuppressWarnings("unchecked")
-  public static <T> T newInstance(Class<T> clazz) {
+  public <T> T newInstance(Class<T> clazz) {
     if (clazz == Integer.class) {
       return (T) Integer.valueOf(0);
     }
@@ -614,14 +614,14 @@ public class ClassUtils {
    * @param type 类型
    * @return true为内置类
    */
-  public static boolean isJavaInternalType(Class<?> type) {
+  public boolean isJavaInternalType(Class<?> type) {
     if (type != null) {
       return type.getClassLoader() == null;
     }
     return false;
   }
 
-  private static void recursivelyCollectAnnotations(Set<Annotation> visited,
+  private void recursivelyCollectAnnotations(Set<Annotation> visited,
       Annotation annotation) {
     Class<? extends Annotation> annotationType = annotation.annotationType();
     if (annotationType == null || isInJavaLangAnnotationPackage(annotationType) || !Modifier

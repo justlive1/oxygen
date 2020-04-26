@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -18,11 +18,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import vip.justlive.oxygen.core.util.SystemUtils;
+import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
  * aio 客户端
@@ -33,16 +32,9 @@ public class Client {
 
   @Getter
   private final GroupContext groupContext;
-  private final BeatProcessor beatProcessor;
-  private final RetryProcessor retryProcessor;
-  private volatile boolean started;
-  @Getter
-  private Map<Long, ChannelContext> channels = new ConcurrentHashMap<>(4);
 
   public Client(GroupContext groupContext) {
     this.groupContext = groupContext;
-    this.beatProcessor = new BeatProcessor(this);
-    this.retryProcessor = new RetryProcessor(this);
   }
 
   /**
@@ -82,44 +74,23 @@ public class Client {
         .withThreadPool(groupContext.getGroupExecutor());
     groupContext.setChannelGroup(channelGroup);
     AsynchronousSocketChannel channel = Utils.create(groupContext, bind);
+    groupContext.setAioListener(new ComposeAioListener().add(ClientAioListener.INSTANCE)
+        .add(groupContext.getAioListener()));
+
     ChannelContext channelContext = new ChannelContext(groupContext, channel, false);
     channelContext.setServerAddress(remote);
     channel.connect(remote, channelContext, ConnectHandler.INSTANCE);
 
-    channels.put(channelContext.getId(), channelContext);
-    if (started) {
-      return channelContext;
-    }
-    started = true;
-    if (groupContext.getAioHandler().beat(channelContext) != null) {
-      groupContext.getScheduledExecutor()
-          .schedule(beatProcessor, groupContext.getBeatInterval(), TimeUnit.MILLISECONDS);
-    }
-    if (groupContext.isRetryEnabled()) {
-      groupContext.getScheduledExecutor()
-          .schedule(retryProcessor, groupContext.getRetryInterval(), TimeUnit.MILLISECONDS);
-    }
+    BeatProcessor beat = new BeatProcessor(channelContext);
+    ThreadUtils.globalTimer()
+        .scheduleWithDelay(beat, groupContext.getBeatInterval(), TimeUnit.MILLISECONDS, beat);
     return channelContext;
-  }
-
-  /**
-   * 关闭单个channel
-   *
-   * @param channelContext channel
-   */
-  public void close(ChannelContext channelContext) {
-    channels.remove(channelContext.getId());
-    channelContext.close();
   }
 
   /**
    * 关闭客户端
    */
   public void close() {
-    for (ChannelContext channelContext : channels.values()) {
-      channelContext.close();
-    }
-    channels.clear();
     groupContext.close();
   }
 

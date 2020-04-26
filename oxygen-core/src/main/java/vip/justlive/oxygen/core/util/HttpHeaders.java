@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2020 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package vip.justlive.oxygen.core.util;
 
 import java.util.Map;
@@ -12,59 +26,59 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class HttpHeaders {
 
-  public static final String BODY_STORE_KEY = "_body";
-  public static final String BOUNDARY = "boundary";
-  public static final String HTTP_PREFIX = "http://";
-  public static final String HTTPS_PREFIX = "https://";
-  public static final String MULTIPART = "multipart/";
-  public static final String FORM_DATA = "form-data";
-  public static final String FORM_DATA_NAME = "name";
-  public static final String FORM_DATA_FILENAME = "filename";
-  public static final String MAX_AGE = "max-age";
+  public final String BODY_STORE_KEY = "_body";
+  public final String BOUNDARY = "boundary";
+  public final String HTTP_PREFIX = "http://";
+  public final String HTTPS_PREFIX = "https://";
+  public final String MULTIPART = "multipart/";
+  public final String FORM_DATA = "form-data";
+  public final String FORM_DATA_NAME = "name";
+  public final String FORM_DATA_FILENAME = "filename";
+  public final String MAX_AGE = "max-age";
 
-  public static final String CHUNKED = "chunked";
-  public static final String CONNECTION_CLOSE = "close";
-  public static final String CONNECTION_KEEP_ALIVE = "keep-alive";
+  public final String CHUNKED = "chunked";
+  public final String CONNECTION_CLOSE = "close";
+  public final String CONNECTION_KEEP_ALIVE = "keep-alive";
 
-  public static final String ACCEPT = "Accept";
-  public static final String ACCEPT_CHARSET = "Accept-Charset";
-  public static final String ACCEPT_ENCODING = "Accept-Encoding";
-  public static final String ALLOW = "Allow";
-  public static final String CACHE_CONTROL = "Cache-Control";
-  public static final String CHARSET = "charset";
-  public static final String CONNECTION = "Connection";
-  public static final String CONTENT_TYPE = "Content-Type";
-  public static final String CONTENT_DISPOSITION = "Content-disposition";
-  public static final String CONTENT_LENGTH = "Content-length";
-  public static final String COOKIE = "Cookie";
-  public static final String ETAG = "ETag";
-  public static final String EXPIRES = "Expires";
-  public static final String HOST_NAME = "Host";
-  public static final String IF_MATCH = "If-Match";
-  public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
-  public static final String IF_NONE_MATCH = "If-None-Match";
-  public static final String LAST_MODIFIED = "Last-Modified";
-  public static final String LOCATION = "Location";
-  public static final String PROXY_CLIENT_IP = "Proxy-Client-IP";
-  public static final String SERVER = "Server";
-  public static final String TRANSFER_ENCODING = "Transfer-Encoding";
-  public static final String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
-  public static final String X_FORWARDED_FOR = "X-Forwarded-For";
-  public static final String X_REAL_IP = "X-Real-IP";
-  public static final String X_REQUESTED_WITH = "X-Requested-With";
-  public static final String XML_HTTP_REQUEST = "XMLHttpRequest";
-  public static final String SET_COOKIE = "Set-Cookie";
+  public final String ACCEPT = "Accept";
+  public final String ACCEPT_CHARSET = "Accept-Charset";
+  public final String ACCEPT_ENCODING = "Accept-Encoding";
+  public final String ALLOW = "Allow";
+  public final String CACHE_CONTROL = "Cache-Control";
+  public final String CHARSET = "charset";
+  public final String CONNECTION = "Connection";
+  public final String CONTENT_TYPE = "Content-Type";
+  public final String CONTENT_DISPOSITION = "Content-disposition";
+  public final String CONTENT_LENGTH = "Content-length";
+  public final String COOKIE = "Cookie";
+  public final String ETAG = "ETag";
+  public final String EXPIRES = "Expires";
+  public final String HOST_NAME = "Host";
+  public final String IF_MATCH = "If-Match";
+  public final String IF_MODIFIED_SINCE = "If-Modified-Since";
+  public final String IF_NONE_MATCH = "If-None-Match";
+  public final String LAST_MODIFIED = "Last-Modified";
+  public final String LOCATION = "Location";
+  public final String PROXY_CLIENT_IP = "Proxy-Client-IP";
+  public final String SERVER = "Server";
+  public final String TRANSFER_ENCODING = "Transfer-Encoding";
+  public final String WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
+  public final String X_FORWARDED_FOR = "X-Forwarded-For";
+  public final String X_REAL_IP = "X-Real-IP";
+  public final String X_REQUESTED_WITH = "X-Requested-With";
+  public final String XML_HTTP_REQUEST = "XMLHttpRequest";
+  public final String SET_COOKIE = "Set-Cookie";
 
-  public static final String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
-  public static final String APPLICATION_JSON = "application/json";
-  public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
-  public static final String APPLICATION_PDF = "application/pdf";
-  public static final String APPLICATION_XML = "application/xml";
-  public static final String MULTIPART_FORM_DATA = "multipart/form-data";
-  public static final String MULTIPART_FORM_DATA_BOUNDARY = "multipart/form-data; boundary=";
-  public static final String TEXT_PLAIN = "text/plain";
-  public static final String TEXT_XML = "text/xml";
-  public static final String TEXT_HTML = "text/html";
+  public final String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
+  public final String APPLICATION_JSON = "application/json";
+  public final String APPLICATION_OCTET_STREAM = "application/octet-stream";
+  public final String APPLICATION_PDF = "application/pdf";
+  public final String APPLICATION_XML = "application/xml";
+  public final String MULTIPART_FORM_DATA = "multipart/form-data";
+  public final String MULTIPART_FORM_DATA_BOUNDARY = "multipart/form-data; boundary=";
+  public final String TEXT_PLAIN = "text/plain";
+  public final String TEXT_XML = "text/xml";
+  public final String TEXT_HTML = "text/html";
 
   /**
    * 获取header
@@ -73,7 +87,7 @@ public class HttpHeaders {
    * @param headers headers
    * @return values
    */
-  public static String[] getHeaders(String name, Map<String, String[]> headers) {
+  public String[] getHeaders(String name, Map<String, String[]> headers) {
     if (headers == null || name == null) {
       return Strings.EMPTY_ARRAY;
     }
@@ -100,7 +114,7 @@ public class HttpHeaders {
    * @param headers headers
    * @return value
    */
-  public static String getHeader(String name, Map<String, String[]> headers) {
+  public String getHeader(String name, Map<String, String[]> headers) {
     String[] values = getHeaders(name, headers);
     if (values.length > 0) {
       return values[0];

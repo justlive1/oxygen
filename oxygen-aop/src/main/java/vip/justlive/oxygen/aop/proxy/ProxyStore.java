@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -37,11 +37,11 @@ import vip.justlive.oxygen.core.util.ClassUtils;
 @UtilityClass
 public class ProxyStore {
 
-  static final List<Object> PROXIES = new LinkedList<>();
-  private static final ConcurrentMap<TYPE, List<Interceptor>> INTERCEPTORS = new ConcurrentHashMap<>(
+  final List<Object> PROXIES = new LinkedList<>();
+  private final ConcurrentMap<TYPE, List<Interceptor>> INTERCEPTORS = new ConcurrentHashMap<>(
       4, 1);
-  private static final Map<TYPE, Map<Method, List<Interceptor>>> STORE = new EnumMap<>(TYPE.class);
-  private static volatile boolean ready = false;
+  private final Map<TYPE, Map<Method, List<Interceptor>>> STORE = new EnumMap<>(TYPE.class);
+  private volatile boolean ready = false;
 
   static {
     for (TYPE type : TYPE.values()) {
@@ -56,7 +56,7 @@ public class ProxyStore {
    * @param type 拦截类型
    * @param interceptors 拦截器
    */
-  public static void addInterceptor(TYPE type, Interceptor... interceptors) {
+  public void addInterceptor(TYPE type, Interceptor... interceptors) {
     if (interceptors == null || interceptors.length == 0) {
       return;
     }
@@ -69,7 +69,7 @@ public class ProxyStore {
   /**
    * 初始化
    */
-  public static void init() {
+  public void init() {
     if (ready) {
       return;
     }
@@ -80,7 +80,7 @@ public class ProxyStore {
     ready = true;
   }
 
-  private static void handleMethod(Method method) {
+  private void handleMethod(Method method) {
     INTERCEPTORS.forEach((k, v) -> v.forEach(interceptor -> {
       if (interceptor.match(method)) {
         addInterceptor(k, method, interceptor);
@@ -96,7 +96,7 @@ public class ProxyStore {
    * @param method 方法
    * @param interceptor 拦截器
    */
-  public static void addInterceptor(TYPE type, Method method, Interceptor interceptor) {
+  public void addInterceptor(TYPE type, Method method, Interceptor interceptor) {
     STORE.get(type).computeIfAbsent(method, k -> new LinkedList<>()).add(interceptor);
     ready = false;
   }
@@ -108,7 +108,7 @@ public class ProxyStore {
    * @param method 方法
    * @param interceptors 拦截器
    */
-  public static void addInterceptors(TYPE type, Method method, List<Interceptor> interceptors) {
+  public void addInterceptors(TYPE type, Method method, List<Interceptor> interceptors) {
     STORE.get(type).computeIfAbsent(method, k -> new LinkedList<>()).addAll(interceptors);
     ready = false;
   }
@@ -120,7 +120,7 @@ public class ProxyStore {
    * @param method 方法
    * @return interceptors
    */
-  public static List<Interceptor> get(TYPE type, Method method) {
+  public List<Interceptor> get(TYPE type, Method method) {
     if (!ready) {
       init();
     }
@@ -130,7 +130,7 @@ public class ProxyStore {
   /**
    * clean
    */
-  public static void clean() {
+  public void clean() {
     STORE.clear();
     PROXIES.clear();
   }

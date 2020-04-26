@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -81,32 +81,38 @@ public class Binder {
       prefix = null;
     }
     for (Field field : ClassUtils.getAllDeclaredFields(obj.getClass())) {
-      if (field.isAnnotationPresent(Ignore.class)) {
-        continue;
-      }
-      String key = field.getName();
-      boolean wrap = false;
-      if (field.isAnnotationPresent(Value.class)) {
-        key = field.getAnnotation(Value.class).value();
-        wrap = true;
-      } else if (prefix != null) {
-        key = prefix + Strings.DOT + key;
-      }
-      Object value = getProperty(key, field.getType(), wrap);
-      if (value != null) {
-        ClassUtils.setValue(obj, field, value);
-      } else if (source.containPrefix(key + Strings.DOT) && !ClassUtils
-          .isJavaInternalType(field.getType())) {
-        value = ClassUtils.getValue(obj, field);
-        if (value == null) {
-          value = bind(field.getType(), key);
-        } else {
-          bind(value, key);
-        }
-        ClassUtils.setValue(obj, field, value);
-      }
+      bindField(obj, field, prefix);
     }
     return obj;
+  }
+
+  private void bindField(Object obj, Field field, String prefix) {
+    if (field.isAnnotationPresent(Ignore.class)) {
+      return;
+    }
+    String key = field.getName();
+    boolean wrap = false;
+    if (field.isAnnotationPresent(Value.class)) {
+      key = field.getAnnotation(Value.class).value();
+      wrap = true;
+    } else if (prefix != null) {
+      key = prefix + Strings.DOT + key;
+    }
+    Object value = getProperty(key, field.getType(), wrap);
+    if (value != null) {
+      ClassUtils.setValue(obj, field, value);
+      return;
+    }
+    if (!ClassUtils.isJavaInternalType(field.getType()) && source
+        .containPrefix(key + Strings.DOT)) {
+      value = ClassUtils.getValue(obj, field);
+      if (value == null) {
+        value = bind(field.getType(), key);
+        ClassUtils.setValue(obj, field, value);
+      } else {
+        bind(value, key);
+      }
+    }
   }
 
   private Object getProperty(String key, Class<?> type, boolean wrap) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -20,7 +20,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.ThreadUtils;
 import vip.justlive.oxygen.core.util.retry.RetryBuilder;
 import vip.justlive.oxygen.core.util.retry.Retryer;
 
@@ -32,12 +31,14 @@ public class RetryerTest {
   @Test
   public void test01() {
     AtomicInteger ato = new AtomicInteger(0);
-    RetryBuilder.newBuilder().retryIfException().withMaxAttempt(3).build().call(() -> {
-      ato.incrementAndGet();
-      int i = 0;
-      System.out.println(10 / i);
-      return ato.get();
-    });
+    Integer value = RetryBuilder.<Integer>newBuilder().retryIfException().withMaxAttempt(3).build()
+        .call(() -> {
+          ato.incrementAndGet();
+          int i = 0;
+          System.out.println(10 / i);
+          return ato.get();
+        });
+    Assert.assertNull(value);
     Assert.assertEquals(3, ato.get());
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -30,7 +30,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class IoUtils {
 
-  private static final int BUFFER_SIZE = 4096;
+  private final int BUFFER_SIZE = 4096;
 
   /**
    * 读完流且不处理
@@ -39,7 +39,7 @@ public class IoUtils {
    * @return 总字节数
    * @throws IOException io异常
    */
-  public static long drain(InputStream input) throws IOException {
+  public long drain(InputStream input) throws IOException {
     long byteCount = 0;
     if (input == null) {
       return byteCount;
@@ -60,7 +60,7 @@ public class IoUtils {
    * @return 总字节数
    * @throws IOException io异常
    */
-  public static long copy(InputStream input, OutputStream output) throws IOException {
+  public long copy(InputStream input, OutputStream output) throws IOException {
     return copy(input, (buffer, bytesRead) -> output.write(buffer, 0, bytesRead));
   }
 
@@ -72,7 +72,7 @@ public class IoUtils {
    * @return 总字节数
    * @throws IOException io异常
    */
-  public static long copy(InputStream input, Bytes bytes) throws IOException {
+  public long copy(InputStream input, Bytes bytes) throws IOException {
     return copy(input, (buffer, bytesRead) -> bytes.write(buffer, 0, bytesRead));
   }
 
@@ -84,7 +84,7 @@ public class IoUtils {
    * @return 总字节数
    * @throws IOException io异常
    */
-  public static long copy(InputStream input, CopyOperate operate) throws IOException {
+  public long copy(InputStream input, CopyOperate operate) throws IOException {
     byte[] buffer = new byte[BUFFER_SIZE];
     long count = 0;
     int bytesRead;
@@ -102,7 +102,7 @@ public class IoUtils {
    * @return byte[]
    * @throws IOException io异常
    */
-  public static byte[] toBytes(InputStream input) throws IOException {
+  public byte[] toBytes(InputStream input) throws IOException {
     Bytes bytes = new Bytes();
     copy(input, bytes);
     return bytes.toArray();
@@ -115,7 +115,7 @@ public class IoUtils {
    * @return 字符串
    * @throws IOException io异常
    */
-  public static String toString(InputStream input) throws IOException {
+  public String toString(InputStream input) throws IOException {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     copy(input, output);
     return output.toString();
@@ -129,7 +129,7 @@ public class IoUtils {
    * @return 字符串
    * @throws IOException io异常
    */
-  public static String toString(InputStream input, Charset charset) throws IOException {
+  public String toString(InputStream input, Charset charset) throws IOException {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     copy(input, output);
     return output.toString(charset.name());
@@ -140,7 +140,7 @@ public class IoUtils {
    *
    * @param closeable 被关闭的对象
    */
-  public static void close(Closeable closeable) {
+  public void close(Closeable closeable) {
     if (closeable != null) {
       try {
         closeable.close();

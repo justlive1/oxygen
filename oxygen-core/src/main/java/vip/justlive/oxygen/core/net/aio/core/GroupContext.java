@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -17,12 +17,12 @@ package vip.justlive.oxygen.core.net.aio.core;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import vip.justlive.oxygen.core.util.CaughtConsumer;
 import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
@@ -93,7 +93,6 @@ public class GroupContext {
 
   private ThreadPoolExecutor groupExecutor;
   private ThreadPoolExecutor workerExecutor;
-  private ScheduledExecutorService scheduledExecutor;
 
   private AsynchronousChannelGroup channelGroup;
 
@@ -107,6 +106,7 @@ public class GroupContext {
    */
   public void close() {
     stopped = true;
+    channels.values().forEach(new CaughtConsumer<>(ChannelContext::close));
     channels.clear();
     if (channelGroup != null) {
       channelGroup.shutdown();
@@ -114,9 +114,6 @@ public class GroupContext {
     groupExecutor.shutdown();
     if (workerExecutor != null) {
       workerExecutor.shutdown();
-    }
-    if (scheduledExecutor != null) {
-      scheduledExecutor.shutdown();
     }
   }
 
@@ -137,13 +134,6 @@ public class GroupContext {
       workerExecutor.prestartCoreThread();
     }
     return workerExecutor;
-  }
-
-  public ScheduledExecutorService getScheduledExecutor() {
-    if (scheduledExecutor == null) {
-      scheduledExecutor = ThreadUtils.newScheduledExecutor(5, "aio-scheduled-%d");
-    }
-    return scheduledExecutor;
   }
 
   /**

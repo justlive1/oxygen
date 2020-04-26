@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.WrappedException;
@@ -27,6 +27,7 @@ import vip.justlive.oxygen.core.util.FileUtils;
 import vip.justlive.oxygen.core.util.IoUtils;
 import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
 import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
  * 引导类
@@ -36,13 +37,13 @@ import vip.justlive.oxygen.core.util.Strings;
  * @author wubo
  */
 @Slf4j
-public final class Bootstrap {
+@UtilityClass
+public class Bootstrap {
 
-  private static final List<Plugin> PLUGINS = new ArrayList<>(5);
-  private static final AtomicBoolean STATE = new AtomicBoolean(false);
-  private static final Thread SHUTDOWN_HOOK = Executors.defaultThreadFactory()
-      .newThread(Bootstrap::doClose);
-  private static final String VERSION;
+  private final List<Plugin> PLUGINS = new ArrayList<>(8);
+  private final AtomicBoolean STATE = new AtomicBoolean(false);
+  private final Thread SHUTDOWN_HOOK;
+  private final String VERSION;
 
   static {
     String version;
@@ -53,9 +54,7 @@ public final class Bootstrap {
       version = "oxygen/unknown";
     }
     VERSION = version;
-  }
-
-  Bootstrap() {
+    SHUTDOWN_HOOK = ThreadUtils.defaultThreadFactory().newThread(Bootstrap::doClose);
   }
 
   /**
@@ -63,7 +62,7 @@ public final class Bootstrap {
    *
    * @return version
    */
-  public static String version() {
+  public String version() {
     return VERSION;
   }
 
@@ -72,7 +71,7 @@ public final class Bootstrap {
    * <br>
    * 使用默认地址进行加载，然后使用覆盖路径再次加载
    */
-  public static void initConfig() {
+  public void initConfig() {
     initConfig("classpath*:config.properties", "classpath*:/config/*.properties");
   }
 
@@ -81,7 +80,7 @@ public final class Bootstrap {
    *
    * @param locations 配置文件路径
    */
-  public static void initConfig(String... locations) {
+  public void initConfig(String... locations) {
     ConfigFactory.loadProperties(locations);
     String overridePath = ConfigFactory.getProperty("config.override.path");
     if (overridePath != null && overridePath.length() > 0) {
@@ -94,7 +93,7 @@ public final class Bootstrap {
    *
    * @param plugins 插件
    */
-  public static void addCustomPlugin(Plugin... plugins) {
+  public void addCustomPlugin(Plugin... plugins) {
     if (STATE.get()) {
       throw new IllegalStateException("Bootstrap已启动");
     }
@@ -106,23 +105,23 @@ public final class Bootstrap {
    *
    * @return plugins
    */
-  public static List<Plugin> enabledPlugins() {
+  public List<Plugin> enabledPlugins() {
     return Collections.unmodifiableList(PLUGINS);
   }
 
   /**
    * 注册默认线程异常处理
    */
-  public static void registerUncaughtExceptionHandler() {
+  public void registerUncaughtExceptionHandler() {
     if (Thread.getDefaultUncaughtExceptionHandler() == null) {
-      Thread.setDefaultUncaughtExceptionHandler(Bootstrap::exceptionHandle);
+      Thread.setDefaultUncaughtExceptionHandler(Bootstrap::handleException);
     }
   }
 
   /**
    * 启动Bootstrap
    */
-  public static void start() {
+  public void start() {
     if (STATE.compareAndSet(false, true)) {
       log.info("starting bootstrap ...");
       registerUncaughtExceptionHandler();
@@ -137,7 +136,7 @@ public final class Bootstrap {
   /**
    * 关闭Bootstrap
    */
-  public static synchronized void close() {
+  public synchronized void close() {
     doClose();
     Runtime.getRuntime().removeShutdownHook(SHUTDOWN_HOOK);
   }
@@ -145,7 +144,7 @@ public final class Bootstrap {
   /**
    * 等待容器关闭，一般在没有web容器时使用
    */
-  public static void sync() {
+  public void sync() {
     if (!STATE.get() || Thread.currentThread().isInterrupted()) {
       return;
     }
@@ -165,14 +164,14 @@ public final class Bootstrap {
   /**
    * 添加系统插件类
    */
-  private static void addSystemPlugin() {
+  private void addSystemPlugin() {
     PLUGINS.addAll(ServiceLoaderUtils.loadServices(Plugin.class));
   }
 
   /**
    * 初始化插件
    */
-  private static void initPlugins() {
+  private void initPlugins() {
     Collections.sort(PLUGINS);
     PLUGINS.forEach(Plugin::start);
   }
@@ -180,14 +179,14 @@ public final class Bootstrap {
   /**
    * 注册shutdown钩子
    */
-  private static synchronized void registerShutdownHook() {
+  private synchronized void registerShutdownHook() {
     Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
   }
 
   /**
    * 关闭Bootstrap
    */
-  private static void doClose() {
+  private void doClose() {
     log.info("closing bootstrap ...");
     PLUGINS.forEach(Plugin::stop);
     FileUtils.cleanTempBaseDir();
@@ -198,7 +197,7 @@ public final class Bootstrap {
     log.info("bootstrap closed ! bye bye");
   }
 
-  private static void exceptionHandle(Thread thread, Throwable throwable) {
+  private void handleException(Thread thread, Throwable throwable) {
     if (throwable instanceof WrappedException) {
       throwable = ((WrappedException) throwable).getException();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -16,7 +16,6 @@ package vip.justlive.oxygen.job;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
@@ -24,7 +23,8 @@ import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.config.CoreConf;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.ThreadUtils;
+import vip.justlive.oxygen.core.util.ThreadFactoryBuilder;
+import vip.justlive.oxygen.core.util.timer.WheelTimer;
 import vip.justlive.oxygen.ioc.IocPlugin;
 
 /**
@@ -36,13 +36,8 @@ import vip.justlive.oxygen.ioc.IocPlugin;
 public class JobPlugin implements Plugin {
 
   private static final List<Job> SCHEDULED_JOBS = new ArrayList<>();
-  static ScheduledExecutorService executorService;
 
-  private static void init() {
-    CoreConf config = ConfigFactory.load(CoreConf.class);
-    executorService = ThreadUtils
-        .newScheduledExecutor(config.getJobPoolSize(), config.getJobThreadFormat());
-  }
+  private WheelTimer wheelTimer;
 
   /**
    * 获取当前job数量
@@ -66,8 +61,15 @@ public class JobPlugin implements Plugin {
 
   @Override
   public void stop() {
-    executorService.shutdownNow();
+    wheelTimer.shutdown();
     SCHEDULED_JOBS.clear();
+  }
+
+  private void init() {
+    CoreConf config = ConfigFactory.load(CoreConf.class);
+    wheelTimer = new WheelTimer(1, 60, config.getJobPoolSize(),
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat(config.getJobThreadFormat())
+            .build());
   }
 
   private void parseJobs() {
@@ -97,9 +99,6 @@ public class JobPlugin implements Plugin {
     if (scheduled.onApplicationStart()) {
       addOnApplicationStartJob(job, scheduled.async());
     }
-    if (log.isDebugEnabled()) {
-      log.debug("add a job [{}]", job);
-    }
   }
 
   private void check(Scheduled scheduled) {
@@ -126,10 +125,9 @@ public class JobPlugin implements Plugin {
     if (initialDelay.length() > 0) {
       initialDelayVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(initialDelay));
     }
-    job.configFixedDelay(fixedDelayVal, initialDelayVal);
-    executorService
-        .scheduleWithFixedDelay(job, initialDelayVal, fixedDelayVal, TimeUnit.MILLISECONDS);
-    SCHEDULED_JOBS.add(job);
+    wheelTimer.scheduleWithFixedDelay(job.configFixedDelay(fixedDelayVal, initialDelayVal),
+        initialDelayVal, fixedDelayVal, TimeUnit.MILLISECONDS);
+    addJob(job);
   }
 
   private void addFixedRateJob(Job job, String fixedRate, String initialDelay) {
@@ -138,23 +136,31 @@ public class JobPlugin implements Plugin {
     if (initialDelay.length() > 0) {
       initialDelayVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(initialDelay));
     }
-    job.configFixedRate(fixedRateVal, initialDelayVal);
-    executorService.scheduleAtFixedRate(job, initialDelayVal, fixedRateVal, TimeUnit.MILLISECONDS);
-    SCHEDULED_JOBS.add(job);
+    wheelTimer
+        .scheduleAtFixedRate(job.configFixedRate(fixedRateVal, initialDelayVal), initialDelayVal,
+            fixedRateVal, TimeUnit.MILLISECONDS);
+    addJob(job);
   }
 
   private void addCronJob(Job job, String cron) {
-    job.configCron(ConfigFactory.getPlaceholderProperty(cron));
-    job.scheduleCron();
-    SCHEDULED_JOBS.add(job);
+    cron = ConfigFactory.getPlaceholderProperty(cron);
+    wheelTimer.scheduleOnCron(job.configCron(cron), cron);
+    addJob(job);
   }
 
   private void addOnApplicationStartJob(Job job, boolean async) {
-    job.configOnApplicationStart(async);
+    Job target = job.configOnApplicationStart(async);
     if (async) {
-      executorService.submit(job);
+      wheelTimer.schedule(target, 0, TimeUnit.MILLISECONDS);
     } else {
-      job.run();
+      target.run();
+    }
+    addJob(target);
+  }
+
+  private void addJob(Job job) {
+    if (log.isDebugEnabled()) {
+      log.debug("add a job [{}]", job);
     }
     SCHEDULED_JOBS.add(job);
   }

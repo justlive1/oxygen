@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain spec copy of the License at
+ * in compliance with the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -33,9 +33,11 @@ public class Pair<K, V> implements Serializable {
   /**
    * 键
    */
+  @SuppressWarnings("squid:S1948")
   private K key;
   /**
    * 值
    */
+  @SuppressWarnings("squid:S1948")
   private V value;
 }

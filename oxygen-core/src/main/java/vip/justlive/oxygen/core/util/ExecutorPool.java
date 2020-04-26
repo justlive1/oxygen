@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -35,13 +35,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ExecutorPool<V> extends ExecutorCompletionService<V> {
 
-  private AtomicInteger count = new AtomicInteger(0);
+  private final AtomicInteger count = new AtomicInteger(0);
 
   /**
    * 使用cached pool构造
    */
   public ExecutorPool() {
-    this(ThreadUtils.cachedPool());
+    this(ThreadUtils.globalPool());
   }
 
 

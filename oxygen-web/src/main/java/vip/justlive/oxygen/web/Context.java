@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -38,11 +38,11 @@ import vip.justlive.oxygen.web.router.RoutingContext;
 @UtilityClass
 public class Context {
 
-  public static final SessionManager SESSION_MANAGER = new SessionManager();
-  static final List<ResultHandler> HANDLERS = new LinkedList<>();
-  static final List<ParamBinder> BINDERS = new LinkedList<>();
-  static final List<WebHook> HOOKS = new LinkedList<>();
-  static final List<Parser> PARSERS = new LinkedList<>();
+  public final SessionManager SESSION_MANAGER = new SessionManager();
+  final List<ResultHandler> HANDLERS = new LinkedList<>();
+  final List<ParamBinder> BINDERS = new LinkedList<>();
+  final List<WebHook> HOOKS = new LinkedList<>();
+  final List<Parser> PARSERS = new LinkedList<>();
 
 
   /**
@@ -51,7 +51,7 @@ public class Context {
    * @param parameter 参数
    * @return 数据绑定
    */
-  public static DataBinder bind(Parameter parameter) {
+  public DataBinder bind(Parameter parameter) {
     for (ParamBinder binder : Context.BINDERS) {
       if (binder.supported(parameter)) {
         return binder.build(parameter);
@@ -65,7 +65,7 @@ public class Context {
    *
    * @param ctx 上下文
    */
-  public static void dispatch(RoutingContext ctx) {
+  public void dispatch(RoutingContext ctx) {
     try {
       Context.parseRequest(ctx.request());
       RouteHandler handler = ctx.request().getRouteHandler();
@@ -92,7 +92,7 @@ public class Context {
    *
    * @param ctx 上下文
    */
-  private static void invokeFinished(RoutingContext ctx) {
+  private void invokeFinished(RoutingContext ctx) {
     for (int i = HOOKS.size() - 1; i >= 0; i--) {
       HOOKS.get(i).finished(ctx);
     }
@@ -103,7 +103,7 @@ public class Context {
    *
    * @param ctx 上下文
    */
-  private static void invokeAfter(RoutingContext ctx) {
+  private void invokeAfter(RoutingContext ctx) {
     for (int i = HOOKS.size() - 1; i >= 0; i--) {
       HOOKS.get(i).after(ctx);
     }
@@ -115,7 +115,7 @@ public class Context {
    * @param ctx 上下文
    * @return 返回false中断处理
    */
-  private static boolean invokeBefore(RoutingContext ctx) {
+  private boolean invokeBefore(RoutingContext ctx) {
     for (WebHook webHook : HOOKS) {
       if (!webHook.before(ctx)) {
         return false;
@@ -129,7 +129,7 @@ public class Context {
    *
    * @param request 请求
    */
-  private static void parseRequest(Request request) {
+  private void parseRequest(Request request) {
     PARSERS.forEach(parser -> parser.parse(request));
   }
 
@@ -139,7 +139,7 @@ public class Context {
    * @param request 请求
    * @param response 响应
    */
-  private static void restoreSession(Request request, Response response) {
+  private void restoreSession(Request request, Response response) {
     if (request.getSession() != null && !request.getSession().getId()
         .equals(request.getCookieValue(Session.SESSION_COOKIE_KEY))) {
       response.setCookie(Session.SESSION_COOKIE_KEY, request.getSession().getId());
@@ -152,7 +152,7 @@ public class Context {
    *
    * @param ctx 上下文
    */
-  private static void handleResult(RoutingContext ctx) {
+  private void handleResult(RoutingContext ctx) {
     for (ResultHandler resultHandler : Context.HANDLERS) {
       if (resultHandler.support(ctx.response().getResult())) {
         resultHandler.apply(ctx, ctx.response().getResult());

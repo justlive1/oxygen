@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -30,10 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 public class PathMatcher {
 
-  private static final String ANY_REGEX = ".*";
-  private static final String DB_ANY_REGEX = "[/]?";
-  private static final String NOT_SEPARATOR_REGEX = "[^/]*";
-  private static final WeakHashMap<String, Pattern> PATTERNS = new WeakHashMap<>(32);
+  private final String ANY_REGEX = ".*";
+  private final String DB_ANY_REGEX = "[/]?";
+  private final String NOT_SEPARATOR_REGEX = "[^/]*";
+  private final WeakHashMap<String, Pattern> PATTERNS = new WeakHashMap<>(32);
 
   /**
    * 是否是通配符
@@ -41,7 +41,7 @@ public class PathMatcher {
    * @param path 路径
    * @return true 是通配符
    */
-  public static boolean isPattern(String path) {
+  public boolean isPattern(String path) {
     return (path.indexOf(Bytes.ANY) != -1 || path.indexOf(Bytes.QUESTION_MARK) != -1);
   }
 
@@ -52,7 +52,7 @@ public class PathMatcher {
    * @param path 路径
    * @return true 匹配上了
    */
-  public static boolean match(String pattern, String path) {
+  public boolean match(String pattern, String path) {
     if (isPattern(pattern)) {
       Pattern p = PATTERNS.get(pattern);
       if (p == null) {
@@ -71,7 +71,7 @@ public class PathMatcher {
    * @param pattern 匹配串
    * @return 正则
    */
-  private static Pattern parsePattern(String pattern) {
+  private Pattern parsePattern(String pattern) {
     char[] chars = pattern.toCharArray();
     int len = chars.length;
     StringBuilder sb = new StringBuilder();
@@ -85,7 +85,7 @@ public class PathMatcher {
     return Pattern.compile(sb.toString());
   }
 
-  private static boolean[] parse(boolean pre, boolean dbPre, char[] chars, int i,
+  private boolean[] parse(boolean pre, boolean dbPre, char[] chars, int i,
       StringBuilder sb) {
     if (chars[i] == Bytes.ANY) {
       if (pre) {
@@ -122,7 +122,7 @@ public class PathMatcher {
    * @param location 路径
    * @return 根路径
    */
-  public static String getRootDir(String location) {
+  public String getRootDir(String location) {
     int prefixEnd = location.indexOf(Strings.COLON) + 1;
     int rootDirEnd = location.length();
     while (rootDirEnd > prefixEnd && isPattern(location.substring(prefixEnd, rootDirEnd))) {
@@ -141,7 +141,7 @@ public class PathMatcher {
    * @param subPattern 匹配串
    * @return 文件列表
    */
-  public static Set<File> findMatchedFiles(File rootDir, String subPattern) {
+  public Set<File> findMatchedFiles(File rootDir, String subPattern) {
     Set<File> files = new LinkedHashSet<>();
     if (!rootDir.exists() || !rootDir.isDirectory() || !rootDir.canRead()) {
       if (log.isWarnEnabled()) {
@@ -165,7 +165,7 @@ public class PathMatcher {
    * @param dir 目录
    * @param files 文件集合
    */
-  private static void searchMatchedFiles(String fullPattern, File dir, Set<File> files) {
+  private void searchMatchedFiles(String fullPattern, File dir, Set<File> files) {
     if (log.isDebugEnabled()) {
       log.debug("search files under dir [{}]", dir);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -38,7 +38,7 @@ import vip.justlive.oxygen.core.net.http.HttpResponse;
 @UtilityClass
 public class FileUtils {
 
-  private static final Properties MIME_TYPES = new Properties();
+  private final Properties MIME_TYPES = new Properties();
 
   static {
     try {
@@ -53,7 +53,7 @@ public class FileUtils {
    *
    * @param dir 目录
    */
-  public static void mkdirs(File dir) {
+  public void mkdirs(File dir) {
     if (dir == null) {
       return;
     }
@@ -72,7 +72,7 @@ public class FileUtils {
    *
    * @param path 路径
    */
-  public static void mkdirs(Path path) {
+  public void mkdirs(Path path) {
     if (path == null) {
       return;
     }
@@ -84,7 +84,7 @@ public class FileUtils {
    *
    * @param path 路径
    */
-  public static void mkdirs(String path) {
+  public void mkdirs(String path) {
     if (path == null) {
       return;
     }
@@ -97,7 +97,7 @@ public class FileUtils {
    * @param parent 父目录
    * @param children 子目录
    */
-  public static void mkdirs(String parent, String... children) {
+  public void mkdirs(String parent, String... children) {
     MoreObjects.notNull(parent);
     File parentDir = new File(parent);
     if (children != null && children.length > 0) {
@@ -113,7 +113,7 @@ public class FileUtils {
    *
    * @param file 文件
    */
-  public static void mkdirsForFile(File file) {
+  public void mkdirsForFile(File file) {
     if (file == null) {
       return;
     }
@@ -128,7 +128,7 @@ public class FileUtils {
    *
    * @param file 文件
    */
-  public static void touch(File file) {
+  public void touch(File file) {
     if (file == null) {
       return;
     }
@@ -152,7 +152,7 @@ public class FileUtils {
    *
    * @param path 文件路径
    */
-  public static void touch(Path path) {
+  public void touch(Path path) {
     if (path == null) {
       return;
     }
@@ -164,7 +164,7 @@ public class FileUtils {
    *
    * @param filepath 文件路径
    */
-  public static void touch(String filepath) {
+  public void touch(String filepath) {
     if (filepath == null) {
       return;
     }
@@ -177,7 +177,7 @@ public class FileUtils {
    * @param filename 文件名
    * @return extension
    */
-  public static String extension(String filename) {
+  public String extension(String filename) {
     int index = MoreObjects.notNull(filename).lastIndexOf(Strings.DOT);
     if (index == -1) {
       return Strings.EMPTY;
@@ -191,7 +191,7 @@ public class FileUtils {
    * @param file 文件
    * @return count
    */
-  public static int countFiles(File file) {
+  public int countFiles(File file) {
     return countFiles(file, MoreObjects.alwaysTrue());
   }
 
@@ -202,7 +202,7 @@ public class FileUtils {
    * @param filter 过滤器
    * @return count
    */
-  public static int countFiles(File file, Predicate<File> filter) {
+  public int countFiles(File file, Predicate<File> filter) {
     MoreObjects.notNull(file, "file cant not be null");
     MoreObjects.notNull(filter, "filter can not be null");
     if (file.isFile()) {
@@ -229,7 +229,7 @@ public class FileUtils {
    * @param file 文件
    * @return count
    */
-  public static int countDirs(File file) {
+  public int countDirs(File file) {
     return countDirs(file, MoreObjects.alwaysTrue());
   }
 
@@ -240,7 +240,7 @@ public class FileUtils {
    * @param filter 过滤器
    * @return count
    */
-  public static int countDirs(File file, Predicate<File> filter) {
+  public int countDirs(File file, Predicate<File> filter) {
     MoreObjects.notNull(file, "file cant not be null");
     MoreObjects.notNull(filter, "filter can not be null");
     if (file.isDirectory()) {
@@ -267,7 +267,7 @@ public class FileUtils {
    * @param file 文件
    * @return path
    */
-  public static String absolutePath(File file) {
+  public String absolutePath(File file) {
     MoreObjects.notNull(file);
     try {
       return file.getCanonicalPath();
@@ -283,7 +283,7 @@ public class FileUtils {
    * @param another 另一文件
    * @return true为相同路径
    */
-  public static boolean isSamePath(File file, File another) {
+  public boolean isSamePath(File file, File another) {
     if (file == another || file.equals(another)) {
       return true;
     }
@@ -296,7 +296,7 @@ public class FileUtils {
    * @param dir 目录
    * @return true为根目录
    */
-  public static boolean isRoot(File dir) {
+  public boolean isRoot(File dir) {
     if (dir == null || !dir.isDirectory()) {
       return false;
     }
@@ -314,7 +314,7 @@ public class FileUtils {
    * @param file 文件
    * @return count
    */
-  public static int delete(File file) {
+  public int delete(File file) {
     if (file != null && file.exists()) {
       if (file.isFile()) {
         return deleteFile(file);
@@ -331,7 +331,7 @@ public class FileUtils {
    * @param file 文件
    * @return count
    */
-  public static int deleteFile(File file) {
+  public int deleteFile(File file) {
     if (file != null && file.isFile()) {
       return deletePath(file.toPath());
     }
@@ -344,7 +344,7 @@ public class FileUtils {
    * @param file 目录
    * @return count
    */
-  public static int deleteDir(File file) {
+  public int deleteDir(File file) {
     if (file != null && file.isDirectory()) {
       File[] files = file.listFiles();
       int count = 0;
@@ -368,7 +368,7 @@ public class FileUtils {
    *
    * @return temp dir
    */
-  public static File tempDir() {
+  public File tempDir() {
     String tempDir = ConfigFactory.getProperty("main.temp.dir");
     if (tempDir == null || tempDir.trim().length() == 0) {
       try {
@@ -385,7 +385,7 @@ public class FileUtils {
    *
    * @return temp base dir
    */
-  public static File tempBaseDir() {
+  public File tempBaseDir() {
     return new File(tempDir(), Bootstrap.version());
   }
 
@@ -394,7 +394,7 @@ public class FileUtils {
    *
    * @return 删除的文件和目录数
    */
-  public static int cleanTempBaseDir() {
+  public int cleanTempBaseDir() {
     return deleteDir(tempBaseDir());
   }
 
@@ -405,7 +405,7 @@ public class FileUtils {
    * @param children 字目录
    * @return 目录
    */
-  public static File createTempDir(String first, String... children) {
+  public File createTempDir(String first, String... children) {
     File dir = new File(tempBaseDir(), first);
     if (children.length > 0) {
       for (String child : children) {
@@ -427,7 +427,7 @@ public class FileUtils {
    * @param filename 文件名
    * @return mime-type
    */
-  public static String parseMimeType(String filename) {
+  public String parseMimeType(String filename) {
     return getMimeType(extension(filename));
   }
 
@@ -437,7 +437,7 @@ public class FileUtils {
    * @param extension 扩展名
    * @return mime-type
    */
-  public static String getMimeType(String extension) {
+  public String getMimeType(String extension) {
     return MIME_TYPES.getProperty(extension);
   }
 
@@ -448,7 +448,7 @@ public class FileUtils {
    * @return 文件
    * @throws IOException io异常
    */
-  public static File download(String url) throws IOException {
+  public File download(String url) throws IOException {
     File file = new File(FileUtils.tempBaseDir(),
         SnowflakeIdWorker.defaultNextId() + Strings.DOT + FileUtils.extension(url));
     download(url, file);
@@ -462,14 +462,14 @@ public class FileUtils {
    * @param file 文件
    * @throws IOException io异常
    */
-  public static void download(String url, File file) throws IOException {
+  public void download(String url, File file) throws IOException {
     try (HttpResponse response = HttpRequest.get(url)
         .execute(); FileOutputStream out = new FileOutputStream(file)) {
       IoUtils.copy(response.getBody(), out);
     }
   }
 
-  private static int deletePath(Path path) {
+  private int deletePath(Path path) {
     try {
       Files.delete(path);
       return 1;

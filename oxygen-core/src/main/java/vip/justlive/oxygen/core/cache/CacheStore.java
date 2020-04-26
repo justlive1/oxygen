@@ -28,8 +28,8 @@ import vip.justlive.oxygen.core.util.MoreObjects;
 @UtilityClass
 public class CacheStore {
 
-  static final Map<String, Cache> CACHES = new ConcurrentHashMap<>(4, 1);
-  private static final AtomicReference<CacheFactory> CACHE_FACTORY = new AtomicReference<>(
+  final Map<String, Cache> CACHES = new ConcurrentHashMap<>(4, 1);
+  private final AtomicReference<CacheFactory> CACHE_FACTORY = new AtomicReference<>(
       new ClassCacheFactory());
 
   /**
@@ -38,7 +38,7 @@ public class CacheStore {
    * @param name 缓存名称
    * @return cache
    */
-  static Cache createCache(String name) {
+  Cache createCache(String name) {
     return CACHE_FACTORY.get().create(name);
   }
 
@@ -47,7 +47,7 @@ public class CacheStore {
    *
    * @param cacheFactory 缓存工厂
    */
-  public static void setCacheFactory(CacheFactory cacheFactory) {
+  public void setCacheFactory(CacheFactory cacheFactory) {
     MoreObjects.notNull(cacheFactory, "cache factory can not be null");
     if (CACHE_FACTORY.get() != cacheFactory) {
       CACHES.clear();

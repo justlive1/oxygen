@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -33,6 +33,8 @@ public class DelegateEncoder extends BaseEncoder {
   static {
     ENCODERS.put("NoOp", new NoOpEncoder());
     ENCODERS.put("MD5", new Md5Encoder());
+    ENCODERS.put("SHA-1", new MessageDigestEncoder("SHA-1"));
+    ENCODERS.put("SHA-256", new MessageDigestEncoder("SHA-256"));
   }
 
   private final String id;

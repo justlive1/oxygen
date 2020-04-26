@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -38,9 +38,9 @@ import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
 @UtilityClass
 public class Templates {
 
-  private static final Map<String, Path> CACHE = new ConcurrentHashMap<>(4);
+  private final Map<String, Path> CACHE = new ConcurrentHashMap<>(4);
 
-  private static final File BASE_DIR;
+  private final File BASE_DIR;
 
   static {
     BASE_DIR = FileUtils.createTempDir("templates");
@@ -52,7 +52,7 @@ public class Templates {
    * @param path 路径
    * @return template
    */
-  public static String template(String path) {
+  public String template(String path) {
     SourceResource sourceResource = new FirstResourceLoader(path).getResource();
     if (sourceResource == null) {
       throw Exceptions.fail(String.format("template [%s] not found", path));
@@ -70,7 +70,7 @@ public class Templates {
    * @param path 路径
    * @return template
    */
-  public static String cachedTemplate(String path) {
+  public String cachedTemplate(String path) {
     try {
       Path templatePath = CACHE.get(path);
       if (templatePath != null) {

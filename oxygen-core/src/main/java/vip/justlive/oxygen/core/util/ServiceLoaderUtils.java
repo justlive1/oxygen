@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -35,7 +35,7 @@ public class ServiceLoaderUtils {
    * @param <T> 泛型
    * @return service
    */
-  public static <T> T loadService(Class<T> clazz) {
+  public <T> T loadService(Class<T> clazz) {
     T service = loadServiceOrNull(clazz);
     if (service == null) {
       throw new IllegalStateException(
@@ -51,7 +51,7 @@ public class ServiceLoaderUtils {
    * @param <T> 泛型
    * @return service or null
    */
-  public static <T> T loadServiceOrNull(Class<T> clazz) {
+  public <T> T loadServiceOrNull(Class<T> clazz) {
     Collection<T> services = loadServices(clazz);
     if (services.isEmpty()) {
       return null;
@@ -66,7 +66,7 @@ public class ServiceLoaderUtils {
    * @param <T> 泛型
    * @return services
    */
-  public static <T> List<T> loadServices(Class<T> clazz) {
+  public <T> List<T> loadServices(Class<T> clazz) {
     return loadServices(clazz, null);
   }
 
@@ -78,7 +78,7 @@ public class ServiceLoaderUtils {
    * @param <T> 泛型
    * @return services
    */
-  public static <T> List<T> loadServices(Class<T> clazz, ClassLoader loader) {
+  public <T> List<T> loadServices(Class<T> clazz, ClassLoader loader) {
     List<T> list = new ArrayList<>();
     ServiceLoader<T> serviceLoader;
     if (loader != null) {

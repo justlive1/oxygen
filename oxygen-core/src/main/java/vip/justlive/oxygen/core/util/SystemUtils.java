@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -37,11 +37,11 @@ public class SystemUtils {
   /**
    * 默认最小端口
    */
-  public static final int DEFAULT_PORT_RANGE_MIN = 10000;
+  public final int DEFAULT_PORT_RANGE_MIN = 10000;
   /**
    * 最大端口
    */
-  public static final int PORT_RANGE_MAX = 65535;
+  public final int PORT_RANGE_MAX = 65535;
 
   /**
    * 是否为有效的端口号，不检验占用
@@ -49,7 +49,7 @@ public class SystemUtils {
    * @param port 端口号
    * @return true为有效
    */
-  public static boolean isValidPort(int port) {
+  public boolean isValidPort(int port) {
     return port > 0 && port <= PORT_RANGE_MAX;
   }
 
@@ -59,12 +59,11 @@ public class SystemUtils {
    * @param port 端口
    * @return true为可用
    */
-  public static boolean isAvailablePort(int port) {
+  public boolean isAvailablePort(int port) {
     if (!isValidPort(port)) {
       return false;
     }
-    try (ServerSocket ignored = ServerSocketFactory.getDefault()
-        .createServerSocket(port, 1, InetAddress.getLocalHost())) {
+    try (ServerSocket ignored = ServerSocketFactory.getDefault().createServerSocket(port)) {
       return true;
     } catch (Exception e) {
       return false;
@@ -76,7 +75,7 @@ public class SystemUtils {
    *
    * @return port
    */
-  public static int findAvailablePort() {
+  public int findAvailablePort() {
     return findAvailablePort(DEFAULT_PORT_RANGE_MIN);
   }
 
@@ -86,7 +85,7 @@ public class SystemUtils {
    * @param minPort 最小端口
    * @return port
    */
-  public static int findAvailablePort(int minPort) {
+  public int findAvailablePort(int minPort) {
     return findAvailablePort(minPort, PORT_RANGE_MAX);
   }
 
@@ -97,7 +96,7 @@ public class SystemUtils {
    * @param maxPort 最大端口
    * @return port
    */
-  public static int findAvailablePort(int minPort, int maxPort) {
+  public int findAvailablePort(int minPort, int maxPort) {
     if (minPort < 0) {
       throw Exceptions.fail("'minPort' must be greater than 0");
     }
@@ -129,7 +128,7 @@ public class SystemUtils {
    * @param address 需要解析的地址
    * @return address
    */
-  public static InetSocketAddress parseAddress(String address) {
+  public InetSocketAddress parseAddress(String address) {
     if (address == null || address.trim().length() == 0) {
       return null;
     }
@@ -143,7 +142,7 @@ public class SystemUtils {
    *
    * @return address
    */
-  public static InetAddress getLocalAddress() {
+  public InetAddress getLocalAddress() {
     InetAddress candidateAddress = null;
     try {
       Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();

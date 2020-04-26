@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -34,9 +34,9 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  */
 public class DefaultBeanStore implements BeanStore {
 
-  private Set<Object> beans = new HashSet<>(32);
-  private ConcurrentMap<Class<?>, List<BeanInfo>> beanClassMap = new ConcurrentHashMap<>(32);
-  private ConcurrentMap<String, Object> beanNameMap = new ConcurrentHashMap<>(32);
+  private final Set<Object> beans = new HashSet<>(32);
+  private final ConcurrentMap<Class<?>, List<BeanInfo>> beanClassMap = new ConcurrentHashMap<>(32);
+  private final ConcurrentMap<String, Object> beanNameMap = new ConcurrentHashMap<>(32);
 
   @Override
   public void addBean(String name, Object bean, int order) {

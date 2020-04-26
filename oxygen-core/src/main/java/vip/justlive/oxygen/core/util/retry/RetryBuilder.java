@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -47,15 +47,15 @@ public class RetryBuilder<T> {
   /**
    * 重试监听
    */
-  private List<Consumer<Attempt<T>>> retryListeners = new LinkedList<>();
+  private final List<Consumer<Attempt<T>>> retryListeners = new LinkedList<>();
   /**
    * 失败监听
    */
-  private List<Consumer<Attempt<T>>> failListeners = new LinkedList<>();
+  private final List<Consumer<Attempt<T>>> failListeners = new LinkedList<>();
   /**
    * 成功监听
    */
-  private List<Consumer<Attempt<T>>> successListeners = new LinkedList<>();
+  private final List<Consumer<Attempt<T>>> successListeners = new LinkedList<>();
   /**
    * 等待时间
    */

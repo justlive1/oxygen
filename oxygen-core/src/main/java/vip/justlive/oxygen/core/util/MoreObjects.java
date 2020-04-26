@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
@@ -41,7 +42,7 @@ public class MoreObjects {
    * @param <T> 泛型类
    * @return 传入值
    */
-  public static <T> T notNull(T obj) {
+  public <T> T notNull(T obj) {
     return notNull(obj, "can not be null");
   }
 
@@ -53,7 +54,7 @@ public class MoreObjects {
    * @param <T> 泛型类
    * @return 传入值
    */
-  public static <T> T notNull(T obj, String msg) {
+  public <T> T notNull(T obj, String msg) {
     if (obj == null) {
       throw Exceptions.fail(msg);
     }
@@ -68,7 +69,7 @@ public class MoreObjects {
    * @param <T> 泛型
    * @return nonNull
    */
-  public static <T> T firstOrNull(T first, T second) {
+  public <T> T firstOrNull(T first, T second) {
     if (first != null) {
       return first;
     }
@@ -83,7 +84,7 @@ public class MoreObjects {
    * @param <T> 泛型
    * @return nonNull
    */
-  public static <T> T firstNonNull(T first, T second) {
+  public <T> T firstNonNull(T first, T second) {
     T obj = firstOrNull(first, second);
     if (obj != null) {
       return obj;
@@ -97,7 +98,7 @@ public class MoreObjects {
    * @param bean 对象
    * @return map
    */
-  public static Map<String, Object> beanToMap(Object bean) {
+  public Map<String, Object> beanToMap(Object bean) {
     notNull(bean, "bean can not be null");
     Map<String, Object> map = new HashMap<>(4);
     if (Map.class.isAssignableFrom(bean.getClass())) {
@@ -128,7 +129,7 @@ public class MoreObjects {
    * @param bean 对象
    * @return queryString
    */
-  public static String beanToQueryString(Object bean) {
+  public String beanToQueryString(Object bean) {
     return beanToQueryString(bean, false);
   }
 
@@ -139,7 +140,7 @@ public class MoreObjects {
    * @param urlEncoded url encoded
    * @return queryString
    */
-  public static String beanToQueryString(Object bean, boolean urlEncoded) {
+  public String beanToQueryString(Object bean, boolean urlEncoded) {
     Map<String, Object> map = MoreObjects.beanToMap(bean);
     StringBuilder sb = new StringBuilder();
     map.forEach((k, v) -> sb.append(Strings.AND).append(k).append(Strings.EQUAL)
@@ -156,7 +157,7 @@ public class MoreObjects {
    * @param <T> 泛型
    * @return predicate
    */
-  public static <T> Predicate<T> alwaysTrue() {
+  public <T> Predicate<T> alwaysTrue() {
     return t -> true;
   }
 
@@ -166,7 +167,7 @@ public class MoreObjects {
    * @param <T> 泛型
    * @return predicate
    */
-  public static <T> Predicate<T> alwaysFalse() {
+  public <T> Predicate<T> alwaysFalse() {
     return t -> false;
   }
 
@@ -176,7 +177,7 @@ public class MoreObjects {
    * @param obj obj
    * @return string
    */
-  public static String safeToString(Object obj) {
+  public String safeToString(Object obj) {
     if (obj == null) {
       return Strings.EMPTY;
     }
@@ -190,7 +191,7 @@ public class MoreObjects {
    * @param consumer 处理单元
    * @param <T> 泛型
    */
-  public static <T> void caughtForeach(Iterable<T> iterable, Consumer<? super T> consumer) {
+  public <T> void caughtForeach(Iterable<T> iterable, Consumer<? super T> consumer) {
     if (consumer instanceof CaughtConsumer) {
       iterable.forEach(consumer);
     } else {
@@ -205,7 +206,7 @@ public class MoreObjects {
    * @param <V> 泛型
    * @return map
    */
-  public static <K, V> Map<K, V> mapOf() {
+  public <K, V> Map<K, V> mapOf() {
     return new HashMap<>(2);
   }
 
@@ -218,7 +219,7 @@ public class MoreObjects {
    * @param <V> 泛型
    * @return map
    */
-  public static <K, V> Map<K, V> mapOf(K k, V v) {
+  public <K, V> Map<K, V> mapOf(K k, V v) {
     Map<K, V> map = mapOf();
     map.put(notNull(k), v);
     return map;
@@ -235,7 +236,7 @@ public class MoreObjects {
    * @param <V> 泛型
    * @return map
    */
-  public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2) {
+  public <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2) {
     Map<K, V> map = mapOf();
     map.put(notNull(k1), v1);
     map.put(notNull(k2), v2);
@@ -255,7 +256,7 @@ public class MoreObjects {
    * @param <V> 泛型
    * @return map
    */
-  public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3) {
+  public <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3) {
     Map<K, V> map = mapOf();
     map.put(notNull(k1), v1);
     map.put(notNull(k2), v2);
@@ -273,7 +274,7 @@ public class MoreObjects {
    * @return 交集
    */
   @SafeVarargs
-  public static <T> Set<T> intersection(Set<T> first, Set<T> second, Set<T>... others) {
+  public <T> Set<T> intersection(Set<T> first, Set<T> second, Set<T>... others) {
     Set<T> intersection = new HashSet<>();
     for (T obj : first) {
       if (second.contains(obj)) {
@@ -299,7 +300,7 @@ public class MoreObjects {
    * @return 并集
    */
   @SafeVarargs
-  public static <T> Set<T> union(Set<T> first, Set<T> second, Set<T>... others) {
+  public <T> Set<T> union(Set<T> first, Set<T> second, Set<T>... others) {
     Set<T> union = new HashSet<>(first);
     union.addAll(second);
     if (others == null) {
@@ -309,5 +310,14 @@ public class MoreObjects {
       union.addAll(other);
     }
     return union;
+  }
+
+  /**
+   * 当前线程直接运行
+   *
+   * @return executor
+   */
+  public Executor directExecutor() {
+    return Runnable::run;
   }
 }

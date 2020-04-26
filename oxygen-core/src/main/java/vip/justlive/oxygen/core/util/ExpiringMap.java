@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -60,14 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   private static final long serialVersionUID = 1L;
-
-  private static final ScheduledExecutorService SCHEDULED;
   private static final AtomicInteger INS = new AtomicInteger(0);
-
-  static {
-    int poolSize = Integer.getInteger("expiringMap.poolSize", 2);
-    SCHEDULED = ThreadUtils.newScheduledExecutor(poolSize, "ExpiringMap-%d");
-  }
 
   private final transient ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
   private final transient Lock readLock = readWriteLock.readLock();
@@ -76,51 +68,52 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   /**
    * 失效监听
    */
-  private transient List<ExpiredListener<K, V>> asyncExpiredListeners;
+  private final transient List<ExpiredListener<K, V>> asyncExpiredListeners;
   /**
    * 名称
    */
   @Getter
-  private String name;
+  private final String name;
   /**
    * 最大数量
    */
   @Getter
-  private int maxSize;
+  private final int maxSize;
   /**
    * 有效期
    */
   @Getter
-  private long duration;
+  private final long duration;
   /**
    * 有效期单位
    */
   @Getter
-  private TimeUnit timeUnit;
+  private final TimeUnit timeUnit;
   /**
    * 失效策略
    */
   @Getter
-  private ExpiringPolicy expiringPolicy;
+  private final ExpiringPolicy expiringPolicy;
   /**
    * 失效清除策略
    */
   @Getter
-  private CleanPolicy cleanPolicy;
+  private final CleanPolicy cleanPolicy;
   /**
    * 定时清理延迟
    */
   @Getter
-  private int scheduleDelay;
+  private final int scheduleDelay;
   /**
    * 累积阈值
    */
   @Getter
-  private int accumulateThreshold;
+  private final int accumulateThreshold;
   /**
    * 实际数据
    */
-  private LruMap<K, V> data;
+  @SuppressWarnings("squid:S1948")
+  private final LruMap<K, V> data;
 
   /**
    * 构造函数
@@ -134,15 +127,17 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     timeUnit = builder.timeUnit;
     cleanPolicy = builder.cleanPolicy;
     expiringPolicy = builder.expiringPolicy;
-    scheduleDelay = builder.scheduleDelay;
-    if (scheduleDelay <= 0) {
+    if (builder.scheduleDelay <= 0) {
       scheduleDelay = Math.max((int) timeUnit.toSeconds(duration) / 4, 60);
+    } else {
+      scheduleDelay = builder.scheduleDelay;
     }
     accumulateThreshold = builder.accumulateThreshold;
     int index = INS.getAndIncrement();
     name = MoreObjects.firstNonNull(builder.name, String.format("Unnamed-%d", index));
-    SCHEDULED.scheduleWithFixedDelay(this::runScheduleCleanPolicy, scheduleDelay, scheduleDelay,
-        TimeUnit.SECONDS);
+    ThreadUtils.globalTimer()
+        .scheduleWithFixedDelay(this::runScheduleCleanPolicy, scheduleDelay, scheduleDelay,
+            TimeUnit.SECONDS);
     data = new LruMap<K, V>().maxSize(maxSize).listeners(asyncExpiredListeners);
   }
 
@@ -384,14 +379,14 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public boolean remove(Object key, Object value) {
     writeLock.lock();
     try {
-      ExpiringValue<V> wrapValue = data.get(key);
+      @SuppressWarnings("unchecked") K k = (K) key;
+      ExpiringValue<V> wrapValue = data.get(k);
       if (wrapValue != null && !wrapValue.isExpired() && Objects.equals(wrapValue.value, value)) {
-        notifyListener((K) key, wrapValue.value, RemovalCause.EXPLICIT);
-        data.remove(key);
+        notifyListener(k, wrapValue.value, RemovalCause.EXPLICIT);
+        data.remove(k);
         return true;
       }
       return false;
@@ -543,7 +538,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     if (log.isDebugEnabled() && size > 0) {
       log.debug("accumulate clean [{}] and now realSize is [{}]", this.name, size);
     }
-    SCHEDULED.execute(this::expiredClean);
+    ThreadUtils.globalPool().execute(this::expiredClean);
   }
 
   /**

@@ -32,7 +32,7 @@ public class LocalRateLimiter implements RateLimiter {
   private static final ScheduledExecutorService POOL = ThreadUtils
       .newScheduledExecutor(10, "rate-limiter-%d");
 
-  private Map<String, Resource> resources = new ConcurrentHashMap<>(4);
+  private final Map<String, Resource> resources = new ConcurrentHashMap<>(4);
 
   @Override
   public void setRate(String key, long rate, long interval) {

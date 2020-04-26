@@ -72,7 +72,7 @@ public class Closer implements Closeable {
     while (!stack.isEmpty()) {
       try {
         stack.pop().close();
-      } catch (Throwable e) {
+      } catch (@SuppressWarnings("squid:S1181") Throwable e) {
         if (thrown == null) {
           thrown = e;
         } else {

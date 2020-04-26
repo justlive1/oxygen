@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,7 +14,7 @@
 
 package vip.justlive.oxygen.core.net.aio.core;
 
-import java.util.concurrent.TimeUnit;
+import java.util.function.LongUnaryOperator;
 import lombok.AllArgsConstructor;
 
 /**
@@ -23,35 +23,36 @@ import lombok.AllArgsConstructor;
  * @author wubo
  */
 @AllArgsConstructor
-public class BeatProcessor implements Runnable {
+public class BeatProcessor implements Runnable, LongUnaryOperator {
 
-  private final Client client;
+  private final ChannelContext channelContext;
 
   @Override
   public void run() {
-    if (client.getGroupContext().isStopped()) {
-      return;
-    }
-    try {
-      client.getChannels().values().forEach(this::handle);
-    } finally {
-      client.getGroupContext().getScheduledExecutor()
-          .schedule(this, client.getGroupContext().getBeatInterval(), TimeUnit.MILLISECONDS);
-    }
-  }
-
-  private void handle(ChannelContext channelContext) {
     if (channelContext.isClosed()) {
       return;
     }
-    long lastActiveAt = Math
-        .max(channelContext.getLastReceivedAt(), channelContext.getLastSentAt());
-    if (System.currentTimeMillis() - lastActiveAt >= client.getGroupContext().getBeatInterval()) {
-      Object beat = client.getGroupContext().getAioHandler().beat(channelContext);
+    long last = Math.max(channelContext.getLastReceivedAt(), channelContext.getLastSentAt());
+    if (System.currentTimeMillis() - last >= channelContext.getGroupContext().getBeatInterval()) {
+      Object beat = channelContext.getGroupContext().getAioHandler().beat(channelContext);
       if (beat == null) {
         return;
       }
       channelContext.write(beat);
     }
+  }
+
+  @Override
+  public long applyAsLong(long deadline) {
+    if (channelContext.getGroupContext().isStopped()
+        || channelContext.getGroupContext().getAioHandler().beat(channelContext) == null) {
+      return Long.MIN_VALUE;
+    }
+    long nextTime = Math.max(channelContext.getLastReceivedAt(), channelContext.getLastSentAt())
+        + channelContext.getGroupContext().getBeatInterval();
+    if (nextTime <= deadline) {
+      nextTime = deadline + channelContext.getGroupContext().getBeatInterval();
+    }
+    return nextTime;
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,11 +14,12 @@
 
 package vip.justlive.oxygen.core.net.aio.core;
 
-import java.io.IOException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.concurrent.TimeUnit;
+import java.util.function.LongUnaryOperator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.util.ThreadUtils;
 
 /**
  * 客户端重连任务
@@ -27,27 +28,12 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class RetryProcessor implements Runnable {
+public class RetryProcessor implements Runnable, LongUnaryOperator {
 
-  private final Client client;
+  private final ChannelContext channelContext;
 
   @Override
   public void run() {
-    if (!client.getGroupContext().isRetryEnabled() || client.getGroupContext().isStopped()) {
-      return;
-    }
-
-    try {
-      client.getChannels().values().forEach(this::handle);
-    } finally {
-      if (!client.getChannels().isEmpty()) {
-        client.getGroupContext().getScheduledExecutor()
-            .schedule(this, client.getGroupContext().getRetryInterval(), TimeUnit.MILLISECONDS);
-      }
-    }
-  }
-
-  private void handle(ChannelContext channelContext) {
     try {
       if (!channelContext.isClosed()) {
         return;
@@ -56,11 +42,12 @@ public class RetryProcessor implements Runnable {
       int retryAttempts = channelContext.getRetryAttempts() + 1;
       channelContext.setRetryAttempts(retryAttempts);
 
-      if (client.getGroupContext().getRetryMaxAttempts() > 0 && retryAttempts > client
-          .getGroupContext().getRetryMaxAttempts()) {
+      if (channelContext.getGroupContext().getRetryMaxAttempts() > 0
+          && retryAttempts > channelContext.getGroupContext().getRetryMaxAttempts()) {
         log.error("{} client try to connect to {} reached the max attempts [{}]", channelContext,
-            channelContext.getServerAddress(), client.getGroupContext().getRetryMaxAttempts());
-        client.close(channelContext);
+            channelContext.getServerAddress(),
+            channelContext.getGroupContext().getRetryMaxAttempts());
+        channelContext.close();
         return;
       }
 
@@ -71,12 +58,28 @@ public class RetryProcessor implements Runnable {
 
       AsynchronousSocketChannel channel = Utils.create(channelContext.getGroupContext());
       channelContext.setChannel(channel);
-      channel.connect(channelContext.getServerAddress(), channelContext,
-          ConnectHandler.INSTANCE);
+      channel.connect(channelContext.getServerAddress(), channelContext, ConnectHandler.INSTANCE);
       channelContext.join();
-    } catch (IOException e) {
+
+      BeatProcessor beat = new BeatProcessor(channelContext);
+      ThreadUtils.globalTimer()
+          .scheduleWithDelay(beat, channelContext.getGroupContext().getBeatInterval(),
+              TimeUnit.MILLISECONDS, beat);
+    } catch (Exception e) {
       log.error("{} client try to connect to {} failed for {} attempt(s)", channelContext,
           channelContext.getRetryAttempts(), channelContext.getServerAddress(), e);
     }
+  }
+
+  @Override
+  public long applyAsLong(long operand) {
+    boolean stop =
+        !channelContext.isClosed() || (channelContext.getGroupContext().getRetryMaxAttempts() > 0
+            && channelContext.getRetryAttempts() > channelContext.getGroupContext()
+            .getRetryMaxAttempts());
+    if (stop) {
+      return Long.MIN_VALUE;
+    }
+    return System.currentTimeMillis() + channelContext.getGroupContext().getRetryInterval();
   }
 }

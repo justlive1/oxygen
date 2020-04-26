@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -39,8 +39,8 @@ public class Multipart implements Serializable {
    * boundary
    */
   private final byte[] boundary;
-  private final FileCleaner cleaner = new FileCleaner();
-  private transient Map<String, MultipartItem> data;
+  private final transient FileCleaner cleaner = new FileCleaner();
+  private final transient Map<String, MultipartItem> data;
 
   public Multipart(String boundary, String encoding) {
     try {

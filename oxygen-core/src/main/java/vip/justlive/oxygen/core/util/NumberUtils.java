@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -33,23 +33,23 @@ public class NumberUtils {
   /**
    * 八进制前缀
    */
-  public static final String OCTONARY_PREFIX = "0";
+  public final String OCTONARY_PREFIX = "0";
   /**
    * 十六进制前缀
    */
-  public static final String HEX_PREFIX_0 = "0x";
+  public final String HEX_PREFIX_0 = "0x";
   /**
    * 十六进制前缀
    */
-  public static final String HEX_PREFIX_1 = "0X";
+  public final String HEX_PREFIX_1 = "0X";
   /**
    * jdk标准Number类型
    * <br>
    * Byte, Short, Integer, Long, BigInteger, Float, Double, BigDecimal
    */
-  public static final List<Class<? extends Number>> STANDARD_NUMBER_TYPES;
+  public final List<Class<? extends Number>> STANDARD_NUMBER_TYPES;
 
-  private static final Map<Class<?>, Function<String, ?>> FUNCTIONS;
+  private final Map<Class<?>, Function<String, ?>> FUNCTIONS;
 
   static {
 
@@ -88,7 +88,7 @@ public class NumberUtils {
    * @throws IllegalArgumentException 当不上jdk标准的Number实现会抛出该异常
    */
   @SuppressWarnings("unchecked")
-  public static <T extends Number> T parseNumber(String text, Class<T> targetClass) {
+  public <T extends Number> T parseNumber(String text, Class<T> targetClass) {
     MoreObjects.notNull(text, "Text must not be null");
     MoreObjects.notNull(targetClass, "Target class must not be null");
     String trimmed = text.trim();
@@ -106,7 +106,7 @@ public class NumberUtils {
    * @param value 校验值
    * @return true 是十六进制
    */
-  public static boolean isHexNumber(String value) {
+  public boolean isHexNumber(String value) {
     int index = (value.startsWith(Strings.DASH) ? 1 : 0);
     return (value.startsWith(HEX_PREFIX_0, index) || value.startsWith(HEX_PREFIX_1, index) || value
         .startsWith(Strings.OCTOTHORP, index));
@@ -118,7 +118,7 @@ public class NumberUtils {
    * @param value 解析值
    * @return 解析后的类型
    */
-  public static BigInteger decodeBigInteger(String value) {
+  public BigInteger decodeBigInteger(String value) {
     int radix = 10;
     int index = 0;
     boolean negative = false;
@@ -145,7 +145,7 @@ public class NumberUtils {
     return (negative ? result.negate() : result);
   }
 
-  public static BigDecimal stringToBigDecimal(String val) {
+  public BigDecimal stringToBigDecimal(String val) {
     return new BigDecimal(val);
   }
 }

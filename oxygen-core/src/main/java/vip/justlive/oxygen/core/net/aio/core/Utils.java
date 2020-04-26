@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -38,7 +38,7 @@ public class Utils {
    *
    * @param channel asynchronous channel
    */
-  public static void close(AsynchronousSocketChannel channel) {
+  public void close(AsynchronousSocketChannel channel) {
     if (channel == null) {
       return;
     }
@@ -65,7 +65,7 @@ public class Utils {
    * @param buffers buffer集合
    * @return 合并后的buffer
    */
-  public static ByteBuffer composite(List<ByteBuffer> buffers) {
+  public ByteBuffer composite(List<ByteBuffer> buffers) {
     int capacity = 0;
     for (ByteBuffer buffer : buffers) {
       capacity += buffer.remaining();
@@ -86,7 +86,7 @@ public class Utils {
    * @return channel
    * @throws IOException io异常时抛出
    */
-  public static AsynchronousSocketChannel create(GroupContext groupContext) throws IOException {
+  public AsynchronousSocketChannel create(GroupContext groupContext) throws IOException {
     return create(groupContext, new InetSocketAddress(SystemUtils.findAvailablePort()));
   }
 
@@ -99,7 +99,7 @@ public class Utils {
    * @throws IOException io异常时抛出
    */
   @SuppressWarnings("squid:S2095")
-  public static AsynchronousSocketChannel create(GroupContext groupContext,
+  public AsynchronousSocketChannel create(GroupContext groupContext,
       InetSocketAddress address) throws IOException {
     return AsynchronousSocketChannel.open(groupContext.getChannelGroup())
         .setOption(StandardSocketOptions.TCP_NODELAY, true)

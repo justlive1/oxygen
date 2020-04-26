@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -35,9 +35,9 @@ public class PropertiesLoader extends AbstractResourceLoader implements Property
   /**
    * 配置路径
    */
-  private String[] locations;
+  private final String[] locations;
 
-  private Properties props = new Properties();
+  private final Properties props = new Properties();
 
   /**
    * 使用路径创建{@code PropertiesLoader}

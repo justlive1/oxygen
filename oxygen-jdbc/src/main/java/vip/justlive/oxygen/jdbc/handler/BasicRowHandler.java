@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -38,7 +38,7 @@ public class BasicRowHandler implements RowHandler {
   private static final Iterable<PropertyHandler> PROPERTY_HANDLERS = ServiceLoader
       .load(PropertyHandler.class);
 
-  private WeakHashMap<Class<?>, Map<String, Field>> cache = new WeakHashMap<>(4);
+  private final WeakHashMap<Class<?>, Map<String, Field>> cache = new WeakHashMap<>(4);
 
   /**
    * 获取单例
@@ -106,10 +106,7 @@ public class BasicRowHandler implements RowHandler {
         continue;
       }
       Class<?> propType = field.getType();
-      Object value = null;
-      if (propType != null) {
-        value = this.processColumn(rs, i, propType);
-      }
+      Object value = this.processColumn(rs, i, propType);
       if (value != null) {
         this.setValue(bean, field, value);
       }
@@ -135,7 +132,7 @@ public class BasicRowHandler implements RowHandler {
   private void setValue(Object target, Field field, Object value) throws IllegalAccessException {
     field.setAccessible(true);
     Class<?> type = field.getType();
-    if (type == null || type.isInstance(value)) {
+    if (type.isInstance(value)) {
       field.set(target, value);
       return;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -47,10 +47,10 @@ public class Conf extends BaseConf {
     System.out.println("aop catching log3 " + invocation.getMethod());
     logService.log();
   }
-  
+
 
   public static void main(String[] args) {
-    for(Method method :Conf.class.getMethods()){
+    for (Method method : Conf.class.getMethods()) {
       System.out.println(method.getName() + method.getAnnotation(Aspect.class));
     }
   }

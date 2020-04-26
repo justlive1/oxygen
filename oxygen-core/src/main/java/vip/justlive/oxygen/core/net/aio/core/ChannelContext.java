@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -161,9 +161,10 @@ public class ChannelContext {
    * 删除属性
    *
    * @param key 键
+   * @return deleted value
    */
-  public void removeAttr(String key) {
-    attrs.remove(key);
+  public Object removeAttr(String key) {
+    return attrs.remove(key);
   }
 
   /**

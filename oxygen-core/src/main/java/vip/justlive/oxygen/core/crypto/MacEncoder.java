@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -39,8 +39,7 @@ public class MacEncoder extends BaseEncoder {
   private boolean useBase64 = false;
 
   public MacEncoder(String algorithm, String secret) {
-    this.algorithm = MoreObjects.notNull(algorithm);
-    this.secret = MoreObjects.notNull(secret).getBytes(StandardCharsets.UTF_8);
+    this(algorithm, MoreObjects.notNull(secret).getBytes(StandardCharsets.UTF_8));
   }
 
   public MacEncoder(String algorithm, byte[] secret) {

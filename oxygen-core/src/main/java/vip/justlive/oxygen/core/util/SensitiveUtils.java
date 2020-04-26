@@ -1,15 +1,15 @@
 /*
- *  Copyright (C) 2020 original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- *  in compliance with the License. You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software distributed under the License
- *  is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- *  or implied. See the License for the specific language governing permissions and limitations under
- *  the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package vip.justlive.oxygen.core.util;
@@ -24,8 +24,8 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class SensitiveUtils {
 
-  private static final int BANK_CARD_LENGTH = 16;
-  private static final int PHONE_LENGTH = 11;
+  private final int BANK_CARD_LENGTH = 16;
+  private final int PHONE_LENGTH = 11;
 
   /**
    * 只适用于中文姓名
@@ -33,7 +33,7 @@ public class SensitiveUtils {
    * @param data 姓名
    * @return 返回按规范进行部分隐藏后的姓名
    */
-  public static String nameHide(final String data) {
+  public String nameHide(final String data) {
     return customizeHide(data, 1, 0, 2);
   }
 
@@ -43,7 +43,7 @@ public class SensitiveUtils {
    * @param data 待部分隐藏处理的身份证号。
    * @return 返回身份证号部分展示字符串
    */
-  public static String idCardNoHide(String data) {
+  public String idCardNoHide(String data) {
     if (!Strings.hasText(data)) {
       return data;
     }
@@ -58,7 +58,7 @@ public class SensitiveUtils {
    * @param data 待部分隐藏处理的银行卡号。
    * @return 返回银行卡部分展示字符串
    */
-  public static String bankCardNoHide(String data) {
+  public String bankCardNoHide(String data) {
     if (!Strings.hasText(data)) {
       return data;
     }
@@ -81,7 +81,7 @@ public class SensitiveUtils {
    * @param data 手机号
    * @return 隐藏后的手机号码
    */
-  public static String cellphoneHide(String data) {
+  public String cellphoneHide(String data) {
     if (!Strings.hasText(data)) {
       return data;
     }
@@ -102,7 +102,7 @@ public class SensitiveUtils {
    * @param data Email
    * @return 隐藏后的email
    */
-  public static String emailHide(String data) {
+  public String emailHide(String data) {
     if (!Strings.hasText(data)) {
       return data;
     }
@@ -127,7 +127,7 @@ public class SensitiveUtils {
    * @param data 待部分隐藏处理的敏感信息。
    * @return 屏蔽后的数据
    */
-  public static String defaultHide(String data) {
+  public String defaultHide(String data) {
     if (!Strings.hasText(data)) {
       return data;
     }
@@ -154,7 +154,7 @@ public class SensitiveUtils {
    * @param hidden 展示星号*的个数
    * @return 部分隐藏的敏感数据字符串
    */
-  public static String customizeHide(String data, int front, int tail, int hidden) {
+  public String customizeHide(String data, int front, int tail, int hidden) {
     if (!Strings.hasText(data)) {
       return data;
     }

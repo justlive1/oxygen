@@ -16,7 +16,6 @@ package vip.justlive.oxygen.core.cache;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import vip.justlive.oxygen.core.cache.Cache;
 import vip.justlive.oxygen.core.Bootstrap;
 
 /**

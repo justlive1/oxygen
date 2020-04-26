@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,7 +14,7 @@
 package vip.justlive.oxygen.core.util.retry;
 
 import java.util.concurrent.Callable;
-import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.CaughtCallable;
 
 /**
  * 无超时限制
@@ -25,10 +25,6 @@ public class NoTimeLimiter<V> implements TimeLimiter<V> {
 
   @Override
   public V call(Callable<V> callable) {
-    try {
-      return callable.call();
-    } catch (Exception e) {
-      throw Exceptions.wrap(e);
-    }
+    return new CaughtCallable<>(callable).call();
   }
 }

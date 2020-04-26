@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,7 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.job;
+package vip.justlive.oxygen.core.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,9 +24,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.function.LongUnaryOperator;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.Strings;
 
 /**
  * Cron
@@ -102,6 +104,15 @@ public class CronExpression implements Serializable {
     }
 
     return calendar.getTime();
+  }
+
+  public LongUnaryOperator operator() {
+    return new CronOperator(this);
+  }
+
+  @Override
+  public String toString() {
+    return "cron(" + expression + ")";
   }
 
   private void doNext(Calendar calendar, int dot) {
@@ -279,4 +290,21 @@ public class CronExpression implements Serializable {
     return String.format("illegal expression '%s'", this.expression);
   }
 
+  @Slf4j
+  @RequiredArgsConstructor
+  private static class CronOperator implements LongUnaryOperator {
+
+    private final CronExpression expression;
+
+    @Override
+    public long applyAsLong(long operand) {
+      Date now = new Date();
+      Date nextDate = expression.next(now);
+      if (nextDate == null) {
+        log.warn("The {} doesn't have any match in the future.", expression);
+        return Long.MIN_VALUE;
+      }
+      return nextDate.getTime();
+    }
+  }
 }

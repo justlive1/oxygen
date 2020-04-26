@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -35,18 +35,18 @@ import vip.justlive.oxygen.core.net.http.HttpMethod;
 @UtilityClass
 public class Router {
 
-  private static final Map<String, Route> SIMPLE_HANDLERS = new ConcurrentHashMap<>(4, 1);
-  private static final Map<String, Route> REGEX_HANDLERS = new ConcurrentHashMap<>(4, 1);
-  private static final Map<String, RouteHandler> STATIC_HANDLERS = new HashMap<>(4, 1);
-  private static final List<Route> ROUTES = new LinkedList<>();
-  private static final List<StaticRoute> STATIC_ROUTES = new LinkedList<>();
+  private final Map<String, Route> SIMPLE_HANDLERS = new ConcurrentHashMap<>(4, 1);
+  private final Map<String, Route> REGEX_HANDLERS = new ConcurrentHashMap<>(4, 1);
+  private final Map<String, RouteHandler> STATIC_HANDLERS = new HashMap<>(4, 1);
+  private final List<Route> ROUTES = new LinkedList<>();
+  private final List<StaticRoute> STATIC_ROUTES = new LinkedList<>();
 
   /**
    * 构建router
    *
    * @return route
    */
-  public static Route router() {
+  public Route router() {
     Route route = new Route();
     ROUTES.add(route);
     return route;
@@ -57,7 +57,7 @@ public class Router {
    *
    * @return route
    */
-  public static StaticRoute staticRoute() {
+  public StaticRoute staticRoute() {
     StaticRoute route = new StaticRoute();
     STATIC_ROUTES.add(route);
     return route;
@@ -66,7 +66,7 @@ public class Router {
   /**
    * build
    */
-  public static void build() {
+  public void build() {
     ROUTES.forEach(Router::buildRoute);
     STATIC_ROUTES.forEach(Router::buildStaticRoute);
   }
@@ -74,7 +74,7 @@ public class Router {
   /**
    * clear
    */
-  public static void clear() {
+  public void clear() {
     SIMPLE_HANDLERS.clear();
     REGEX_HANDLERS.clear();
   }
@@ -86,7 +86,7 @@ public class Router {
    * @param path request path
    * @return route
    */
-  public static Route lookup(HttpMethod method, String path) {
+  public Route lookup(HttpMethod method, String path) {
     Route route = SIMPLE_HANDLERS.get(path);
     if (route != null && (route = route.match(path, method)) != null) {
       return route;
@@ -105,7 +105,7 @@ public class Router {
    * @param path 路径
    * @return http methods
    */
-  public static Set<HttpMethod> getAllows(String path) {
+  public Set<HttpMethod> getAllows(String path) {
     Route route = SIMPLE_HANDLERS.get(path);
     if (route != null) {
       return new HashSet<>(route.methods());
@@ -124,7 +124,7 @@ public class Router {
    * @param path path
    * @return handle
    */
-  public static RouteHandler lookupStatic(String path) {
+  public RouteHandler lookupStatic(String path) {
     for (Map.Entry<String, RouteHandler> entry : STATIC_HANDLERS.entrySet()) {
       if (path.startsWith(entry.getKey())) {
         return entry.getValue();
@@ -133,7 +133,7 @@ public class Router {
     return null;
   }
 
-  private static void buildRoute(Route route) {
+  private void buildRoute(Route route) {
     if (route.methods().isEmpty()) {
       for (HttpMethod method : HttpMethod.values()) {
         if (method != HttpMethod.UNKNOWN) {
@@ -160,7 +160,7 @@ public class Router {
     }
   }
 
-  private static void buildStaticRoute(StaticRoute route) {
+  private void buildStaticRoute(StaticRoute route) {
     if (STATIC_HANDLERS.putIfAbsent(route.prefix(), new StaticRouteHandler(route)) != null) {
       throw Exceptions.fail(String.format("path [%s] already exists", route.prefix()));
     }

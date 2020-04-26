@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -46,7 +46,7 @@ public class DefaultClassScanner implements ClassScanner {
   /**
    * 扫描包路径
    */
-  private ClassLoader loader;
+  private final ClassLoader loader;
 
   public DefaultClassScanner() {
     this(ClassUtils.getDefaultClassLoader());

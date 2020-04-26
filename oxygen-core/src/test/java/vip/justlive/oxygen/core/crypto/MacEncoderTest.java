@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -33,8 +33,7 @@ public class MacEncoderTest {
 
     Assert.assertEquals("fafea2c76d82df6d21edb318754afe57f25a62b05ad4fa9f427a0b4cb9b498d7", result);
 
-    encoder.useBase64(true);
-    result = encoder.encode(source);
+    result = encoder.useBase64(true).encode(source);
     Assert.assertEquals("+v6ix22C320h7bMYdUr+V/JaYrBa1PqfQnoLTLm0mNc=", result);
 
   }

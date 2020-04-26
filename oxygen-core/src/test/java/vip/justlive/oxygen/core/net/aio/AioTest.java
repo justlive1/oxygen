@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 the original author or authors.
+ * Copyright (C) 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -101,8 +101,103 @@ public class AioTest {
     run();
   }
 
+//  @Test
+  public void test1() throws IOException {
+    int port = SystemUtils.findAvailablePort();
+    InetSocketAddress address = new InetSocketAddress("localhost", port);
+
+    server(address);
+
+    GroupContext group = new GroupContext(new LengthFrameHandler());
+    group.setRetryEnabled(true).setRetryInterval(1000L).setRetryMaxAttempts(10)
+        .setBeatInterval(1000);
+    Client client = new Client(group);
+    client.connect(address);
+
+    ThreadUtils.sleep(5000);
+
+    server(address);
+
+    ThreadUtils.sleep(5000);
+
+  }
+
+  @Test
+  public void test2() throws IOException {
+    int port = SystemUtils.findAvailablePort();
+    InetSocketAddress address = new InetSocketAddress("localhost", port);
+    GroupContext group = new GroupContext(new LengthFrameHandler());
+    Server server = new Server(group);
+    server.start(address);
+
+    group = new GroupContext(new LengthFrameHandler());
+    group.setBeatInterval(3000);
+    Client client = new Client(group);
+    ChannelContext channel = client.connect(address);
+
+    ThreadUtils.sleep(4500);
+    channel.write(new LengthFrame().setBody("asdfg".getBytes()));
+
+    ThreadUtils.sleep(8000);
+  }
+
+  private void server(InetSocketAddress address) throws IOException {
+    GroupContext group = new GroupContext(new LengthFrameHandler());
+    Server server = new Server(group);
+    server.start(address);
+
+    new Thread(() -> {
+      ThreadUtils.sleep(2000);
+      server.stop();
+    }).start();
+
+  }
+
+  //  @Test
+  public void tx() throws IOException {
+    int port = SystemUtils.findAvailablePort();
+    new Thread(() -> {
+      InetSocketAddress address = new InetSocketAddress(port);
+      GroupContext group1 = new GroupContext(new LengthFrameHandler());
+      Server server = new Server(group1);
+      try {
+        server.start(address);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      ThreadUtils.sleep(4000);
+      server.stop();
+
+    }).start();
+
+    ThreadUtils.sleep(2000);
+
+    List<Client> clients = new ArrayList<>();
+    clients.add(ad(port));
+    clients.add(ad(port));
+    clients.add(ad(port));
+
+    ThreadUtils.sleep(4000);
+
+    clients.forEach(client -> System.out.println(client.getGroupContext().getChannels()));
+  }
+
+  private Client ad(int port) throws IOException {
+    GroupContext group = new GroupContext(new LengthFrameHandler());
+    Client client = new Client(group);
+
+    for (int i = 0; i < 2; i++) {
+      ChannelContext channel = client.connect(new InetSocketAddress("localhost", port));
+      channel.join();
+    }
+
+    return client;
+  }
+
   private void run() throws IOException {
     int port = SystemUtils.findAvailablePort();
+    ThreadUtils.sleep(500);
     InetSocketAddress address = new InetSocketAddress(port);
     AtomicLong current = new AtomicLong();
     int max = 10000;
@@ -122,7 +217,7 @@ public class AioTest {
 
     group = new GroupContext(new LengthFrameHandler());
     Client client = new Client(group);
-    client.connect(new InetSocketAddress("localhost", port));
+    client.connect(new InetSocketAddress("localhost", port)).join();
 
     for (int i = 0; i < 5; i++) {
       a(max, client, current);
@@ -136,7 +231,7 @@ public class AioTest {
     long now = System.currentTimeMillis();
 
     for (int i = 0; i < max; i++) {
-      client.getChannels().values().iterator().next()
+      client.getGroupContext().getChannels().values().iterator().next()
           .write(new LengthFrame().setBody(String.valueOf(i).getBytes()));
     }
 
