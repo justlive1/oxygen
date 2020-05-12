@@ -275,24 +275,4 @@ public class Urls {
     }
     return s;
   }
-
-  public class JarFileInfo implements AutoCloseable {
-
-    public final JarFile jarFile;
-    public final String jarFileUrl;
-    public final String rootEntryPath;
-
-    private JarFileInfo(JarFile jarFile, String jarFileUrl, String rootEntryPath) {
-      this.jarFile = jarFile;
-      this.jarFileUrl = jarFileUrl;
-      this.rootEntryPath = rootEntryPath;
-    }
-
-    @Override
-    public void close() throws IOException {
-      if (jarFile != null) {
-        jarFile.close();
-      }
-    }
-  }
 }

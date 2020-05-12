@@ -509,7 +509,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
           K key = entry.getKey();
           V value = entry.getValue().value;
           it.remove();
-          notifyListener(key, value, RemovalCause.EXPIRED);
+          notifyListenerSync(key, value, RemovalCause.EXPIRED);
         }
       }
     } finally {
@@ -517,12 +517,16 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     }
   }
 
-  private void notifyListener(K key, V value, RemovalCause cause) {
+  private void notifyListenerSync(K key, V value, RemovalCause cause) {
     if (asyncExpiredListeners != null && !asyncExpiredListeners.isEmpty()) {
       for (ExpiredListener<K, V> listener : asyncExpiredListeners) {
         listener.expire(key, value, cause);
       }
     }
+  }
+
+  private void notifyListener(K key, V value, RemovalCause cause) {
+    ThreadUtils.globalPool().execute(() -> this.notifyListenerSync(key, value, cause));
   }
 
   private void runScheduleCleanPolicy() {

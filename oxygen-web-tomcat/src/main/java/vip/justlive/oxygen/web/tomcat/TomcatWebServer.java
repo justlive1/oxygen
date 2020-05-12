@@ -15,7 +15,6 @@
 package vip.justlive.oxygen.web.tomcat;
 
 import java.io.File;
-import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
@@ -30,6 +29,7 @@ import org.apache.coyote.http11.AbstractHttp11Protocol;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.FileUtils;
+import vip.justlive.oxygen.core.util.ThreadUtils;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.server.WebServer;
 
@@ -98,7 +98,7 @@ public class TomcatWebServer implements WebServer {
   }
 
   private void startDaemonAwaitThread() {
-    Executors.defaultThreadFactory().newThread(tomcat.getServer()::await).start();
+    ThreadUtils.defaultThreadFactory().newThread(tomcat.getServer()::await).start();
   }
 
   @Override

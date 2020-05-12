@@ -117,6 +117,16 @@ public class Strings {
   }
 
   /**
+   * 是否是通配符
+   *
+   * @param path 路径
+   * @return true 是通配符
+   */
+  public boolean isPattern(String path) {
+    return (path.indexOf(Bytes.ANY) != -1 || path.indexOf(Bytes.QUESTION_MARK) != -1);
+  }
+
+  /**
    * Jaccard 相似度,集合的交集与集合的并集的比例
    *
    * @param a 第一个比对字符串

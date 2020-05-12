@@ -32,10 +32,10 @@ import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.ClassUtils;
 import vip.justlive.oxygen.core.util.FileUtils;
+import vip.justlive.oxygen.core.util.JarFileInfo;
 import vip.justlive.oxygen.core.util.PathMatcher;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.core.util.Urls;
-import vip.justlive.oxygen.core.util.Urls.JarFileInfo;
 import vip.justlive.oxygen.web.WebConf;
 import vip.justlive.oxygen.web.server.WebServer;
 

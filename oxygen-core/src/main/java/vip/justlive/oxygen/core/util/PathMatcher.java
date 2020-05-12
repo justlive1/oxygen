@@ -16,8 +16,6 @@ package vip.justlive.oxygen.core.util;
 import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.regex.Pattern;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,20 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 public class PathMatcher {
 
-  private final String ANY_REGEX = ".*";
-  private final String DB_ANY_REGEX = "[/]?";
-  private final String NOT_SEPARATOR_REGEX = "[^/]*";
-  private final WeakHashMap<String, Pattern> PATTERNS = new WeakHashMap<>(32);
-
-  /**
-   * 是否是通配符
-   *
-   * @param path 路径
-   * @return true 是通配符
-   */
-  public boolean isPattern(String path) {
-    return (path.indexOf(Bytes.ANY) != -1 || path.indexOf(Bytes.QUESTION_MARK) != -1);
-  }
+  private final SplitterMatcher MATCHER = new SplitterMatcher('/');
 
   /**
    * 匹配路径
@@ -53,67 +38,7 @@ public class PathMatcher {
    * @return true 匹配上了
    */
   public boolean match(String pattern, String path) {
-    if (isPattern(pattern)) {
-      Pattern p = PATTERNS.get(pattern);
-      if (p == null) {
-        p = parsePattern(pattern);
-        PATTERNS.put(pattern, p);
-        return p.matcher(path).matches();
-      }
-      return p.matcher(path).matches();
-    }
-    return pattern.equals(path);
-  }
-
-  /**
-   * 将通配符表达式转化为正则表达式
-   *
-   * @param pattern 匹配串
-   * @return 正则
-   */
-  private Pattern parsePattern(String pattern) {
-    char[] chars = pattern.toCharArray();
-    int len = chars.length;
-    StringBuilder sb = new StringBuilder();
-    boolean pre = false;
-    boolean dbPre = false;
-    for (int i = 0; i < len; i++) {
-      boolean[] dbp = parse(pre, dbPre, chars, i, sb);
-      pre = dbp[0];
-      dbPre = dbp[1];
-    }
-    return Pattern.compile(sb.toString());
-  }
-
-  private boolean[] parse(boolean pre, boolean dbPre, char[] chars, int i,
-      StringBuilder sb) {
-    if (chars[i] == Bytes.ANY) {
-      if (pre) {
-        // 第二次遇到*，替换成.*
-        sb.append(ANY_REGEX);
-        dbPre = true;
-      } else if (i + 1 == chars.length) {
-        // 单星是最后一个字符，则直接将*转成[^/]*
-        sb.append(NOT_SEPARATOR_REGEX);
-      } else {
-        pre = true;
-      }
-    } else {
-      if (dbPre && chars[i] == Bytes.SLASH) {
-        sb.append(DB_ANY_REGEX);
-      } else if (!dbPre && pre) {
-        sb.append(NOT_SEPARATOR_REGEX);
-      }
-      if (chars[i] == Bytes.QUESTION_MARK) {
-        // 遇到？替换成. 否则不变
-        sb.append(Strings.DOT);
-      } else if (!dbPre || chars[i] != Bytes.SLASH) {
-        sb.append(chars[i]);
-      }
-      pre = false;
-      dbPre = false;
-    }
-    return new boolean[]{pre, dbPre};
+    return MATCHER.match(pattern, path);
   }
 
   /**
@@ -125,7 +50,7 @@ public class PathMatcher {
   public String getRootDir(String location) {
     int prefixEnd = location.indexOf(Strings.COLON) + 1;
     int rootDirEnd = location.length();
-    while (rootDirEnd > prefixEnd && isPattern(location.substring(prefixEnd, rootDirEnd))) {
+    while (rootDirEnd > prefixEnd && Strings.isPattern(location.substring(prefixEnd, rootDirEnd))) {
       rootDirEnd = location.lastIndexOf(Strings.SLASH, rootDirEnd - 2) + 1;
     }
     if (rootDirEnd == 0) {

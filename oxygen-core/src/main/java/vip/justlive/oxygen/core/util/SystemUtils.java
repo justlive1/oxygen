@@ -14,6 +14,7 @@
 
 package vip.justlive.oxygen.core.util;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -63,7 +64,10 @@ public class SystemUtils {
     if (!isValidPort(port)) {
       return false;
     }
-    try (ServerSocket ignored = ServerSocketFactory.getDefault().createServerSocket(port)) {
+    try {
+      ServerSocket socket = ServerSocketFactory.getDefault()
+          .createServerSocket(port, 1, InetAddress.getLocalHost());
+      socket.close();
       return true;
     } catch (Exception e) {
       return false;
@@ -145,10 +149,7 @@ public class SystemUtils {
   public InetAddress getLocalAddress() {
     InetAddress candidateAddress = null;
     try {
-      Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-      if (interfaces != null) {
-        candidateAddress = getByNetworkInterfaces(interfaces);
-      }
+      candidateAddress = getByNetworkInterfaces(NetworkInterface.getNetworkInterfaces());
     } catch (SocketException e) {
       // ignore
     }
@@ -161,6 +162,35 @@ public class SystemUtils {
       }
     }
     return candidateAddress;
+  }
+
+  /**
+   * 获取当前进程的PID
+   *
+   * @return 失败时返回-1
+   */
+  public int pid() {
+    try {
+      // JMX not allowed on Android
+      String name = (String) Class.forName("java.lang.management.RuntimeMXBean")
+          .getDeclaredMethod("getName").invoke(
+              Class.forName("java.lang.management.ManagementFactory")
+                  .getDeclaredMethod("getRuntimeMXBean").invoke(null));
+      // likely works on most platforms
+      return Integer.parseInt(name.split(Strings.AT)[0]);
+    } catch (Exception ex) {
+      try {
+        // try a Linux-specific way
+        @SuppressWarnings("squid:S1075")
+        File proc = new File("/proc/self").getCanonicalFile();
+        if (proc.exists()) {
+          return Integer.parseInt(proc.getName());
+        }
+      } catch (Exception ignored) {
+        // Ignore exception.
+      }
+    }
+    return -1;
   }
 
   private InetAddress getByNetworkInterfaces(Enumeration<NetworkInterface> interfaces) {

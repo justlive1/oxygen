@@ -16,7 +16,6 @@ package vip.justlive.oxygen.core.util.timer;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -31,6 +30,8 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.CronExpression;
 import vip.justlive.oxygen.core.util.RepeatRunnable;
 import vip.justlive.oxygen.core.util.SecurityChecker;
+import vip.justlive.oxygen.core.util.SecurityThreadPoolExecutor;
+import vip.justlive.oxygen.core.util.SecurityThreadPoolExecutor.PoolQueue;
 import vip.justlive.oxygen.core.util.ThreadFactoryBuilder;
 
 /**
@@ -46,6 +47,7 @@ public class WheelTimer {
   private static final int STATE_SHUTDOWN = 2;
   private static final long POLL_TIMEOUT;
   private static final ThreadFactory FACTORY;
+  private static final AtomicInteger COUNT = new AtomicInteger();
 
   static {
     POLL_TIMEOUT = Long.parseLong(ConfigFactory.getProperty("wheel_timer.poll.timeout", "100"));
@@ -62,7 +64,8 @@ public class WheelTimer {
   private final DelayQueue<Slot> delayQueue = new DelayQueue<>();
   private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
   private Wheel wheel;
-  private final RepeatRunnable worker = new RepeatRunnable("wheel-timer", this::doWork);
+  private final RepeatRunnable worker = new RepeatRunnable("wheel-timer-" + COUNT.getAndIncrement(),
+      this::doWork);
 
   public WheelTimer(long duration, int wheelSize) {
     this(duration, wheelSize, 1);
@@ -78,8 +81,11 @@ public class WheelTimer {
     }
     this.duration = duration;
     this.wheelSize = wheelSize;
-    this.executor = new ThreadPoolExecutor(taskPoolSize, taskPoolSize, 120, TimeUnit.SECONDS,
-        new LinkedBlockingQueue<>(), factory);
+    PoolQueue queue = new PoolQueue();
+    SecurityThreadPoolExecutor pool = new SecurityThreadPoolExecutor(1, taskPoolSize, 120,
+        TimeUnit.SECONDS, queue, factory);
+    queue.setPool(pool);
+    this.executor = pool;
   }
 
   /**
@@ -214,6 +220,7 @@ public class WheelTimer {
    * @return ScheduledFuture
    */
   public ScheduledFuture<Void> scheduleOnCron(Runnable command, String cron) {
+    start();
     LongUnaryOperator operator = new CronExpression(cron).operator();
     long deadline = operator.applyAsLong(0);
     if (deadline == Long.MIN_VALUE) {

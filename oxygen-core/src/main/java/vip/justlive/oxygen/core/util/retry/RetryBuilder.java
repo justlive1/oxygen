@@ -32,6 +32,18 @@ import vip.justlive.oxygen.core.util.ThreadUtils;
 public class RetryBuilder<T> {
 
   /**
+   * 重试监听
+   */
+  private final List<Consumer<Attempt<T>>> retryListeners = new LinkedList<>();
+  /**
+   * 失败监听
+   */
+  private final List<Consumer<Attempt<T>>> failListeners = new LinkedList<>();
+  /**
+   * 成功监听
+   */
+  private final List<Consumer<Attempt<T>>> successListeners = new LinkedList<>();
+  /**
    * 重试判断
    */
   private Predicate<Attempt<T>> retryPredicate = attempt -> false;
@@ -44,18 +56,6 @@ public class RetryBuilder<T> {
    */
   private Consumer<Attempt<T>> blockConsumer = attempt -> {
   };
-  /**
-   * 重试监听
-   */
-  private final List<Consumer<Attempt<T>>> retryListeners = new LinkedList<>();
-  /**
-   * 失败监听
-   */
-  private final List<Consumer<Attempt<T>>> failListeners = new LinkedList<>();
-  /**
-   * 成功监听
-   */
-  private final List<Consumer<Attempt<T>>> successListeners = new LinkedList<>();
   /**
    * 等待时间
    */
@@ -128,8 +128,7 @@ public class RetryBuilder<T> {
    * @return builder
    */
   public RetryBuilder<T> withTimeLimit(long timeout, TimeUnit timeUnit) {
-    return withTimeLimit(timeout, timeUnit,
-        ThreadUtils.newThreadPool(5, 10, 100, 1000, "retry-time-limiter-%d"));
+    return withTimeLimit(timeout, timeUnit, ThreadUtils.globalPool());
   }
 
   /**

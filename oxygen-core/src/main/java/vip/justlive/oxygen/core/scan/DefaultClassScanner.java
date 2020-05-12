@@ -25,10 +25,10 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.JarFileInfo;
 import vip.justlive.oxygen.core.util.PathMatcher;
 import vip.justlive.oxygen.core.util.Strings;
 import vip.justlive.oxygen.core.util.Urls;
-import vip.justlive.oxygen.core.util.Urls.JarFileInfo;
 
 /**
  * 默认class scanner实现，采用类加载方式

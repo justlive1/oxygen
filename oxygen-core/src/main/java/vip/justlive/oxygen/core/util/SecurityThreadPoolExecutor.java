@@ -16,20 +16,31 @@ package vip.justlive.oxygen.core.util;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * 安全校验的线程池
+ * 增加安全校验的线程池
+ *
+ * 使用PoolQueue可先创建线程达到maximumPoolSize，而不是等队列满了才创建线程
  *
  * @author wubo
  */
+@Slf4j
+@Accessors(chain = true)
 public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
 
+  private final AtomicInteger submittedCount = new AtomicInteger(0);
   @Setter
   @Getter
   private SecurityChecker securityChecker;
@@ -55,6 +66,19 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
   }
 
+  @Override
+  public void execute(Runnable command) {
+    submittedCount.incrementAndGet();
+    try {
+      super.execute(command);
+    } catch (RejectedExecutionException e) {
+      if (getQueue() instanceof PoolQueue && getQueue().offer(command)) {
+        return;
+      }
+      submittedCount.decrementAndGet();
+      throw e;
+    }
+  }
 
   @Override
   public void shutdown() {
@@ -72,4 +96,44 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
     return super.shutdownNow();
   }
 
+  public int getSubmittedCount() {
+    return submittedCount.get();
+  }
+
+  @Override
+  protected void afterExecute(Runnable r, Throwable t) {
+    submittedCount.decrementAndGet();
+  }
+
+  @NoArgsConstructor
+  public static class PoolQueue extends LinkedBlockingQueue<Runnable> {
+
+    private static final long serialVersionUID = 5267382526416848275L;
+
+    @Setter
+    private transient SecurityThreadPoolExecutor pool;
+
+    PoolQueue(int capacity) {
+      super(capacity);
+    }
+
+    @Override
+    public boolean offer(Runnable runnable) {
+      if (pool == null) {
+        return super.offer(runnable);
+      }
+      int poolSize = pool.getPoolSize();
+      if (poolSize >= pool.getMaximumPoolSize()) {
+        return super.offer(runnable);
+      }
+      if (pool.getSubmittedCount() <= poolSize) {
+        return super.offer(runnable);
+      }
+      // 当前线程小于最大线程数，触发addWorker方法
+      if (poolSize < pool.getMaximumPoolSize()) {
+        return false;
+      }
+      return super.offer(runnable);
+    }
+  }
 }

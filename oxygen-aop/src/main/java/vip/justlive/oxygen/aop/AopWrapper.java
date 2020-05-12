@@ -13,8 +13,11 @@
  */
 package vip.justlive.oxygen.aop;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import lombok.Data;
+import net.sf.cglib.reflect.FastClass;
+import net.sf.cglib.reflect.FastMethod;
 
 /**
  * aop包装
@@ -27,4 +30,21 @@ public class AopWrapper {
   private final Object target;
   private final Method method;
   private final int order;
+  private final FastMethod fastMethod;
+
+  public AopWrapper(Object target, Method method, int order) {
+    this.target = target;
+    this.method = method;
+    this.order = order;
+    this.fastMethod = FastClass.create(target.getClass()).getMethod(method);
+  }
+
+  public Object invoke() throws InvocationTargetException {
+    return fastMethod.invoke(target, new Object[0]);
+  }
+
+  public Object invoke(Invocation invocation) throws InvocationTargetException {
+    return fastMethod.invoke(target, new Object[]{invocation});
+  }
+
 }
