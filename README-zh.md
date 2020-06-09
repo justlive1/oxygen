@@ -18,23 +18,11 @@
   - i18n国际化
   - 资源文件加载，提供file,jar,classpath等文件加载
   - 类扫描器
-  - 部分工具类
-  - retry重试
-
-- oxygen-ioc
   - 基于构造器的轻量级依赖注入
-
-- oxygen-aop
-  - 基于cglib实现的切面
-  - 轻巧简单，可单独使用
-  - 可使用注解`Aspect`或直接实现`Interceptor`编写切面
-
-- oxygen-cache
-  - 内置Ehcache和LocalCache缓存
-  - 提供基于注解`Cacheable`的方法缓存
-
-- oxygen-job
+  - 缓存
   - 提供基于注解`Scheduled`的定时任务
+  - 可使用注解`Aspect`或直接实现`Interceptor`编写切面
+  - 部分工具类
 
 - oxygen-jdbc
   - 小巧简单的jdbc实现，纯jdk实现，无第三方jar
@@ -47,7 +35,7 @@
   - 支持i18n动态切换
   - 提供`WebHook`进行请求拦截处理
   - 支持自定义全局异常处理
-  
+  - 内置aio服务器
 
 
 ## 特性
@@ -89,7 +77,7 @@ compile 'vip.justlive:oxygen-web-tomcat:$oxygenVersion'
 ```java
 public static void main(String[] args) {
   Router.router().path("/").handler(ctx -> ctx.response().write("hello world"));
-  Server.server().listen(8080);
+  Server.listen(8080);
 }
 ```
 
@@ -449,7 +437,7 @@ public class CustomExceptionHandler extends ExceptionHandlerImpl {
 
 **编码指定**
 ```java
-Server.server().listen(8080);
+Server.listen(8080);
 ```
 **配置文件**
 ```properties
@@ -468,7 +456,7 @@ java -jar -Dserver.port=8090 app.jar
 ```java
 public class Application {
   public static void main(String[] args) {
-    Server.server().listen();
+    Server.listen();
   }
 }
 ```
@@ -559,134 +547,151 @@ public class Application {
 ```properties
 ##### 基础配置
 # 配置覆盖地址，用户外部配置覆盖项目配置 例 file:/config/*.properties,classpath*:/config/*.properties,xx.properties
-config.override.path=
+oxygen.config.override.path=
 # 类扫描路径属性
-main.class.scan=vip.justlive
+oxygen.class.scan=vip.justlive
 # 临时文件根目录
-main.temp.dir=.oxygen
+oxygen.temp.dir=.oxygen
 # 缓存实现类，自定义缓存时使用
-cache.impl.class=
+oxygen.cache.class=
 
 
 ##### web 
 # embedded 启动端口
-server.port=8080
+oxygen.server.port=8080
 # context path
-server.contextPath=
+oxygen.server.contextPath=
 # session失效时间，单位秒
-web.session.expired=3600
+oxygen.web.session.expired=3600
 # 默认静态资源请求前缀
-web.static.prefix=/public
+oxygen.web.static.prefix=/public
 # 默认静态资源目录
-web.static.path=/public,/static,classpath:/META-INF/resources/webjars
+oxygen.web.static.path=/public,/static,classpath:/META-INF/resources/webjars
 # 静态资源缓存时间
-web.static.cache=3600
+oxygen.web.static.cache=3600
 # jsp路径前缀
-web.view.jsp.prefix=WEB-INF
+oxygen.web.view.jsp.prefix=WEB-INF
 # thymeleaf 路径前缀
-web.view.thymeleaf.prefix=/templates
+oxygen.web.view.thymeleaf.prefix=/templates
 # thymeleaf 视图后缀
-web.view.thymeleaf.suffix=.html
+oxygen.web.view.thymeleaf.suffix=.html
 # freemarker 路径前缀
-web.view.freemarker.prefix=/templates
+oxygen.web.view.freemarker.prefix=/templates
 # 内置简单视图处理 路径前缀
-web.view.simple.prefix=/templates
+oxygen.web.view.simple.prefix=/templates
 # 内置简单视图处理 视图后缀
-web.view.simple.suffix=.htm
+oxygen.web.view.simple.suffix=.htm
 # 是否开启模板缓存
-web.view.cache.enabled=true
+oxygen.web.view.cache.enabled=true
 
 
 ##### 定时任务job
 # job线程名称格式
-job.thread.name.format=jobs-%d
+oxygen.job.threadNameFormat=jobs-%d
 # job核心线程池大小
-job.core.pool.size=10
+oxygen.job.corePoolSize=10
 
 
 ##### i18n国际化
 # i18n配置文件地址
-i18n.path=classpath:message/*.properties
+oxygen.i18n.path=classpath:message/*.properties
 # i18n默认语言
-i18n.default.language=zh
+oxygen.i18n.language=zh
 # i18n默认国家
-i18n.default.country=CN
+oxygen.i18n.country=CN
 # i18n参数key
-i18n.param.key=locale
+oxygen.i18n.param.key=locale
 # i18n Session key
-i18n.session.key=I18N_SESSION_LOCALE
+oxygen.i18n.session.key=I18N_SESSION_LOCALE
 
 
 ##### jetty
 # 虚拟主机
-server.jetty.virtualHosts=
+oxygen.server.jetty.virtualHosts=
 # 连接器在空闲状态持续该时间后（单位毫秒）关闭
-server.jetty.idleTimeout=30000
+oxygen.server.jetty.idleTimeout=30000
 # 温和的停止一个连接器前等待的时间（毫秒）
-server.jetty.stopTimeout=30000
+oxygen.server.jetty.stopTimeout=30000
 # 等待处理的连接队列大小
-server.jetty.acceptQueueSize=
+oxygen.server.jetty.acceptQueueSize=
 # 允许Server socket被重绑定，即使在TIME_WAIT状态
-server.jetty.reuseAddress=true
+oxygen.server.jetty.reuseAddress=true
 # 是否启用servlet3.0特性
-server.jetty.configurationDiscovered=true
+oxygen.server.jetty.configurationDiscovered=true
 # 最大表单数据大小
-server.jetty.maxFormContentSize=256 * 1024 * 1024
+oxygen.server.jetty.maxFormContentSize=256 * 1024 * 1024
 # 最大表单键值对数量
-server.jetty.maxFormKeys=200
+oxygen.server.jetty.maxFormKeys=200
 
 
 ##### tomcat
 # 最大请求队列数
-server.tomcat.acceptCount=100
+oxygen.server.tomcat.acceptCount=100
 # 最大连接数
-server.tomcat.maxConnections=5000
+oxygen.server.tomcat.maxConnections=5000
 # 最大工作线程数
-server.tomcat.maxThreads=200
+oxygen.server.tomcat.maxThreads=200
 # 最小线程数
-server.tomcat.minSpareThreads=10
+oxygen.server.tomcat.minSpareThreads=10
 # 最大请求头数据大小
-server.tomcat.maxHttpHeaderSize=8 * 1024
+oxygen.server.tomcat.maxHttpHeaderSize=8 * 1024
 # 最大表单数据大小
-server.tomcat.maxHttpPostSize=2 * 1024 * 1024
+oxygen.server.tomcat.maxHttpPostSize=2 * 1024 * 1024
 # 连接超时
-server.tomcat.connectionTimeout=20000
+oxygen.server.tomcat.connectionTimeout=20000
 # URI解码编码
-server.tomcat.uriEncoding=utf-8
+oxygen.server.tomcat.uriEncoding=utf-8
 # 调用backgroundProcess延迟时间
-server.tomcat.backgroundProcessorDelay=10
+oxygen.server.tomcat.backgroundProcessorDelay=10
 # 是否启用访问日志
-server.tomcat.accessLogEnabled=false
+oxygen.server.tomcat.accessLogEnabled=false
 # 访问日志是否开启缓冲
-server.tomcat.accessLogBuffered=true
+oxygen.server.tomcat.accessLogBuffered=true
 # 是否设置请求属性，ip、host、protocol、port
-server.tomcat.accessLogRequestAttributesEnabled=false
+oxygen.server.tomcat.accessLogRequestAttributesEnabled=false
 # 每日日志格式
-server.tomcat.accessLogFileFormat=.yyyy-MM-dd
+oxygen.server.tomcat.accessLogFileFormat=.yyyy-MM-dd
 # 日志格式
-server.tomcat.accessLogPattern=common
+oxygen.server.tomcat.accessLogPattern=common
 
 
 
 ##### undertow
 # 主机名
-server.undertow.host=0.0.0.0
+oxygen.server.undertow.host=0.0.0.0
 # io线程数
-server.undertow.ioThreads=
+oxygen.server.undertow.ioThreads=
 # worker线程数
-server.undertow.workerThreads=
+oxygen.server.undertow.workerThreads=
 # 是否开启gzip压缩
-server.undertow.gzipEnabled=false
+oxygen.server.undertow.gzipEnabled=false
 # gzip处理优先级
-server.undertow.gzipPriority=100
+oxygen.server.undertow.gzipPriority=100
 # 压缩级别，默认值 -1。 可配置 1 到 9。 1 拥有最快压缩速度，9 拥有最高压缩率
-server.undertow.gzipLevel=-1
+oxygen.server.undertow.gzipLevel=-1
 # 触发压缩的最小内容长度
-server.undertow.gzipMinLength=1024
+oxygen.server.undertow.gzipMinLength=1024
 # url是否允许特殊字符
-server.undertow.allowUnescapedCharactersInUrl=true
+oxygen.server.undertow.allowUnescapedCharactersInUrl=true
 # 是否开启http2
-server.undertow.http2enabled=false
+oxygen.server.undertow.http2enabled=false
+
+
+#### aio
+# aio服务连接空闲超时时间，单位毫秒
+oxygen.server.aio.idleTimeout=10000
+# aio请求连接超时时间，负数为不超时
+oxygen.server.aio.requestTimeout=-1
+# 连接线程数
+oxygen.server.aio.acceptThreads=100
+# 连接线程最大等待数
+oxygen.server.aio.acceptMaxWaiter=10000
+# 工作线程数
+oxygen.server.aio.workerThreads=200
+# 工作线程最大等待数
+oxygen.server.aio.workerMaxWaiter=1000000
+# 是否hold住端口，true的话随主线程退出而退出，false的话则要主动退出
+oxygen.server.aio.daemon=false
 
 ```
 

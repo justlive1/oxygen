@@ -16,8 +16,8 @@ package vip.justlive.oxygen.web.http;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Map;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.ioc.annotation.Bean;
 
 /**
  * multipart请求解析

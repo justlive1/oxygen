@@ -22,7 +22,7 @@ import vip.justlive.oxygen.core.config.ValueConfig;
  * @author wubo
  */
 @Data
-@ValueConfig("server.undertow")
+@ValueConfig("oxygen.server.undertow")
 public class UndertowConf {
 
   /**

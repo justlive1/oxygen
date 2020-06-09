@@ -15,8 +15,8 @@ package vip.justlive.oxygen.web.http;
 
 import com.alibaba.fastjson.JSON;
 import java.nio.charset.Charset;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
 
 /**
  * json请求解析

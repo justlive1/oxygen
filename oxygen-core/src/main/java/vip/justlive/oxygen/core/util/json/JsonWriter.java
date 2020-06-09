@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
+import vip.justlive.oxygen.core.util.base.ServiceLoaderUtils;
 import vip.justlive.oxygen.core.util.json.codec.ArraySerializer;
 import vip.justlive.oxygen.core.util.json.codec.AtomicArraySerializer;
 import vip.justlive.oxygen.core.util.json.codec.BeanSerializer;

@@ -17,7 +17,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.jdbc.config.DataSourceConf.TYPE;
 
 /**

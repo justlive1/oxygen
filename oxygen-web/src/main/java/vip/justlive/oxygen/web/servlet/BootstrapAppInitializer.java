@@ -17,7 +17,7 @@ package vip.justlive.oxygen.web.servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration.Dynamic;
 import vip.justlive.oxygen.core.Bootstrap;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * bootstrap initializer
@@ -34,7 +34,6 @@ public class BootstrapAppInitializer implements WebAppInitializer {
   @Override
   public void onStartup(ServletContext context) {
     Bootstrap.start();
-
     Dynamic dynamic = context
         .addServlet(DispatcherServlet.class.getSimpleName(), DispatcherServlet.class);
     dynamic.setLoadOnStartup(0);

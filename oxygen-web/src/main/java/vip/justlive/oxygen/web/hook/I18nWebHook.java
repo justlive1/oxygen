@@ -15,11 +15,10 @@ package vip.justlive.oxygen.web.hook;
 
 import java.util.Locale;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.config.CoreConf;
-import vip.justlive.oxygen.core.util.ResourceBundle;
-import vip.justlive.oxygen.core.util.Strings;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.CoreConfigKeys;
+import vip.justlive.oxygen.core.bean.Bean;
+import vip.justlive.oxygen.core.util.base.ResourceBundle;
+import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -28,17 +27,18 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  *
  * @author wubo
  */
-@Slf4j
 @Bean
+@Slf4j
 public class I18nWebHook implements WebHook {
 
   @Override
   public boolean before(RoutingContext ctx) {
+    String paramKey = CoreConfigKeys.I18N_PARAM_KEY.getValue();
     Request request = ctx.request();
-    CoreConf conf = ConfigFactory.load(CoreConf.class);
-    String localeStr = request.getParam(conf.getI18nParamKey());
+    String localeStr = request.getParam(paramKey);
+    String sessionKey = CoreConfigKeys.I18N_SESSION_KEY.getValue();
     if (localeStr == null || localeStr.length() == 0) {
-      Locale locale = (Locale) request.getSession().get(conf.getI18nSessionKey());
+      Locale locale = (Locale) request.getSession().get(sessionKey);
       if (locale != null) {
         ResourceBundle.setThreadLocale(locale);
       }
@@ -52,7 +52,7 @@ public class I18nWebHook implements WebHook {
           log.debug("change locale from [{}] to [{}]", ResourceBundle.currentThreadLocale(),
               locale);
         }
-        request.getSession().put(conf.getI18nSessionKey(), locale);
+        request.getSession().put(sessionKey, locale);
         ResourceBundle.setThreadLocale(locale);
       }
     }

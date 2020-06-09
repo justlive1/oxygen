@@ -23,8 +23,8 @@ import java.util.Map;
 import lombok.Data;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.web.result.Result;
 
 /**

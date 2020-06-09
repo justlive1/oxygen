@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.MoreObjects;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
 
 /**
  * @author wubo

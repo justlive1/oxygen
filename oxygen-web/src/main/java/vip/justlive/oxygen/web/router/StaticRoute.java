@@ -70,25 +70,4 @@ public class StaticRoute {
     return this;
   }
 
-  /**
-   * 设置缓存时间，单位秒
-   *
-   * @param maxAge 缓存时间
-   * @return route
-   */
-  public StaticRoute maxAge(int maxAge) {
-    this.maxAge = maxAge;
-    return this;
-  }
-
-  /**
-   * 设置是否启用缓存
-   *
-   * @param enabled 是否启用缓存
-   * @return route
-   */
-  public StaticRoute cachingEnabled(boolean enabled) {
-    this.cachingEnabled = enabled;
-    return this;
-  }
 }

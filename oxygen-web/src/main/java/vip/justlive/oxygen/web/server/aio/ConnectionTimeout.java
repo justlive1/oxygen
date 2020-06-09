@@ -17,7 +17,7 @@ package vip.justlive.oxygen.web.server.aio;
 import java.util.function.LongUnaryOperator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
+import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
 
 /**
  * 空闲连接处理

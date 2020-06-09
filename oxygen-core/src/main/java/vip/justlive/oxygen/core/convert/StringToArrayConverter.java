@@ -15,7 +15,7 @@ package vip.justlive.oxygen.core.convert;
 
 import java.lang.reflect.Array;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * String - 数组 转换器

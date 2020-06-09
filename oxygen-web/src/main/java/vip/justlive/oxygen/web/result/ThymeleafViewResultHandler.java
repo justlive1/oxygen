@@ -25,14 +25,13 @@ import org.thymeleaf.context.WebContext;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 import org.thymeleaf.templateresource.ITemplateResource;
 import org.thymeleaf.templateresource.StringTemplateResource;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
-import vip.justlive.oxygen.core.template.Templates;
-import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.core.util.ResourceBundle;
-import vip.justlive.oxygen.ioc.annotation.Bean;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.core.bean.Bean;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.ResourceBundle;
+import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
+import vip.justlive.oxygen.core.util.template.Templates;
+import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
@@ -51,7 +50,7 @@ public class ThymeleafViewResultHandler implements ResultHandler {
   private ThymeleafResolver resolver;
 
   public ThymeleafViewResultHandler() {
-    this.suffix = ConfigFactory.load(WebConf.class).getThymeleafViewSuffix();
+    this.suffix = WebConfigKeys.VIEW_SUFFIX_THYMELEAF.getValue();
     if (SUPPORTED) {
       resolver = new ThymeleafResolver();
     }
@@ -79,11 +78,10 @@ public class ThymeleafViewResultHandler implements ResultHandler {
     private final TemplateEngine templateEngine;
 
     ThymeleafResolver() {
-      WebConf webConf = ConfigFactory.load(WebConf.class);
       this.templateEngine = new TemplateEngine();
       ResourceTemplateResolver templateResolver = new ResourceTemplateResolver(
-          webConf.getThymeleafViewPrefix());
-      templateResolver.setCacheable(webConf.isViewCacheEnabled());
+          WebConfigKeys.VIEW_PREFIX_THYMELEAF.getValue());
+      templateResolver.setCacheable(WebConfigKeys.VIEW_CACHE.castValue(boolean.class));
       this.templateEngine.setTemplateResolver(templateResolver);
     }
 

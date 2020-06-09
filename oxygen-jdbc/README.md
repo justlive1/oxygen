@@ -62,19 +62,19 @@ Jdbc.addDataSource(String name, DataSource dataSource)
 ```
 // 配置文件中增加如下信息
 // 主数据源
-datasource.logSql=true
-datasource.driverClassName=org.h2.Driver
-datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
-datasource.username=sa
-datasource.password=sa
+oxygen.datasource.logSql=true
+oxygen.datasource.driverClassName=org.h2.Driver
+oxygen.datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
+oxygen.datasource.username=sa
+oxygen.datasource.password=sa
 
 // 多数据源名称
-datasource.multi=a
+oxygen.datasource.multi=a
 // 数据源a
-datasource.a.driverClassName=org.h2.Driver
-datasource.a.url=jdbc:h2:mem:a;DB_CLOSE_DELAY=-1
-datasource.a.username=sa
-datasource.a.password=sa
+oxygen.datasource.a.driverClassName=org.h2.Driver
+oxygen.datasource.a.url=jdbc:h2:mem:a;DB_CLOSE_DELAY=-1
+oxygen.datasource.a.username=sa
+oxygen.datasource.a.password=sa
 ```
 
 #### 切换数据源

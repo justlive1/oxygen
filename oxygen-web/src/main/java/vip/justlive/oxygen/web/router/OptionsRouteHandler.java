@@ -17,17 +17,28 @@ package vip.justlive.oxygen.web.router;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
-import vip.justlive.oxygen.core.net.http.HttpMethod;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 
 /**
  * @author wubo
  */
 public class OptionsRouteHandler implements RouteHandler {
 
-  private static final String ALLOW = getAllow(Arrays.asList(HttpMethod.values()));
   public static final OptionsRouteHandler INSTANCE = new OptionsRouteHandler();
+  private static final String ALLOW = getAllow(Arrays.asList(HttpMethod.values()));
+
+  private static String getAllow(Collection<HttpMethod> methods) {
+    StringBuilder sb = new StringBuilder();
+    for (HttpMethod method : methods) {
+      if (method != HttpMethod.UNKNOWN) {
+        sb.append(Strings.COMMA).append(method.name());
+      }
+    }
+    sb.deleteCharAt(0);
+    return sb.toString();
+  }
 
   @Override
   public void handle(RoutingContext ctx) {
@@ -40,16 +51,5 @@ public class OptionsRouteHandler implements RouteHandler {
       allow = getAllow(methods);
     }
     ctx.response().setHeader(HttpHeaders.ALLOW, allow);
-  }
-
-  private static String getAllow(Collection<HttpMethod> methods) {
-    StringBuilder sb = new StringBuilder();
-    for (HttpMethod method : methods) {
-      if (method != HttpMethod.UNKNOWN) {
-        sb.append(Strings.COMMA).append(method.name());
-      }
-    }
-    sb.deleteCharAt(0);
-    return sb.toString();
   }
 }

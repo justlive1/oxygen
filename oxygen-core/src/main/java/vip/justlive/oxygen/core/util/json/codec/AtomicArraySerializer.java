@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import lombok.RequiredArgsConstructor;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
  * atomic array序列化

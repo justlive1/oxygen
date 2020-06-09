@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
  * ToString 序列化,优先级较低

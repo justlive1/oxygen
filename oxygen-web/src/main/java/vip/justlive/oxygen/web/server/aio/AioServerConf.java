@@ -15,7 +15,7 @@
 package vip.justlive.oxygen.web.server.aio;
 
 import lombok.Data;
-import vip.justlive.oxygen.core.config.Value;
+import vip.justlive.oxygen.core.config.ValueConfig;
 
 /**
  * aio server配置
@@ -23,47 +23,41 @@ import vip.justlive.oxygen.core.config.Value;
  * @author wubo
  */
 @Data
+@ValueConfig("oxygen.server.aio")
 public class AioServerConf {
 
   /**
    * aio服务连接空闲超时时间
    */
-  @Value("${server.aio.idleTimeout:10000}")
-  private long aioIdleTimeout;
+  private long idleTimeout = 10000;
 
   /**
    * aio请求连接超时时间
    */
-  @Value("${server.aio.requestTimeout:-1}")
-  private long aioRequestTimeout;
+  private long requestTimeout = -1;
 
   /**
    * 连接线程数
    */
-  @Value("${server.aio.acceptThreads:100}")
   private int acceptThreads = 100;
 
   /**
    * 连接线程最大等待数
    */
-  @Value("${server.aio.acceptMaxWaiter:10000}")
-  private int acceptMaxWaiter;
+  private int acceptMaxWaiter = 10000;
 
   /**
    * 工作线程数
    */
-  @Value("${server.aio.workerThreads:200}")
-  private int workerThreads;
+  private int workerThreads = 200;
 
   /**
    * 工作线程最大等待数
    */
-  @Value("${server.aio.workerMaxWaiter:1000000}")
   private int workerMaxWaiter = 1000000;
 
   /**
    * 是否hold住端口，true的话随主线程退出而退出，false的话则要主动退出
    */
-  @Value("${server.aio.daemon:false}")
   private boolean daemon;
 }

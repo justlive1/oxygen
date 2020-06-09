@@ -1,3 +1,9 @@
 
-vip.justlive.oxygen.core.scan.ClassScannerPlugin
-vip.justlive.oxygen.core.util.ResourceBundle
+vip.justlive.oxygen.core.config.ConfigPlugin
+vip.justlive.oxygen.core.util.scan.ClassScannerPlugin
+vip.justlive.oxygen.core.util.base.ResourceBundle
+vip.justlive.oxygen.core.bean.IocPlugin
+vip.justlive.oxygen.core.job.JobPlugin
+vip.justlive.oxygen.core.cache.CachePlugin
+vip.justlive.oxygen.core.aop.AopPlugin
+vip.justlive.oxygen.core.bean.LifeCyclePlugin

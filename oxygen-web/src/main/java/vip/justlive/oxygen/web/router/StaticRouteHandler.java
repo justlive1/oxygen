@@ -27,16 +27,16 @@ import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.io.FirstResourceLoader;
-import vip.justlive.oxygen.core.io.SourceResource;
-import vip.justlive.oxygen.core.util.ExpiringMap;
-import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
-import vip.justlive.oxygen.core.util.ExpiringMap.RemovalCause;
-import vip.justlive.oxygen.core.util.FileUtils;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.core.util.MoreObjects;
-import vip.justlive.oxygen.core.util.SnowflakeIdWorker;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.ExpiringMap;
+import vip.justlive.oxygen.core.util.base.ExpiringMap.ExpiringPolicy;
+import vip.justlive.oxygen.core.util.base.ExpiringMap.RemovalCause;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
+import vip.justlive.oxygen.core.util.base.SnowflakeId;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.io.FileUtils;
+import vip.justlive.oxygen.core.util.io.FirstResourceLoader;
+import vip.justlive.oxygen.core.util.io.SourceResource;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 
@@ -139,7 +139,7 @@ public class StaticRouteHandler implements RouteHandler {
       // cache files in jar
       try (InputStream is = sourceResource.getInputStream()) {
         File savedFile = new File(TEMP_DIR,
-            SnowflakeIdWorker.defaultNextId() + Strings.DOT + FileUtils.extension(path));
+            SnowflakeId.defaultNextId() + Strings.DOT + FileUtils.extension(path));
         Files.copy(is, savedFile.toPath());
         return new StaticSource(savedFile, path, true);
       }

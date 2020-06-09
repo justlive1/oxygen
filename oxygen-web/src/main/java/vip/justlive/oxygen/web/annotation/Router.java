@@ -18,7 +18,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 
 /**
  * 路由

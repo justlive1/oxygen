@@ -22,9 +22,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import vip.justlive.oxygen.core.net.http.HttpMethod;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 import vip.justlive.oxygen.web.router.RouteHandler;
 
 /**

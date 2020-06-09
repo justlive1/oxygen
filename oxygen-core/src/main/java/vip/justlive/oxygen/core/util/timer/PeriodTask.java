@@ -15,14 +15,12 @@
 package vip.justlive.oxygen.core.util.timer;
 
 import java.util.function.LongUnaryOperator;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 周期任务
  *
  * @author wubo
  */
-@Slf4j
 public class PeriodTask extends Task<Void> {
 
   final WheelTimer timer;

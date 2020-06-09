@@ -41,8 +41,8 @@ import org.apache.tomcat.util.compat.JreCompat;
 import org.apache.tomcat.util.res.StringManager;
 import org.apache.tomcat.util.scan.JarFactory;
 import org.apache.tomcat.util.scan.StandardJarScanFilter;
-import vip.justlive.oxygen.core.util.Strings;
-import vip.justlive.oxygen.core.util.Urls;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.base.Urls;
 
 /**
  * fat-jar scanner

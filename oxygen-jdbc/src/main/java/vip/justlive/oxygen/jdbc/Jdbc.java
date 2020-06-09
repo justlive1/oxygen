@@ -40,7 +40,7 @@ import vip.justlive.oxygen.jdbc.page.PageDialectHelper;
 public class Jdbc {
 
   static final String PRIMARY_KEY = Jdbc.class.getSimpleName();
-  static final String TEMPLATE = "datasource.%s";
+  static final String TEMPLATE = "oxygen.datasource.%s";
   private static final List<JdbcInterceptor> JDBC_INTERCEPTORS = new ArrayList<>(4);
   private static final Map<String, DataSource> DATA_SOURCE_MAP = new ConcurrentHashMap<>(2, 1f);
   private static final ThreadLocal<Map<String, Connection>> CONNECTION_CONTAINER = ThreadLocal

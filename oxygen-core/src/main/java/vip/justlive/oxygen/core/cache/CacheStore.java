@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.experimental.UtilityClass;
-import vip.justlive.oxygen.core.util.MoreObjects;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
 
 /**
  * cache store
@@ -43,6 +43,13 @@ public class CacheStore {
   }
 
   /**
+   * 清除缓存引用，不清除缓存内容
+   */
+  public void clear() {
+    CACHES.clear();
+  }
+
+  /**
    * 设置缓存工厂
    *
    * @param cacheFactory 缓存工厂
@@ -50,7 +57,7 @@ public class CacheStore {
   public void setCacheFactory(CacheFactory cacheFactory) {
     MoreObjects.notNull(cacheFactory, "cache factory can not be null");
     if (CACHE_FACTORY.get() != cacheFactory) {
-      CACHES.clear();
+      clear();
     }
     CACHE_FACTORY.set(cacheFactory);
   }

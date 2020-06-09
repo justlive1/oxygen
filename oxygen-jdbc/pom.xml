@@ -5,7 +5,7 @@
   <parent>
     <artifactId>oxygen</artifactId>
     <groupId>vip.justlive</groupId>
-    <version>2.1.13</version>
+    <version>3.0.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>oxygen-jdbc</artifactId>
@@ -28,12 +28,6 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>oxygen-core</artifactId>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>oxygen-ioc</artifactId>
       <optional>true</optional>
     </dependency>
 

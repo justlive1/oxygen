@@ -22,7 +22,7 @@ import vip.justlive.oxygen.core.config.ValueConfig;
  * @author wubo
  */
 @Data
-@ValueConfig("server.jetty")
+@ValueConfig("oxygen.server.jetty")
 public class JettyConf {
 
   /**

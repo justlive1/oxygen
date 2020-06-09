@@ -18,8 +18,13 @@ import java.lang.reflect.Parameter;
 import java.util.LinkedList;
 import java.util.List;
 import lombok.experimental.UtilityClass;
+import vip.justlive.oxygen.core.bean.Singleton;
+import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.web.bind.DataBinder;
 import vip.justlive.oxygen.web.bind.ParamBinder;
+import vip.justlive.oxygen.web.exception.ExceptionHandler;
+import vip.justlive.oxygen.web.exception.ExceptionHandlerImpl;
 import vip.justlive.oxygen.web.hook.WebHook;
 import vip.justlive.oxygen.web.http.Parser;
 import vip.justlive.oxygen.web.http.Request;
@@ -43,6 +48,7 @@ public class Context {
   final List<ParamBinder> BINDERS = new LinkedList<>();
   final List<WebHook> HOOKS = new LinkedList<>();
   final List<Parser> PARSERS = new LinkedList<>();
+  final ExceptionHandler HANDLER = new ExceptionHandlerImpl();
 
 
   /**
@@ -70,7 +76,7 @@ public class Context {
       Context.parseRequest(ctx.request());
       RouteHandler handler = ctx.request().getRouteHandler();
       if (handler == null) {
-        RouteHandler.notFound(ctx);
+        routeNotFound(ctx);
         return;
       }
       if (!Context.invokeBefore(ctx)) {
@@ -79,12 +85,25 @@ public class Context {
       handler.handle(ctx);
       Context.invokeAfter(ctx);
     } catch (Exception e) {
-      RouteHandler.exception(ctx, e);
+      routeException(ctx, e);
     } finally {
       Context.invokeFinished(ctx);
       Context.restoreSession(ctx.request(), ctx.response());
       Context.handleResult(ctx);
     }
+  }
+
+  public void routeNotFound(RoutingContext ctx) {
+    MoreObjects.firstNonNull(Singleton.get(ExceptionHandler.class), HANDLER)
+        .handle(ctx, Exceptions.fail("No handle found"), 404);
+  }
+
+  public void routeException(RoutingContext ctx, Exception e) {
+    MoreObjects.firstNonNull(Singleton.get(ExceptionHandler.class), HANDLER).handle(ctx, e, 500);
+  }
+
+  public void routeError(RoutingContext ctx, Exception e) {
+    MoreObjects.firstNonNull(Singleton.get(ExceptionHandler.class), HANDLER).error(ctx, e);
   }
 
   /**

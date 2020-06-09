@@ -16,7 +16,6 @@ package vip.justlive.oxygen.core.config;
 
 import lombok.Data;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -24,34 +23,30 @@ import org.junit.Test;
  */
 public class ConfigFactoryTest {
 
-  @Before
-  public void before() {
-    ConfigFactory.clear();
-  }
-
   @Test
   public void testLoadOneProp() {
 
-    ConfigFactory.loadProperties("classpath:/config/config.properties");
+    ConfigFactory.loadProperties("classpath*:config.properties", "classpath*:/config/*.properties");
 
-    System.out.println(ConfigFactory.keys());
+    Assert.assertTrue(ConfigFactory.keys().contains("fc.age"));
 
     Prop prop = ConfigFactory.load(Prop.class);
 
     Assert.assertNotNull(prop);
     Assert.assertEquals("jack", prop.getName());
-    Assert.assertEquals(new Integer(18), prop.getAge());
 
-  }
-
-  @Test
-  public void testLoadOverride() {
-    ConfigFactory.loadProperties("classpath:/config/config.properties",
-        "classpath:/config/config2.properties");
-    Prop prop = ConfigFactory.load(Prop.class);
-
-    Assert.assertNotNull(prop);
     Assert.assertEquals(new Integer(19), prop.getAge());
+
+    System.setProperty("fc.age", "23");
+    ConfigFactory.setProperty("fc.name", "321");
+
+    prop = ConfigFactory.load(Prop.class);
+    Assert.assertEquals(new Integer(23), prop.getAge());
+
+    ConfigFactory.setProperty("fc.age", "32");
+    prop = ConfigFactory.load(Prop.class);
+
+    Assert.assertEquals(new Integer(32), prop.getAge());
   }
 
   @Data

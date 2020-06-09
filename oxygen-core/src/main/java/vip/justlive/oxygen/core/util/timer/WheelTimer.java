@@ -25,14 +25,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.LongUnaryOperator;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.CronExpression;
-import vip.justlive.oxygen.core.util.RepeatRunnable;
-import vip.justlive.oxygen.core.util.SecurityChecker;
-import vip.justlive.oxygen.core.util.SecurityThreadPoolExecutor;
-import vip.justlive.oxygen.core.util.SecurityThreadPoolExecutor.PoolQueue;
-import vip.justlive.oxygen.core.util.ThreadFactoryBuilder;
+import vip.justlive.oxygen.core.util.base.SecurityChecker;
+import vip.justlive.oxygen.core.util.concurrent.RepeatRunnable;
+import vip.justlive.oxygen.core.util.concurrent.SecurityThreadPoolExecutor;
+import vip.justlive.oxygen.core.util.concurrent.SecurityThreadPoolExecutor.PoolQueue;
+import vip.justlive.oxygen.core.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * 时间轮
@@ -50,7 +49,7 @@ public class WheelTimer {
   private static final AtomicInteger COUNT = new AtomicInteger();
 
   static {
-    POLL_TIMEOUT = Long.parseLong(ConfigFactory.getProperty("wheel_timer.poll.timeout", "100"));
+    POLL_TIMEOUT = CoreConfigKeys.WHEEL_TIMER_TIMEOUT.castValue(long.class);
     FACTORY = new ThreadFactoryBuilder().setDaemon(true).setPriority(Thread.NORM_PRIORITY)
         .setNameFormat("wheel-task-%d").build();
   }

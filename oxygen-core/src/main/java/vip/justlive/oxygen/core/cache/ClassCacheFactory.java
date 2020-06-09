@@ -14,10 +14,10 @@
 
 package vip.justlive.oxygen.core.cache;
 
-import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * 根据class构造缓存
@@ -28,11 +28,11 @@ public class ClassCacheFactory implements CacheFactory {
 
   @Override
   public Cache create(String name) {
-    String cacheImpl = ConfigFactory.getProperty("cache.impl.class");
-    if (Strings.hasText(cacheImpl)) {
+    String cacheClass = CoreConfigKeys.CACHE_CLASS.getValue();
+    if (Strings.hasText(cacheClass)) {
       try {
-        Class<?> clazz = ClassUtils.forName(cacheImpl);
-        return (Cache) clazz.getConstructor(String.class).newInstance(name);
+        return (Cache) ClassUtils.forName(cacheClass).getConstructor(String.class)
+            .newInstance(name);
       } catch (Exception e) {
         throw Exceptions.wrap(e);
       }

@@ -16,11 +16,11 @@ package vip.justlive.oxygen.web;
 
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.net.http.HttpMethod;
-import vip.justlive.oxygen.core.net.http.HttpRequest;
-import vip.justlive.oxygen.core.net.http.HttpResponse;
-import vip.justlive.oxygen.core.util.SystemUtils;
-import vip.justlive.oxygen.core.util.ThreadUtils;
+import vip.justlive.oxygen.core.util.base.SystemUtils;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
+import vip.justlive.oxygen.core.util.net.http.HttpMethod;
+import vip.justlive.oxygen.core.util.net.http.HttpRequest;
+import vip.justlive.oxygen.core.util.net.http.HttpResponse;
 import vip.justlive.oxygen.web.router.Router;
 import vip.justlive.oxygen.web.server.Server;
 
@@ -38,8 +38,7 @@ public class WebTest {
     Router.router().method(HttpMethod.GET).path("/a").handler(ctx -> ctx.response().write(msg));
     Router.router().method(HttpMethod.POST).path("/a")
         .handler(ctx -> ctx.response().write(msg + "!"));
-    Server server = Server.server();
-    server.listen(port);
+    Server.listen(port);
 
     ThreadUtils.sleep(3000);
 
@@ -62,7 +61,7 @@ public class WebTest {
       Assert.fail();
     }
 
-    server.stop();
+    Server.stop();
   }
 
 }

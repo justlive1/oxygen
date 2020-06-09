@@ -21,7 +21,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.FileCleaner;
+import vip.justlive.oxygen.core.util.io.FileCleaner;
 
 /**
  * multipart请求类型

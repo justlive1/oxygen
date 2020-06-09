@@ -20,8 +20,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import vip.justlive.oxygen.core.util.MoreObjects;
-import vip.justlive.oxygen.core.util.ThreadUtils;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
  * 重试构造器

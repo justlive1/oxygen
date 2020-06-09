@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import lombok.Data;
 import org.apache.catalina.valves.Constants.AccessLog;
 import vip.justlive.oxygen.core.config.ValueConfig;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * tomcat配置
@@ -25,7 +25,7 @@ import vip.justlive.oxygen.core.util.Strings;
  * @author wubo
  */
 @Data
-@ValueConfig("server.tomcat")
+@ValueConfig("oxygen.server.tomcat")
 public class TomcatConf {
 
   /**

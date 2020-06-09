@@ -14,7 +14,7 @@
 package vip.justlive.oxygen.core.util.retry;
 
 import java.util.concurrent.Callable;
-import vip.justlive.oxygen.core.util.CaughtCallable;
+import vip.justlive.oxygen.core.util.base.CaughtCallable;
 
 /**
  * 无超时限制

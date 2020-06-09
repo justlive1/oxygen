@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.util.ThreadUtils;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
  * @author wubo

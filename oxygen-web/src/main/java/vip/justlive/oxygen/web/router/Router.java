@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.net.http.HttpMethod;
+import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 
 /**
  * Router

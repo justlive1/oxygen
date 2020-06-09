@@ -16,13 +16,45 @@ package vip.justlive.oxygen.core.cache;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import vip.justlive.oxygen.core.util.base.Naming;
 
 /**
  * 缓存接口
  *
  * @author wubo
  */
-public interface Cache {
+public interface Cache extends Naming {
+
+  /**
+   * 获取默认cache
+   *
+   * @return cache
+   */
+  static Cache cache() {
+    return cache(Cache.class.getSimpleName());
+  }
+
+  /**
+   * 根据缓存名称获取cache
+   *
+   * @param name cache name
+   * @return cache
+   */
+  static Cache cache(String name) {
+    if (!CacheStore.CACHES.containsKey(name)) {
+      CacheStore.CACHES.putIfAbsent(name, CacheStore.createCache(name));
+    }
+    return CacheStore.CACHES.get(name);
+  }
+
+  /**
+   * 获取缓存名称集合
+   *
+   * @return 缓存名称集合
+   */
+  static Collection<String> cacheNames() {
+    return CacheStore.CACHES.keySet();
+  }
 
   /**
    * 获取缓存对象
@@ -99,7 +131,6 @@ public interface Cache {
    * @return exist cache value
    */
   Object set(String key, Object value, long duration, TimeUnit unit);
-
 
   /**
    * 替换缓存中key对应的value
@@ -179,47 +210,6 @@ public interface Cache {
    * Clear the cache
    */
   void clear();
-
-  /**
-   * 获取默认cache
-   *
-   * @return cache
-   */
-  static Cache cache() {
-    return cache(Cache.class.getSimpleName());
-  }
-
-  /**
-   * 根据缓存名称获取cache
-   *
-   * @param name cache name
-   * @return cache
-   */
-  static Cache cache(String name) {
-    if (!CacheStore.CACHES.containsKey(name)) {
-      CacheStore.CACHES.putIfAbsent(name, CacheStore.createCache(name));
-    }
-    return CacheStore.CACHES.get(name);
-  }
-
-  /**
-   * 获取缓存名称集合
-   *
-   * @return 缓存名称集合
-   */
-  static Collection<String> cacheNames() {
-    return CacheStore.CACHES.keySet();
-  }
-
-  /**
-   * 清除缓存
-   */
-  static void clearAll() {
-    for (Cache cache : CacheStore.CACHES.values()) {
-      cache.clear();
-    }
-    CacheStore.CACHES.clear();
-  }
 
 
 }

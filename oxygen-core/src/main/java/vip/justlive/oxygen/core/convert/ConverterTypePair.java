@@ -15,7 +15,7 @@ package vip.justlive.oxygen.core.convert;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import vip.justlive.oxygen.core.util.MoreObjects;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
 
 /**
  * 转换类型对

@@ -21,13 +21,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.exception.WrappedException;
-import vip.justlive.oxygen.core.util.FileUtils;
-import vip.justlive.oxygen.core.util.IoUtils;
-import vip.justlive.oxygen.core.util.ServiceLoaderUtils;
-import vip.justlive.oxygen.core.util.Strings;
-import vip.justlive.oxygen.core.util.ThreadUtils;
+import vip.justlive.oxygen.core.util.base.ServiceLoaderUtils;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
+import vip.justlive.oxygen.core.util.io.FileUtils;
+import vip.justlive.oxygen.core.util.io.IoUtils;
 
 /**
  * 引导类
@@ -67,28 +66,6 @@ public class Bootstrap {
   }
 
   /**
-   * 初始化配置
-   * <br>
-   * 使用默认地址进行加载，然后使用覆盖路径再次加载
-   */
-  public void initConfig() {
-    initConfig("classpath*:config.properties", "classpath*:/config/*.properties");
-  }
-
-  /**
-   * 初始化配置
-   *
-   * @param locations 配置文件路径
-   */
-  public void initConfig(String... locations) {
-    ConfigFactory.loadProperties(locations);
-    String overridePath = ConfigFactory.getProperty("config.override.path");
-    if (overridePath != null && overridePath.length() > 0) {
-      ConfigFactory.loadProperties(overridePath.split(Strings.COMMA));
-    }
-  }
-
-  /**
    * 添加自定义插件
    *
    * @param plugins 插件
@@ -125,7 +102,6 @@ public class Bootstrap {
     if (STATE.compareAndSet(false, true)) {
       log.info("starting bootstrap ...");
       registerUncaughtExceptionHandler();
-      initConfig();
       addSystemPlugin();
       initPlugins();
       registerShutdownHook();
@@ -172,8 +148,12 @@ public class Bootstrap {
    * 初始化插件
    */
   private void initPlugins() {
+    PLUGINS.addAll(Singleton.getList(Plugin.class));
     Collections.sort(PLUGINS);
-    PLUGINS.forEach(Plugin::start);
+    for (Plugin plugin : PLUGINS) {
+      log.info("start plugin: [{}]", plugin);
+      plugin.start();
+    }
   }
 
   /**
@@ -188,7 +168,11 @@ public class Bootstrap {
    */
   private void doClose() {
     log.info("closing bootstrap ...");
-    PLUGINS.forEach(Plugin::stop);
+    for (Plugin plugin : PLUGINS) {
+      log.info("stop plugin: [{}]", plugin);
+      plugin.stop();
+    }
+    PLUGINS.clear();
     FileUtils.cleanTempBaseDir();
     STATE.set(false);
     synchronized (STATE) {

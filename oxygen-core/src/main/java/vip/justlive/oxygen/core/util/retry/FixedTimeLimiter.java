@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.MoreObjects;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
 
 /**
  * 固定时间 time limiter

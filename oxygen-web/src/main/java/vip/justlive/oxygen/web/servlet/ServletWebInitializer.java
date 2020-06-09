@@ -21,8 +21,8 @@ import java.util.Set;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.annotation.HandlesTypes;
-import vip.justlive.oxygen.core.scan.ClassScannerPlugin;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
+import vip.justlive.oxygen.core.util.scan.ClassScannerPlugin;
 
 /**
  * servlet容器自动初始化

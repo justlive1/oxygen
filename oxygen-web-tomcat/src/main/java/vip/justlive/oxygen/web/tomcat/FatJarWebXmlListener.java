@@ -24,9 +24,8 @@ import org.apache.catalina.WebResourceRoot.ResourceSetType;
 import org.apache.catalina.webresources.StandardRoot;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.util.Strings;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.web.WebConfigKeys;
 
 /**
  * fat-jar加载classpath下的WEB-INF
@@ -49,7 +48,7 @@ public class FatJarWebXmlListener implements LifecycleListener {
 
       // 使用embedded tomcat时 WEB-INF放在了classpath下
       createWebResource(context, resources, TomcatConf.WEB_INF);
-      String customPath = ConfigFactory.load(WebConf.class).getJspViewPrefix();
+      String customPath = WebConfigKeys.VIEW_PREFIX_JSP.getValue();
       if (!customPath.startsWith(TomcatConf.WEB_INF)) {
         createWebResource(context, resources, customPath);
       }

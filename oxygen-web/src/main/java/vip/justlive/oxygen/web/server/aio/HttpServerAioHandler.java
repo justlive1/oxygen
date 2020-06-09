@@ -23,16 +23,15 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.net.aio.core.AioHandler;
-import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
-import vip.justlive.oxygen.core.net.http.HttpMethod;
-import vip.justlive.oxygen.core.util.Bytes;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.Bytes;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.net.aio.AioHandler;
+import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
+import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 import vip.justlive.oxygen.web.Context;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
-import vip.justlive.oxygen.web.router.RouteHandler;
 import vip.justlive.oxygen.web.router.RoutingContext;
 import vip.justlive.oxygen.web.router.RoutingContextImpl;
 
@@ -106,9 +105,9 @@ public class HttpServerAioHandler implements AioHandler {
     if (builder == null) {
       return null;
     }
-    if (!builder.requestUri.startsWith(contextPath)) {
-      channelContext.close();
-      throw Exceptions.fail("RequestUri not match contextPath");
+    if (Strings.hasText(contextPath) && !builder.requestUri.startsWith(contextPath)) {
+      throw Exceptions.fail(String
+          .format("RequestUri [%s] not match contextPath [%s]", builder.requestUri, contextPath));
     }
     if (parseHeaders(builder, buffer) && parseBody(builder, buffer)) {
       Request request = builder.build(channelContext);
@@ -138,7 +137,7 @@ public class HttpServerAioHandler implements AioHandler {
     try {
       Context.dispatch(ctx);
     } catch (Exception e) {
-      RouteHandler.error(ctx, e);
+      Context.routeError(ctx, e);
     } finally {
       Request.clear();
       Response.clear();

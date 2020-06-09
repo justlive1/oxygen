@@ -15,7 +15,6 @@
 package vip.justlive.oxygen.web.tomcat;
 
 import java.io.File;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
@@ -28,9 +27,9 @@ import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.FileUtils;
-import vip.justlive.oxygen.core.util.ThreadUtils;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
+import vip.justlive.oxygen.core.util.io.FileUtils;
+import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.server.WebServer;
 
 /**
@@ -38,13 +37,13 @@ import vip.justlive.oxygen.web.server.WebServer;
  *
  * @author wubo
  */
-@Slf4j
 public class TomcatWebServer implements WebServer {
 
   private Tomcat tomcat;
   private int port;
+  private String contextPath;
 
-  private void initServer(WebConf webConf) {
+  private void initServer() {
     if (tomcat == null) {
       tomcat = new Tomcat();
     }
@@ -55,7 +54,7 @@ public class TomcatWebServer implements WebServer {
     tomcat.setBaseDir(baseDir.getAbsolutePath());
     Host host = tomcat.getHost();
     host.setAutoDeploy(false);
-    Context ctx = tomcat.addWebapp(host, webConf.getContextPath(), docBase.getAbsolutePath(),
+    Context ctx = tomcat.addWebapp(host, contextPath, docBase.getAbsolutePath(),
         new FatJarContextConfig());
     ctx.setJarScanner(new FatJarScanner());
     ctx.setParentClassLoader(getClass().getClassLoader());
@@ -104,12 +103,10 @@ public class TomcatWebServer implements WebServer {
   @Override
   public synchronized void listen(int port) {
     this.port = port;
-    WebConf conf = ConfigFactory.load(WebConf.class);
-    initServer(conf);
+    this.contextPath = WebConfigKeys.SERVER_CONTEXT_PATH.getValue();
+    initServer();
     try {
       tomcat.start();
-      log.info("tomcat started and listened on port [{}] with context path [{}]", this.port,
-          conf.getContextPath());
       startDaemonAwaitThread();
     } catch (LifecycleException e) {
       throw Exceptions.wrap(e);

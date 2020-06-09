@@ -25,8 +25,8 @@ import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.Jar;
 import org.apache.tomcat.util.descriptor.web.WebXml;
 import org.apache.tomcat.util.scan.JarFactory;
-import vip.justlive.oxygen.core.util.Strings;
-import vip.justlive.oxygen.core.util.Urls;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.base.Urls;
 
 /**
  * fat-jar for tomcat context config

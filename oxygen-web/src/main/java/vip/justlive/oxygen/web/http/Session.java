@@ -32,11 +32,11 @@ public class Session implements Serializable {
   public static final String SESSION_COOKIE_KEY = "OX_SESSION";
 
   private static final long serialVersionUID = 1L;
+  @SuppressWarnings("squid:S1948")
+  private final HashMap<String, Object> data = new HashMap<>(4);
   private String id;
   @Setter
   private long expired;
-  @SuppressWarnings("squid:S1948")
-  private final HashMap<String, Object> data = new HashMap<>(4);
   private transient boolean change;
   private transient SessionManager manager;
 

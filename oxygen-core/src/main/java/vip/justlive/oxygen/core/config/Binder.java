@@ -18,9 +18,9 @@ import java.lang.reflect.Field;
 import lombok.RequiredArgsConstructor;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.io.PropertySource;
-import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.io.PropertySource;
 
 /**
  * 属性绑定器
@@ -59,7 +59,7 @@ public class Binder {
       throw Exceptions.wrap(e);
     }
 
-    Class<?> actualClass = ClassUtils.getCglibActualClass(clazz);
+    Class<?> actualClass = ClassUtils.getActualClass(clazz);
     boolean b = (prefix == null || Strings.DOT.equals(prefix)) && actualClass
         .isAnnotationPresent(ValueConfig.class);
     if (b) {

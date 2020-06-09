@@ -16,7 +16,7 @@ package vip.justlive.oxygen.web.router;
 import com.alibaba.fastjson.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 

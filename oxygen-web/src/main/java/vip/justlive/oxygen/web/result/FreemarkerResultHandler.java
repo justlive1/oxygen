@@ -23,14 +23,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
 import vip.justlive.oxygen.core.Bootstrap;
-import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.core.util.ResourceBundle;
-import vip.justlive.oxygen.core.util.Strings;
-import vip.justlive.oxygen.ioc.annotation.Bean;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.ResourceBundle;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -75,13 +74,13 @@ public class FreemarkerResultHandler implements ResultHandler {
     final Configuration cfg;
 
     FreemarkerResolver() {
-      WebConf webConf = ConfigFactory.load(WebConf.class);
       cfg = new Configuration(Configuration.getVersion());
       cfg.setDefaultEncoding(StandardCharsets.UTF_8.name());
       cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-      cfg.setClassForTemplateLoading(Bootstrap.class, webConf.getFreemarkerViewPrefix());
+      cfg.setClassForTemplateLoading(Bootstrap.class,
+          WebConfigKeys.VIEW_PREFIX_FREEMARKER.getValue());
       cfg.setNumberFormat(Strings.OCTOTHORP);
-      if (webConf.isViewCacheEnabled()) {
+      if (WebConfigKeys.VIEW_CACHE.castValue(boolean.class)) {
         cfg.setCacheStorage(new MruCacheStorage(20, 250));
       } else {
         cfg.unsetCacheStorage();

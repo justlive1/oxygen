@@ -14,7 +14,7 @@
 
 package vip.justlive.oxygen.web;
 
-import vip.justlive.oxygen.core.net.http.HttpMethod;
+import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 import vip.justlive.oxygen.web.annotation.Mapping;
 import vip.justlive.oxygen.web.annotation.PathParam;
 import vip.justlive.oxygen.web.annotation.Router;

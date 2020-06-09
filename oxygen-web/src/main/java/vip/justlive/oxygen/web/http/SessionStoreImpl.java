@@ -13,8 +13,8 @@
  */
 package vip.justlive.oxygen.web.http;
 
-import vip.justlive.oxygen.core.util.ExpiringMap;
-import vip.justlive.oxygen.core.util.ExpiringMap.ExpiringPolicy;
+import vip.justlive.oxygen.core.util.base.ExpiringMap;
+import vip.justlive.oxygen.core.util.base.ExpiringMap.ExpiringPolicy;
 
 /**
  * 本地session实现

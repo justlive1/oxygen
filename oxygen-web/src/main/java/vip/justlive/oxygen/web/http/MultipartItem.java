@@ -20,10 +20,10 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import lombok.Data;
-import vip.justlive.oxygen.core.io.SourceStream;
-import vip.justlive.oxygen.core.util.FileUtils;
-import vip.justlive.oxygen.core.util.MoreObjects;
-import vip.justlive.oxygen.core.util.Strings;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.io.FileUtils;
+import vip.justlive.oxygen.core.util.io.SourceStream;
 
 /**
  * multipart item

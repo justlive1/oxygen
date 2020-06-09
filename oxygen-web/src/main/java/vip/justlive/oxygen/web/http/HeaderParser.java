@@ -15,12 +15,12 @@
 package vip.justlive.oxygen.web.http;
 
 import java.util.Locale;
-import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
-import vip.justlive.oxygen.core.net.http.HttpMethod;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.core.util.MoreObjects;
-import vip.justlive.oxygen.core.util.Strings;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
+import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 
 /**
  * header解析器

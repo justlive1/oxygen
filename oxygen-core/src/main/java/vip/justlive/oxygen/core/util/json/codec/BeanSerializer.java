@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.ClassUtils;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
  * bean序列化

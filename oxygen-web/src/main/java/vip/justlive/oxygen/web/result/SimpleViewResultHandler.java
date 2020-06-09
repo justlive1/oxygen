@@ -13,13 +13,10 @@
  */
 package vip.justlive.oxygen.web.result;
 
-import vip.justlive.oxygen.core.config.ConfigFactory;
-import vip.justlive.oxygen.core.template.SimpleTemplateEngine;
-import vip.justlive.oxygen.core.template.TemplateEngine;
-import vip.justlive.oxygen.core.template.Templates;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.ioc.annotation.Bean;
-import vip.justlive.oxygen.web.WebConf;
+import vip.justlive.oxygen.core.bean.Bean;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.template.Templates;
+import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -27,22 +24,19 @@ import vip.justlive.oxygen.web.router.RoutingContext;
  * 使用内置简单模板引擎处理
  *
  * @author wubo
- * @see vip.justlive.oxygen.core.template.SimpleTemplateEngine
+ * @see Templates
  */
 @Bean
 public class SimpleViewResultHandler implements ResultHandler {
 
   private final String suffix;
   private final String prefix;
-  private final TemplateEngine templateEngine;
   private final boolean viewCacheEnabled;
 
   public SimpleViewResultHandler() {
-    WebConf webConf = ConfigFactory.load(WebConf.class);
-    this.suffix = webConf.getSimpleViewSuffix();
-    this.prefix = webConf.getSimpleViewPrefix();
-    this.templateEngine = new SimpleTemplateEngine();
-    this.viewCacheEnabled = webConf.isViewCacheEnabled();
+    this.suffix = WebConfigKeys.VIEW_SUFFIX_SIMPLE.getValue();
+    this.prefix = WebConfigKeys.VIEW_PREFIX_SIMPLE.getValue();
+    this.viewCacheEnabled = WebConfigKeys.VIEW_CACHE.castValue(boolean.class);
   }
 
   @Override
@@ -59,12 +53,10 @@ public class SimpleViewResultHandler implements ResultHandler {
     ViewResult data = (ViewResult) result;
     Response response = ctx.response();
     response.setContentType(HttpHeaders.TEXT_HTML);
-    String template;
     if (viewCacheEnabled) {
-      template = Templates.cachedTemplate(prefix + data.getPath());
+      response.write(Templates.loadAndRender(prefix + data.getPath(), data.getData()));
     } else {
-      template = Templates.template(prefix + data.getPath());
+      response.write(Templates.render(Templates.template(prefix + data.getPath()), data.getData()));
     }
-    response.write(templateEngine.render(template, data.getData()));
   }
 }

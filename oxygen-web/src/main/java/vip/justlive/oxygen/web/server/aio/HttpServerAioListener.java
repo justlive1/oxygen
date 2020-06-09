@@ -17,10 +17,10 @@ package vip.justlive.oxygen.web.server.aio;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.net.aio.core.AioListener;
-import vip.justlive.oxygen.core.net.aio.core.ChannelContext;
-import vip.justlive.oxygen.core.util.HttpHeaders;
-import vip.justlive.oxygen.core.util.ThreadUtils;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
+import vip.justlive.oxygen.core.util.net.aio.AioListener;
+import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
 import vip.justlive.oxygen.web.http.Response;
 
 /**
@@ -48,10 +48,10 @@ public class HttpServerAioListener implements AioListener {
     if (log.isDebugEnabled()) {
       log.debug("channel connected {}", channelContext);
     }
-    ConnectionTimeout timeout = new ConnectionTimeout(channelContext, conf.getAioIdleTimeout(),
-        conf.getAioRequestTimeout());
+    ConnectionTimeout timeout = new ConnectionTimeout(channelContext, conf.getIdleTimeout(),
+        conf.getRequestTimeout());
     ThreadUtils.globalTimer()
-        .scheduleWithDelay(timeout, conf.getAioIdleTimeout(), TimeUnit.MILLISECONDS, timeout);
+        .scheduleWithDelay(timeout, conf.getIdleTimeout(), TimeUnit.MILLISECONDS, timeout);
   }
 
   @Override

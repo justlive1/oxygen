@@ -23,7 +23,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import vip.justlive.oxygen.core.net.http.HttpMethod;
+import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 
 /**
  * 路由
@@ -35,14 +35,14 @@ import vip.justlive.oxygen.core.net.http.HttpMethod;
 @Accessors(fluent = true)
 public class Route {
 
-  private static final Pattern REGEX_PATH_GROUP = Pattern.compile("\\{(\\w+)[}]");
   public static final String REGEX_PATH_VAR = "\\{\\w+}";
   public static final String REGEX_PATH_VAR_REPLACE = "([^/?]*)";
-
+  private static final Pattern REGEX_PATH_GROUP = Pattern.compile("\\{(\\w+)[}]");
   /**
    * 方法
    */
   private final Set<HttpMethod> methods = new HashSet<>(1, 1f);
+  private final List<String> pathVars = new LinkedList<>();
   /**
    * 请求路径
    */
@@ -56,9 +56,6 @@ public class Route {
    */
   @Setter
   private RouteHandler handler;
-
-  private final List<String> pathVars = new LinkedList<>();
-
   @Setter
   private Route next;
 

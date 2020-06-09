@@ -17,8 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import lombok.Getter;
-import vip.justlive.oxygen.core.util.ExpiringMap;
+import vip.justlive.oxygen.core.util.base.ExpiringMap;
 
 /**
  * 本地缓存实现
@@ -27,19 +26,22 @@ import vip.justlive.oxygen.core.util.ExpiringMap;
  */
 public class LocalCacheImpl implements Cache {
 
-  @Getter
   private final String name;
-  private final ExpiringMap<String, Object> expiringMap;
+  private final ExpiringMap<String, Object> store;
 
   public LocalCacheImpl(String name) {
     this.name = name;
-    this.expiringMap = ExpiringMap.<String, Object>builder().name(name).build();
+    this.store = ExpiringMap.<String, Object>builder().name(name).build();
   }
 
+  @Override
+  public String name() {
+    return name;
+  }
 
   @Override
   public Object get(String key) {
-    return expiringMap.get(key);
+    return store.get(key);
   }
 
   @Override
@@ -58,43 +60,43 @@ public class LocalCacheImpl implements Cache {
 
   @Override
   public Object putIfAbsent(String key, Object value) {
-    return expiringMap.putIfAbsent(key, value);
+    return store.putIfAbsent(key, value);
   }
 
   @Override
   public Object putIfAbsent(String key, Object value, long duration, TimeUnit unit) {
-    return expiringMap.putIfAbsent(key, value, duration, unit);
+    return store.putIfAbsent(key, value, duration, unit);
   }
 
   @Override
   public Object set(String key, Object value) {
-    return expiringMap.put(key, value);
+    return store.put(key, value);
   }
 
   @Override
   public Object set(String key, Object value, long duration, TimeUnit unit) {
-    return expiringMap.put(key, value, duration, unit);
+    return store.put(key, value, duration, unit);
   }
 
   @Override
   public Object replace(String key, Object value) {
-    return expiringMap.replace(key, value);
+    return store.replace(key, value);
   }
 
   @Override
   public Object replace(String key, Object value, long duration, TimeUnit unit) {
-    return expiringMap.replace(key, value, duration, unit);
+    return store.replace(key, value, duration, unit);
   }
 
   @Override
   public Collection<String> keys() {
-    return expiringMap.keySet();
+    return store.keySet();
   }
 
   @Override
   public void remove(String... keys) {
     for (String key : keys) {
-      expiringMap.remove(key);
+      store.remove(key);
     }
   }
 
@@ -114,7 +116,7 @@ public class LocalCacheImpl implements Cache {
 
   @Override
   public void clear() {
-    expiringMap.clear();
+    store.clear();
   }
 
 }

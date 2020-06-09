@@ -19,41 +19,39 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import vip.justlive.oxygen.core.io.PropertiesLoader;
-import vip.justlive.oxygen.core.io.PropertySource;
-import vip.justlive.oxygen.core.util.ClassUtils;
-import vip.justlive.oxygen.core.util.MoreObjects;
-import vip.justlive.oxygen.core.util.Strings;
+import lombok.experimental.UtilityClass;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.io.MultiPropertySource;
+import vip.justlive.oxygen.core.util.io.PropertiesLoader;
+import vip.justlive.oxygen.core.util.io.PropertiesPropertySource;
+import vip.justlive.oxygen.core.util.io.PropertySource;
+import vip.justlive.oxygen.core.util.io.SystemEnvPropertySource;
+import vip.justlive.oxygen.core.util.io.SystemPropertySource;
 
 /**
  * 配置工厂
  *
  * @author wubo
  */
+@UtilityClass
 public class ConfigFactory {
 
-  /**
-   * 存储解析过的配置类
-   */
-  private static final Map<Class<?>, Map<String, Object>> FACTORY = new ConcurrentHashMap<>();
-  /**
-   * 配置属性集合
-   */
-  private static final Properties PROPS = new Properties();
-  /**
-   * 配置资源包装
-   */
-  private static final PropertySource SOURCE_WRAPPER = ConfigFactory::props;
-  /**
-   * 解析过的locations
-   */
-  private static final Set<String> PARSED_LOCATIONS = new HashSet<>(4);
-  private static final Binder BINDER = new Binder(SOURCE_WRAPPER);
+  private final Map<Class<?>, Map<String, Object>> FACTORY = new ConcurrentHashMap<>();
+  private final Set<String> PARSED_LOCATIONS = new HashSet<>(4);
 
-  private ConfigFactory() {
+  private final PropertiesPropertySource APP_SOURCE;
+  private final MultiPropertySource SOURCE;
+  private final Binder BINDER;
+
+  static {
+    APP_SOURCE = new PropertiesPropertySource().setOrder(Integer.MIN_VALUE);
+    SOURCE = new MultiPropertySource().addSource(APP_SOURCE)
+        .addSource(new SystemEnvPropertySource()).addSource(new SystemPropertySource());
+    BINDER = new Binder(SOURCE);
   }
 
   /**
@@ -61,7 +59,7 @@ public class ConfigFactory {
    *
    * @param locations 路径
    */
-  public static void loadProperties(String... locations) {
+  public void loadProperties(String... locations) {
     loadProperties(StandardCharsets.UTF_8, true, locations);
   }
 
@@ -72,7 +70,7 @@ public class ConfigFactory {
    * @param ignoreNotFound 忽略未找到
    * @param locations 路径
    */
-  public static void loadProperties(Charset charset, boolean ignoreNotFound, String... locations) {
+  public void loadProperties(Charset charset, boolean ignoreNotFound, String... locations) {
     List<String> list = new LinkedList<>();
     for (String location : locations) {
       if (PARSED_LOCATIONS.add(location)) {
@@ -93,8 +91,8 @@ public class ConfigFactory {
    *
    * @param source 属性源
    */
-  public static void loadProperties(PropertySource source) {
-    PROPS.putAll(source.props());
+  public void loadProperties(PropertySource source) {
+    SOURCE.addSource(source);
     FACTORY.clear();
   }
 
@@ -104,9 +102,9 @@ public class ConfigFactory {
    * @param key 键
    * @param value 值
    */
-  public static void setProperty(String key, String value) {
+  public void setProperty(String key, String value) {
     MoreObjects.notNull(key, "key can not be null");
-    PROPS.setProperty(key, value);
+    APP_SOURCE.setProperty(key, value);
     FACTORY.clear();
   }
 
@@ -116,8 +114,8 @@ public class ConfigFactory {
    * @param key 属性键值
    * @return 属性值
    */
-  public static String getProperty(String key) {
-    return SOURCE_WRAPPER.getProperty(key);
+  public String getProperty(String key) {
+    return SOURCE.getProperty(key);
   }
 
   /**
@@ -126,8 +124,8 @@ public class ConfigFactory {
    * @param placeholder 占位 eg. ${a}
    * @return 属性值
    */
-  public static String getPlaceholderProperty(String placeholder) {
-    return SOURCE_WRAPPER.getPlaceholderProperty(placeholder);
+  public String getPlaceholderProperty(String placeholder) {
+    return SOURCE.getPlaceholderProperty(placeholder);
   }
 
   /**
@@ -137,8 +135,8 @@ public class ConfigFactory {
    * @param defaultValue 默认值
    * @return 属性值
    */
-  public static String getProperty(String key, String defaultValue) {
-    return SOURCE_WRAPPER.getProperty(key, defaultValue);
+  public String getProperty(String key, String defaultValue) {
+    return SOURCE.getProperty(key, defaultValue);
   }
 
   /**
@@ -148,7 +146,7 @@ public class ConfigFactory {
    * @param <T> 泛型类
    * @return 配置类
    */
-  public static <T> T load(Class<T> clazz) {
+  public <T> T load(Class<T> clazz) {
     return load(clazz, Strings.DOT);
   }
 
@@ -160,7 +158,7 @@ public class ConfigFactory {
    * @param <T> 泛型
    * @return 配置类
    */
-  public static <T> T load(Class<T> clazz, String prefix) {
+  public <T> T load(Class<T> clazz, String prefix) {
     Map<String, Object> map = FACTORY.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>(4, 1f));
     if (map.containsKey(prefix)) {
       return clazz.cast(map.get(prefix));
@@ -179,12 +177,12 @@ public class ConfigFactory {
    *
    * @param bean 对象
    */
-  public static void load(Object bean) {
+  public void load(Object bean) {
     if (bean == null) {
       return;
     }
     ValueConfig config = ClassUtils
-        .getAnnotation(ClassUtils.getCglibActualClass(bean.getClass()), ValueConfig.class);
+        .getAnnotation(ClassUtils.getActualClass(bean.getClass()), ValueConfig.class);
     if (config == null) {
       load(bean, null);
     } else {
@@ -198,7 +196,7 @@ public class ConfigFactory {
    * @param bean 对象
    * @param prefix 前缀
    */
-  public static void load(Object bean, String prefix) {
+  public void load(Object bean, String prefix) {
     if (bean != null) {
       BINDER.bind(bean, prefix);
     }
@@ -207,9 +205,11 @@ public class ConfigFactory {
   /**
    * 清除配置
    */
-  public static void clear() {
+  public void clear() {
     FACTORY.clear();
-    PROPS.clear();
+    APP_SOURCE.clear();
+    SOURCE.clear().addSource(APP_SOURCE).addSource(new SystemEnvPropertySource())
+        .addSource(new SystemPropertySource());
     PARSED_LOCATIONS.clear();
   }
 
@@ -218,14 +218,8 @@ public class ConfigFactory {
    *
    * @return keys
    */
-  public static Set<String> keys() {
-    return PROPS.stringPropertyNames();
+  public Set<String> keys() {
+    return SOURCE.props().stringPropertyNames();
   }
 
-  private static Properties props() {
-    Properties properties = new Properties();
-    properties.putAll(PROPS);
-    properties.putAll(System.getProperties());
-    return properties;
-  }
 }

@@ -14,7 +14,7 @@
 package vip.justlive.oxygen.web.bind;
 
 import java.lang.reflect.Parameter;
-import vip.justlive.oxygen.ioc.annotation.Bean;
+import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
 /**

@@ -18,7 +18,7 @@ import java.util.Properties;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
-import vip.justlive.oxygen.core.net.aio.core.Server;
+import vip.justlive.oxygen.core.util.net.aio.Server;
 
 /**
  * @author wubo
