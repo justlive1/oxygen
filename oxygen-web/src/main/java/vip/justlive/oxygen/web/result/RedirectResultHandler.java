@@ -16,6 +16,7 @@ package vip.justlive.oxygen.web.result;
 import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
 import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 import vip.justlive.oxygen.web.router.RoutingContext;
@@ -50,6 +51,10 @@ public class RedirectResultHandler implements ResultHandler {
         sb.append(HttpHeaders.HTTP_PREFIX);
       }
       sb.append(request.getHost());
+      String contextPath = WebConfigKeys.SERVER_CONTEXT_PATH.getValue();
+      if (Strings.hasText(contextPath) && !Strings.SLASH.equals(contextPath)) {
+        sb.append(contextPath);
+      }
       if (!data.getUrl().startsWith(Strings.SLASH)) {
         sb.append(ctx.requestPath()).append(Strings.SLASH);
       }

@@ -22,6 +22,8 @@ import java.util.Properties;
  */
 public class SystemEnvPropertySource implements PropertySource {
 
+  public static final int ORDER = Integer.MIN_VALUE + 2000;
+
   private final Properties props = new Properties();
 
   public SystemEnvPropertySource() {
@@ -30,7 +32,7 @@ public class SystemEnvPropertySource implements PropertySource {
 
   @Override
   public int order() {
-    return -100;
+    return ORDER;
   }
 
   @Override

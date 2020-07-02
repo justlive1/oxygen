@@ -441,11 +441,11 @@ Server.listen(8080);
 ```
 **配置文件**
 ```properties
-server.port=8081
+oxygen.server.port=8081
 ```
 **启动命令**
 ```bash
-java -jar -Dserver.port=8090 app.jar
+java -jar -Doxygen.server.port=8090 app.jar
 ```
 
 #### 运行项目

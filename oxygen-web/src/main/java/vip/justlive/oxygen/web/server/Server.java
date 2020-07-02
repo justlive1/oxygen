@@ -17,7 +17,6 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.web.WebConfigKeys;
-import vip.justlive.oxygen.web.WebPlugin;
 
 /**
  * server 启动类
@@ -49,7 +48,7 @@ public class Server {
       Bootstrap.addCustomPlugin(plugin);
       Bootstrap.start();
       log.info("[{}] started and listened on port [{}] with context path [{}]",
-          plugin.webServer.getClass().getSimpleName(), port,
+          plugin.webServer.getClass().getSimpleName(), plugin.getPort(),
           WebConfigKeys.SERVER_CONTEXT_PATH.getValue());
     }
   }

@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.Properties;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
@@ -40,6 +42,10 @@ public class PropertiesLoader extends AbstractResourceLoader implements Property
 
   private final Properties props = new Properties();
 
+  @Getter
+  @Setter
+  protected int order;
+
   /**
    * 使用路径创建{@code PropertiesLoader}
    *
@@ -58,6 +64,11 @@ public class PropertiesLoader extends AbstractResourceLoader implements Property
   public PropertiesLoader(ClassLoader loader, String... locations) {
     this.locations = locations;
     this.loader = loader;
+  }
+
+  @Override
+  public int order() {
+    return order;
   }
 
   /**

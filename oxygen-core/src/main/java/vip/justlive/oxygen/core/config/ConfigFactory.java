@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
@@ -42,6 +43,7 @@ public class ConfigFactory {
 
   private final Map<Class<?>, Map<String, Object>> FACTORY = new ConcurrentHashMap<>();
   private final Set<String> PARSED_LOCATIONS = new HashSet<>(4);
+  private final AtomicInteger INDEX = new AtomicInteger(0);
 
   private final PropertiesPropertySource APP_SOURCE;
   private final MultiPropertySource SOURCE;
@@ -64,6 +66,16 @@ public class ConfigFactory {
   }
 
   /**
+   * 加载配置文件
+   *
+   * @param order 优先级
+   * @param locations 路径
+   */
+  public void loadProperties(int order, String... locations) {
+    loadProperties(order, StandardCharsets.UTF_8, true, locations);
+  }
+
+  /**
    * 加载配置文件，设置编码和忽略找不到的资源
    *
    * @param charset 字符集
@@ -71,6 +83,19 @@ public class ConfigFactory {
    * @param locations 路径
    */
   public void loadProperties(Charset charset, boolean ignoreNotFound, String... locations) {
+    loadProperties(INDEX.getAndDecrement(), charset, ignoreNotFound, locations);
+  }
+
+  /**
+   * 加载配置文件，设置编码和忽略找不到的资源
+   *
+   * @param order 优先级
+   * @param charset 字符集
+   * @param ignoreNotFound 忽略未找到
+   * @param locations 路径
+   */
+  public void loadProperties(int order, Charset charset, boolean ignoreNotFound,
+      String... locations) {
     List<String> list = new LinkedList<>();
     for (String location : locations) {
       if (PARSED_LOCATIONS.add(location)) {
@@ -83,6 +108,7 @@ public class ConfigFactory {
     PropertiesLoader loader = new PropertiesLoader(list.toArray(new String[0]));
     loader.setCharset(charset);
     loader.setIgnoreNotFound(ignoreNotFound);
+    loader.setOrder(order);
     loadProperties(loader);
   }
 

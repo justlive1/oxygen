@@ -22,9 +22,11 @@ import java.util.Properties;
  */
 public class SystemPropertySource implements PropertySource {
 
+  public static final int ORDER = Integer.MIN_VALUE + 1000;
+
   @Override
   public int order() {
-    return -200;
+    return ORDER;
   }
 
   @Override
