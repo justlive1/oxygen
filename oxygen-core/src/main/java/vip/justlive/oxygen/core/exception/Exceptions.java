@@ -203,6 +203,17 @@ public class Exceptions {
   }
 
   /**
+   * 创建故障异常
+   *
+   * @param e 异常
+   * @param message 异常消息
+   * @return 包装异常
+   */
+  public CodedException fault(Throwable e, String message) {
+    return fault(e, errorMessage(message));
+  }
+
+  /**
    * 创建可带参数的故障异常
    *
    * @param e 异常

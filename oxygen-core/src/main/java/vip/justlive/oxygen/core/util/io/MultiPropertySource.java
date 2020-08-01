@@ -44,7 +44,9 @@ public class MultiPropertySource implements PropertySource {
   @Override
   public Properties props() {
     Properties props = new Properties();
-    sources.forEach(source -> props.putAll(source.props()));
+    for (int i = sources.size() - 1; i >= 0; i--) {
+      props.putAll(sources.get(i).props());
+    }
     return props;
   }
 
