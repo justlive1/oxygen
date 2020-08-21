@@ -13,11 +13,13 @@
  */
 package vip.justlive.oxygen.core.util.eventbus;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import lombok.Getter;
+import vip.justlive.oxygen.core.aop.invoke.Invoker;
 import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.exception.WrappedException;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
  * 订阅包装
@@ -31,13 +33,14 @@ public class Subscriber {
   private final String pattern;
   private final Object target;
   private final Method method;
+  private final Invoker invoker;
 
   public Subscriber(EventBus eventBus, String pattern, Object target, Method method) {
     this.eventBus = eventBus;
     this.pattern = pattern;
     this.target = target;
     this.method = method;
-    this.method.setAccessible(true);
+    this.invoker = ClassUtils.generateInvoker(target, method);
   }
 
   void handle(String channel, Object event) {
@@ -46,18 +49,25 @@ public class Subscriber {
   }
 
   void invoke(EventContext ctx) {
+    Throwable exception = null;
     try {
-      method.invoke(target, ctx.getEvent());
-    } catch (IllegalArgumentException e) {
-      throw Exceptions.fault(e, "Method rejected target/argument: " + ctx.getEvent());
-    } catch (IllegalAccessException e) {
-      throw Exceptions.fault(e, "Method became inaccessible: " + ctx.getEvent());
-    } catch (InvocationTargetException e) {
-      if (e.getCause() instanceof Error) {
-        throw (Error) e.getCause();
-      }
-      eventBus.handleException(e.getCause(), ctx);
+      invoker.invoke(new Object[]{ctx.getEvent()});
+    } catch (WrappedException e) {
+      exception = e.getException();
+    } catch (Exception e) {
+      exception = e;
     }
+    if (exception == null) {
+      return;
+    }
+    if (exception instanceof IllegalArgumentException) {
+      throw Exceptions.fault(exception, "Method rejected target/argument: " + ctx.getEvent());
+    } else if (exception instanceof IllegalAccessException) {
+      throw Exceptions.fault(exception, "Method became inaccessible: " + ctx.getEvent());
+    } else if (exception instanceof Error) {
+      throw (Error) exception.getCause();
+    }
+    eventBus.handleException(exception, ctx);
   }
 
   @Override

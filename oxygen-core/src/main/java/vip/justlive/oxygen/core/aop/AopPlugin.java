@@ -19,9 +19,6 @@ import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.aop.Aspect.TYPE;
 import vip.justlive.oxygen.core.aop.interceptor.AnnotationInterceptor;
 import vip.justlive.oxygen.core.aop.interceptor.MethodInterceptor;
-import vip.justlive.oxygen.core.aop.invoke.FastMethodInvoker;
-import vip.justlive.oxygen.core.aop.invoke.Invoker;
-import vip.justlive.oxygen.core.aop.invoke.ReflectInvoker;
 import vip.justlive.oxygen.core.aop.proxy.ProxyStore;
 import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.exception.Exceptions;
@@ -33,9 +30,6 @@ import vip.justlive.oxygen.core.util.base.ClassUtils;
  * @author wubo
  */
 public class AopPlugin implements Plugin {
-
-  private static final boolean HAS_FAST_METHOD = ClassUtils
-      .isPresent("net.sf.cglib.reflect.FastMethod");
 
   @Override
   public int order() {
@@ -64,7 +58,7 @@ public class AopPlugin implements Plugin {
       throw Exceptions.wrap(e);
     }
     AopWrapper wrapper = new AopWrapper(bean, realMethod, aspect.order(),
-        buildInvoker(bean, realMethod));
+        ClassUtils.generateInvoker(bean, realMethod));
     for (TYPE type : aspect.type()) {
       if (aspect.annotation() != Annotation.class) {
         ProxyStore.addInterceptor(type, new AnnotationInterceptor(aspect.annotation(), wrapper));
@@ -73,12 +67,5 @@ public class AopPlugin implements Plugin {
         ProxyStore.addInterceptor(type, new MethodInterceptor(aspect.method(), wrapper));
       }
     }
-  }
-
-  private Invoker buildInvoker(Object bean, Method method) {
-    if (HAS_FAST_METHOD) {
-      return new FastMethodInvoker(bean, method);
-    }
-    return new ReflectInvoker(bean, method);
   }
 }

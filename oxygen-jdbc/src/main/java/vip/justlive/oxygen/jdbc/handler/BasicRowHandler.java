@@ -87,7 +87,7 @@ public class BasicRowHandler implements RowHandler {
       int cols = rsmd.getColumnCount();
       String[] columns = new String[cols + 1];
       for (int col = 1; col <= cols; col++) {
-        columns[col] = getColumnName(rsmd, col).toLowerCase();
+        columns[col] = getColumnName(rsmd, col);
       }
 
       return fillBeanProperty(rs, type, columns);
@@ -101,7 +101,7 @@ public class BasicRowHandler implements RowHandler {
     T bean = type.getConstructor().newInstance();
     Map<String, Field> fields = getBeanInfo(type);
     for (int i = 1; i < columns.length; i++) {
-      Field field = fields.get(columns[i]);
+      Field field = findByName(columns[i], fields);
       if (field == null) {
         continue;
       }
@@ -112,6 +112,17 @@ public class BasicRowHandler implements RowHandler {
       }
     }
     return bean;
+  }
+
+  private Field findByName(String name, Map<String, Field> fields) {
+    Field field = fields.get(name);
+    if (field == null) {
+      field = fields.get(name.toLowerCase());
+    }
+    if (field == null) {
+      field = fields.get(name.toUpperCase());
+    }
+    return field;
   }
 
   private Object processColumn(ResultSet rs, int index, Class<?> propType) throws SQLException {

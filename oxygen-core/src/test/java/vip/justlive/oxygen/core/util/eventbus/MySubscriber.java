@@ -45,5 +45,4 @@ public class MySubscriber {
     log.info("enter into [m*]-{}", event);
   }
 
-
 }

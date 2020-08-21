@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.exception.WrappedException;
 import vip.justlive.oxygen.core.util.base.ServiceLoaderUtils;
-import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
+import vip.justlive.oxygen.core.util.concurrent.ShutdownHooks;
 import vip.justlive.oxygen.core.util.io.FileUtils;
 import vip.justlive.oxygen.core.util.io.IoUtils;
 
@@ -41,7 +41,7 @@ public class Bootstrap {
 
   private final List<Plugin> PLUGINS = new ArrayList<>(8);
   private final AtomicBoolean STATE = new AtomicBoolean(false);
-  private final Thread SHUTDOWN_HOOK;
+  private final Runnable SHUTDOWN_HOOK = Bootstrap::doClose;
   private final String VERSION;
 
   static {
@@ -53,7 +53,6 @@ public class Bootstrap {
       version = "oxygen/unknown";
     }
     VERSION = version;
-    SHUTDOWN_HOOK = ThreadUtils.defaultThreadFactory().newThread(Bootstrap::doClose);
   }
 
   /**
@@ -104,7 +103,7 @@ public class Bootstrap {
       registerUncaughtExceptionHandler();
       addSystemPlugin();
       initPlugins();
-      registerShutdownHook();
+      ShutdownHooks.add(SHUTDOWN_HOOK);
       log.info("bootstrap has started ! have fun");
     }
   }
@@ -114,7 +113,7 @@ public class Bootstrap {
    */
   public synchronized void close() {
     doClose();
-    Runtime.getRuntime().removeShutdownHook(SHUTDOWN_HOOK);
+    ShutdownHooks.remove(SHUTDOWN_HOOK);
   }
 
   /**
@@ -154,13 +153,6 @@ public class Bootstrap {
       log.info("start plugin: [{}]", plugin);
       plugin.start();
     }
-  }
-
-  /**
-   * 注册shutdown钩子
-   */
-  private synchronized void registerShutdownHook() {
-    Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
   }
 
   /**

@@ -18,6 +18,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.aop.invoke.Invoker;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
  * job类
@@ -29,6 +31,7 @@ public class Job implements Runnable {
 
   private final Object target;
   private final Method method;
+  private final Invoker invoker;
   private final AtomicLong runCount = new AtomicLong();
   private TYPE type;
   private Long fixedDelay;
@@ -41,6 +44,7 @@ public class Job implements Runnable {
   public Job(Object target, Method method) {
     this.target = target;
     this.method = method;
+    this.invoker = ClassUtils.generateInvoker(target, method);
   }
 
   public Job configFixedDelay(long fixedDelay, long initialDelay) {
@@ -77,7 +81,7 @@ public class Job implements Runnable {
   public void run() {
     try {
       startAt = Instant.now();
-      method.invoke(target);
+      invoker.invoke();
     } catch (Exception e) {
       onException(e);
     } finally {

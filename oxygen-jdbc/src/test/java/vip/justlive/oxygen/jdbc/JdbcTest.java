@@ -37,8 +37,6 @@ public class JdbcTest {
   public void test() {
     test(Jdbc.PRIMARY_KEY);
     test("a");
-    Jdbc.use(Jdbc.PRIMARY_KEY);
-    Assert.assertEquals(1, Record.count(new Option()));
   }
 
   private void test(String dataSourceName) {
@@ -90,6 +88,14 @@ public class JdbcTest {
     Jdbc.closeTx();
 
     Assert.assertEquals(1, Record.count(new Option()));
+
+    option = new Option().setId(123L).setSt("0.2f");
+    Record.insert(option);
+
+    Assert.assertEquals(2, Record.count(new Option()));
+    Record.deleteByIds(Option.class, Arrays.asList(1, 123L));
+    Assert.assertEquals(0, Record.count(new Option()));
+
   }
 
   @Test

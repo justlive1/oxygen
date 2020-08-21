@@ -14,9 +14,15 @@
 package vip.justlive.oxygen.jdbc;
 
 import javax.sql.DataSource;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.config.ConfigFactory;
+import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.io.FirstResourceLoader;
+import vip.justlive.oxygen.core.util.io.IoUtils;
+import vip.justlive.oxygen.core.util.io.SourceResource;
 import vip.justlive.oxygen.jdbc.config.DataSourceBuilder;
 import vip.justlive.oxygen.jdbc.config.DataSourceConf;
 import vip.justlive.oxygen.jdbc.interceptor.JdbcInterceptor;
@@ -27,6 +33,7 @@ import vip.justlive.oxygen.jdbc.interceptor.LogSqlJdbcInterceptor;
  *
  * @author wubo
  */
+@Slf4j
 public class JdbcPlugin implements Plugin {
 
   @Override
@@ -84,6 +91,9 @@ public class JdbcPlugin implements Plugin {
     if (conf.getAlias() != null && conf.getAlias().length() > 0) {
       Jdbc.addDataSource(conf.getAlias(), ds);
     }
+    if (conf.getInitScripts() != null) {
+      runInitScripts(Jdbc.PRIMARY_KEY, conf.getInitScripts());
+    }
   }
 
   private void addDataSource(DataSourceConf conf, String name) {
@@ -94,6 +104,30 @@ public class JdbcPlugin implements Plugin {
     }
     if (conf.getAlias() != null && conf.getAlias().length() > 0) {
       Jdbc.addDataSource(conf.getAlias(), ds);
+    }
+    if (conf.getInitScripts() != null) {
+      runInitScripts(name, conf.getInitScripts());
+    }
+  }
+
+  private void runInitScripts(String name, String[] scripts) {
+    try {
+      Batch batch = Batch.use(name);
+      for (String script : scripts) {
+        SourceResource resource = new FirstResourceLoader(script).getResource();
+        if (resource == null) {
+          log.warn("script not found: {}", script);
+          continue;
+        }
+        for (String sql : IoUtils.toString(resource.getInputStream()).split(Strings.SEMICOLON)) {
+          if (Strings.hasText(sql)) {
+            batch.addBatch(sql);
+          }
+        }
+      }
+      batch.commit();
+    } catch (Exception e) {
+      throw Exceptions.wrap(e);
     }
   }
 

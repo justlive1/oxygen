@@ -13,9 +13,11 @@
  */
 package vip.justlive.oxygen.core.aop.invoke;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import net.sf.cglib.reflect.FastClass;
 import net.sf.cglib.reflect.FastMethod;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * FastMethod
@@ -33,12 +35,20 @@ public class FastMethodInvoker implements Invoker {
   }
 
   @Override
-  public Object invoke() throws ReflectiveOperationException {
-    return method.invoke(target, new Object[0]);
+  public Object invoke() {
+    try {
+      return method.invoke(target, new Object[0]);
+    } catch (InvocationTargetException e) {
+      throw Exceptions.wrap(e.getTargetException());
+    }
   }
 
   @Override
-  public Object invoke(Object[] args) throws ReflectiveOperationException {
-    return method.invoke(target, args);
+  public Object invoke(Object[] args) {
+    try {
+      return method.invoke(target, args);
+    } catch (InvocationTargetException e) {
+      throw Exceptions.wrap(e.getTargetException());
+    }
   }
 }

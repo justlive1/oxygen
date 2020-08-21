@@ -27,10 +27,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.CoreConfigKeys;
+import vip.justlive.oxygen.core.aop.invoke.FastMethodInvoker;
+import vip.justlive.oxygen.core.aop.invoke.Invoker;
+import vip.justlive.oxygen.core.aop.invoke.ReflectInvoker;
+import vip.justlive.oxygen.core.aop.proxy.CglibBeanProxy;
+import vip.justlive.oxygen.core.aop.proxy.CompilerBeanProxy;
+import vip.justlive.oxygen.core.bean.BeanProxy;
+import vip.justlive.oxygen.core.bean.SimpleBeanProxy;
 import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
@@ -54,6 +63,10 @@ public class ClassUtils {
    * 内部非基本数组类名前缀: "[L"
    */
   public final String NON_PRIMITIVE_ARRAY_PREFIX = "[L";
+
+  private final boolean HAS_FAST_METHOD = ClassUtils.isPresent("net.sf.cglib.reflect.FastMethod");
+  private final boolean HAS_CGLIB_PROXY = ClassUtils
+      .isPresent("net.sf.cglib.proxy.MethodInterceptor");
 
   private final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER_TYPE;
   private final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE_TYPE;
@@ -360,6 +373,7 @@ public class ClassUtils {
     }
   }
 
+
   /**
    * 获取类所有方法
    *
@@ -638,6 +652,45 @@ public class ClassUtils {
       return type.getClassLoader() == null;
     }
     return false;
+  }
+
+  /**
+   * 生成invoker
+   *
+   * @param bean 实例
+   * @param method 方法
+   * @return Invoker
+   */
+  public Invoker generateInvoker(Object bean, Method method) {
+    if (HAS_FAST_METHOD) {
+      return new FastMethodInvoker(bean, method);
+    }
+    return new ReflectInvoker(bean, method);
+  }
+
+  /**
+   * 生成beanProxy
+   *
+   * @return BeanProxy
+   */
+  public BeanProxy generateBeanProxy() {
+    if (CoreConfigKeys.AOP_ENABLED.castValue(boolean.class)) {
+      List<BeanProxy> list = ServiceLoaderUtils.loadServices(BeanProxy.class);
+      if (!list.isEmpty()) {
+        Collections.sort(list);
+        return list.get(0);
+      }
+      if (HAS_CGLIB_PROXY) {
+        return new CglibBeanProxy();
+      } else {
+        try {
+          return new CompilerBeanProxy();
+        } catch (Exception e) {
+          log.warn("Compiler Bean Proxy init error", e);
+        }
+      }
+    }
+    return new SimpleBeanProxy();
   }
 
   private void recursivelyCollectAnnotations(Set<Annotation> visited,

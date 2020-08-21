@@ -206,18 +206,6 @@ public class ThreadUtils {
   }
 
   /**
-   * 添加关闭钩子
-   *
-   * @param runnable 任务
-   * @return Thread
-   */
-  public Thread addShutdownHook(Runnable runnable) {
-    Thread thread = defaultThreadFactory().newThread(runnable);
-    Runtime.getRuntime().addShutdownHook(thread);
-    return thread;
-  }
-
-  /**
    * 全局pool
    *
    * @return pool
@@ -227,7 +215,7 @@ public class ThreadUtils {
       globalPool = newThreadPool(1, CoreConfigKeys.THREAD_POOL_SIZE.castValue(int.class), 120,
           CoreConfigKeys.THREAD_POOL_QUEUE.castValue(int.class), "global-pool-%d");
       globalPool.setSecurityChecker(new SecurityChecker()
-          .addChecker(new OwnerThreadChecker(ThreadUtils.addShutdownHook(globalTimer::shutdown))));
+          .addChecker(new OwnerThreadChecker(ShutdownHooks.add(globalTimer::shutdown))));
     }
     return globalPool;
   }
@@ -243,7 +231,7 @@ public class ThreadUtils {
           CoreConfigKeys.WHEEL_TIMER_WHEEL_SIZE.castValue(int.class),
           CoreConfigKeys.WHEEL_TIMER_POOL_SIZE.castValue(int.class));
       globalTimer.getSecurityChecker()
-          .addChecker(new OwnerThreadChecker(ThreadUtils.addShutdownHook(globalTimer::shutdown)));
+          .addChecker(new OwnerThreadChecker(ShutdownHooks.add(globalTimer::shutdown)));
     }
     return globalTimer;
   }

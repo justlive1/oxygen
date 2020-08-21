@@ -51,6 +51,7 @@ public class DynamicCompiler implements Closeable {
       .compile("package\\s+([$_a-zA-Z][$_a-zA-Z0-9.]*);");
   private static final Pattern CLASS_PATTERN = Pattern
       .compile("class\\s+([$_a-zA-Z][$_a-zA-Z0-9]*)[\\s<]");
+  private static final ClasspathTransfer TRANSFER = new ClasspathTransfer();
 
   private final ClassLoader loader;
   private final List<String> options;
@@ -68,16 +69,22 @@ public class DynamicCompiler implements Closeable {
       throw Exceptions.fail("no compiler found");
     }
     StandardJavaFileManager fileManager = compiler.getStandardFileManager(collector, null, null);
-    if (parent instanceof URLClassLoader) {
+
+    if (parent instanceof URLClassLoader && parent != ClassLoader.getSystemClassLoader()) {
       try {
         List<File> files = new ArrayList<>();
         for (URL url : ((URLClassLoader) parent).getURLs()) {
           files.add(new File(url.getFile()));
         }
+        TRANSFER.transfer(files);
         fileManager.setLocation(StandardLocation.CLASS_PATH, files);
       } catch (IOException e) {
         throw new IllegalStateException(e.getMessage(), e);
       }
+    }
+    if (log.isDebugEnabled()) {
+      log.debug("ClassLoader: {}, StandardJavaFileManager class-path: {}", parent,
+          fileManager.getLocation(StandardLocation.CLASS_PATH));
     }
     this.manager = new DynamicJavaFileManager(fileManager, loader, sources, byteCodes);
     this.options = new ArrayList<>();

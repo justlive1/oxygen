@@ -16,17 +16,13 @@ package vip.justlive.oxygen.core.bean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
-import vip.justlive.oxygen.core.aop.proxy.CglibBeanProxy;
-import vip.justlive.oxygen.core.aop.proxy.CompilerBeanProxy;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
-import vip.justlive.oxygen.core.util.base.ServiceLoaderUtils;
 import vip.justlive.oxygen.core.util.scan.ClassScannerPlugin;
 
 /**
@@ -41,8 +37,6 @@ import vip.justlive.oxygen.core.util.scan.ClassScannerPlugin;
 @Slf4j
 public class IocPlugin implements Plugin {
 
-  private static final boolean HAS_CGLIB_PROXY = ClassUtils
-      .isPresent("net.sf.cglib.proxy.MethodInterceptor");
   private BeanProxy beanProxy;
 
   @Override
@@ -52,22 +46,7 @@ public class IocPlugin implements Plugin {
 
   @Override
   public void start() {
-    List<BeanProxy> list = ServiceLoaderUtils.loadServices(BeanProxy.class);
-    if (list.isEmpty()) {
-      if (HAS_CGLIB_PROXY) {
-        beanProxy = new CglibBeanProxy();
-      } else {
-        try {
-          beanProxy = new CompilerBeanProxy();
-        } catch (Exception e) {
-          log.warn("Compiler Bean Proxy init error", e);
-          beanProxy = new SimpleBeanProxy();
-        }
-      }
-    } else {
-      Collections.sort(list);
-      beanProxy = list.get(0);
-    }
+    beanProxy = ClassUtils.generateBeanProxy();
     log.info("init bean proxy of class [{}]", beanProxy.getClass());
     ioc();
   }

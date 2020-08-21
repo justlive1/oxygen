@@ -29,6 +29,6 @@ public class LogEventExceptionHandlerImpl implements EventExceptionHandler {
   public void handle(Throwable e, EventContext ctx) {
     log.error("Subscriber [{}#{}] handler event [{}] error",
         ctx.getSubscriber().getTarget().getClass(), ctx.getSubscriber().getMethod().getName(),
-        ctx.getEvent());
+        ctx.getEvent(), e);
   }
 }

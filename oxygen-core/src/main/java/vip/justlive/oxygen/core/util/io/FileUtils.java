@@ -65,7 +65,7 @@ public class FileUtils {
       log.info("mkdirs [{}] exists", dir);
     } else {
       if (!dir.mkdirs()) {
-        throw Exceptions.fail("create dir fail");
+        throw Exceptions.fail("create dir [" + dir + "] fail");
       }
       log.info("mkdirs [{}] successfully", dir);
     }

@@ -24,16 +24,14 @@ public interface Invoker {
    * 执行方法，无参
    *
    * @return 结果
-   * @throws ReflectiveOperationException e
    */
-  Object invoke() throws ReflectiveOperationException;
+  Object invoke();
 
   /**
    * 执行方法
    *
    * @param args 参数
    * @return 结果
-   * @throws ReflectiveOperationException e
    */
-  Object invoke(Object[] args) throws ReflectiveOperationException;
+  Object invoke(Object[] args);
 }

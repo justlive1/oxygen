@@ -15,7 +15,6 @@ package vip.justlive.oxygen.core.aop.interceptor;
 
 import vip.justlive.oxygen.core.aop.AopWrapper;
 import vip.justlive.oxygen.core.aop.Invocation;
-import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * aop拦截
@@ -37,21 +36,17 @@ public abstract class AbstractInterceptor implements Interceptor {
 
   @Override
   public boolean intercept(Invocation invocation) {
-    try {
-      int count = aopWrapper.getMethod().getParameterCount();
-      check(aopWrapper);
-      Object result;
-      if (count == 0) {
-        result = aopWrapper.invoke();
-      } else {
-        result = aopWrapper.invoke(invocation);
-      }
-      Class<?> returnType = aopWrapper.getMethod().getReturnType();
-      if (returnType == boolean.class) {
-        return (boolean) result;
-      }
-    } catch (ReflectiveOperationException e) {
-      throw Exceptions.wrap(e);
+    int count = aopWrapper.getMethod().getParameterCount();
+    check(aopWrapper);
+    Object result;
+    if (count == 0) {
+      result = aopWrapper.invoke();
+    } else {
+      result = aopWrapper.invoke(invocation);
+    }
+    Class<?> returnType = aopWrapper.getMethod().getReturnType();
+    if (returnType == boolean.class) {
+      return (boolean) result;
     }
     return true;
   }

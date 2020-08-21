@@ -48,6 +48,7 @@ public class Strings {
   public final String DOUBLE_QUOTATION_MARK = "\"";
   public final String EMPTY = "";
   public final String EQUAL = "=";
+  public final String EXCLAMATION_MARK = "!";
   public final String OCTOTHORP = "#";
   public final String OPEN_BRACE = "{";
   public final String OPEN_BRACKET = "[";

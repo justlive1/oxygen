@@ -67,6 +67,11 @@ public class DataSourceConf {
   private String alias;
 
   /**
+   * 项目启动初始化脚本
+   */
+  private String[] initScripts;
+
+  /**
    * 校验合法
    *
    * @return conf

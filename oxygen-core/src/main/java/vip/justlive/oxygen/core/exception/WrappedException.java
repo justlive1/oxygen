@@ -35,6 +35,7 @@ public class WrappedException extends CodedException {
   public WrappedException(Throwable exception, ErrorCode errorCode) {
     super(errorCode);
     this.exception = exception;
+    addSuppressed(this.exception);
   }
 
   @Override

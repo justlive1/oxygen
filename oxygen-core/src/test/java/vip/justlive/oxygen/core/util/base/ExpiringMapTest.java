@@ -31,7 +31,7 @@ public class ExpiringMapTest {
 
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
         // 默认失效时间 50
-        .expiration(50, TimeUnit.MILLISECONDS)
+        .expiration(500, TimeUnit.MILLISECONDS)
         // 累积4次
         .accumulateThreshold(4).build();
 
@@ -40,7 +40,7 @@ public class ExpiringMapTest {
 
     Assert.assertNotNull(expiringMap.get(key));
 
-    TimeUnit.MILLISECONDS.sleep(60);
+    TimeUnit.MILLISECONDS.sleep(600);
 
     Assert.assertNull(expiringMap.get(key));
 
@@ -49,7 +49,7 @@ public class ExpiringMapTest {
     expiringMap.get(key);
 
     // 等待清理线程执行完毕
-    TimeUnit.MILLISECONDS.sleep(10);
+    TimeUnit.MILLISECONDS.sleep(100);
 
     Assert.assertEquals(0, expiringMap.realSize());
 
@@ -60,7 +60,7 @@ public class ExpiringMapTest {
 
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
         // 默认失效时间 20
-        .expiration(20, TimeUnit.MILLISECONDS)
+        .expiration(200, TimeUnit.MILLISECONDS)
         // 访问刷新
         .expiringPolicy(ExpiringPolicy.ACCESSED)
         // 累积
@@ -74,15 +74,15 @@ public class ExpiringMapTest {
     Assert.assertNotNull(expiringMap.get(key));
     Assert.assertNotNull(expiringMap.get(k));
 
-    TimeUnit.MILLISECONDS.sleep(10);
+    TimeUnit.MILLISECONDS.sleep(100);
 
     Assert.assertNotNull(expiringMap.get(key));
 
-    TimeUnit.MILLISECONDS.sleep(10);
+    TimeUnit.MILLISECONDS.sleep(100);
 
     Assert.assertNotNull(expiringMap.get(key));
 
-    TimeUnit.MILLISECONDS.sleep(10);
+    TimeUnit.MILLISECONDS.sleep(100);
 
     Assert.assertNotNull(expiringMap.get(key));
     Assert.assertNull(expiringMap.get(k));
@@ -94,7 +94,7 @@ public class ExpiringMapTest {
 
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
         // 默认失效时间 20
-        .expiration(20, TimeUnit.MILLISECONDS)
+        .expiration(200, TimeUnit.MILLISECONDS)
         // 定时清理任务
         .cleanPolicy(CleanPolicy.SCHEDULE)
         // 定时任务间隔
@@ -107,7 +107,7 @@ public class ExpiringMapTest {
 
     Assert.assertNotNull(expiringMap.get(key));
 
-    TimeUnit.MILLISECONDS.sleep(30);
+    TimeUnit.MILLISECONDS.sleep(300);
 
     Assert.assertNull(expiringMap.get(key));
     Assert.assertEquals(1, expiringMap.realSize());
@@ -123,24 +123,24 @@ public class ExpiringMapTest {
 
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
         // 默认失效时间 10
-        .expiration(10, TimeUnit.MILLISECONDS)
+        .expiration(100, TimeUnit.MILLISECONDS)
         // 累积4次
         .accumulateThreshold(4).build();
 
     String key = "key";
     String k = "k";
-    expiringMap.put(key, 1, 20, TimeUnit.MILLISECONDS);
+    expiringMap.put(key, 1, 200, TimeUnit.MILLISECONDS);
     expiringMap.put(k, 1);
 
     Assert.assertNotNull(expiringMap.get(key));
     Assert.assertNotNull(expiringMap.get(k));
 
-    TimeUnit.MILLISECONDS.sleep(15);
+    TimeUnit.MILLISECONDS.sleep(150);
 
     Assert.assertNull(expiringMap.get(k));
     Assert.assertNotNull(expiringMap.get(key));
 
-    TimeUnit.MILLISECONDS.sleep(10);
+    TimeUnit.MILLISECONDS.sleep(100);
 
     Assert.assertNull(expiringMap.get(key));
 
@@ -152,7 +152,7 @@ public class ExpiringMapTest {
     List<String> size = new ArrayList<>();
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
         // 默认失效时间 10
-        .expiration(30, TimeUnit.MILLISECONDS)
+        .expiration(300, TimeUnit.MILLISECONDS)
         // 累积1次
         .accumulateThreshold(1).maxSize(2).asyncExpiredListeners((k, v, cause) -> {
           list.add(k);
@@ -164,11 +164,11 @@ public class ExpiringMapTest {
 
     expiringMap.put("1", 1);
     expiringMap.put("2", 2);
-    TimeUnit.MILLISECONDS.sleep(25);
+    TimeUnit.MILLISECONDS.sleep(250);
     expiringMap.put("3", 3);
-    TimeUnit.MILLISECONDS.sleep(10);
+    TimeUnit.MILLISECONDS.sleep(100);
     expiringMap.get("3");
-    TimeUnit.MILLISECONDS.sleep(20);
+    TimeUnit.MILLISECONDS.sleep(200);
 
     Assert.assertEquals(2, list.size());
     Assert.assertEquals("1", list.get(0));

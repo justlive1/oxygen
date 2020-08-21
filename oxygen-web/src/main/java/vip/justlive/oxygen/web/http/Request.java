@@ -26,6 +26,7 @@ import vip.justlive.oxygen.core.util.base.HttpHeaders;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 import vip.justlive.oxygen.web.router.RouteHandler;
+import vip.justlive.oxygen.web.router.StaticRouteHandler;
 
 /**
  * Request
@@ -331,6 +332,15 @@ public class Request implements Serializable {
    */
   public boolean isAjax() {
     return Objects.equals(getHeader(HttpHeaders.X_REQUESTED_WITH), HttpHeaders.XML_HTTP_REQUEST);
+  }
+
+  /**
+   * 是否为静态资源请求
+   *
+   * @return true为静态资源请求
+   */
+  public boolean isStatic() {
+    return routeHandler instanceof StaticRouteHandler;
   }
 
 }

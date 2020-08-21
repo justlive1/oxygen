@@ -100,7 +100,7 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
       if (!(gsc instanceof ParameterizedType)) {
         continue;
       }
-      Map<TypeVariable<?>, Type> map = typeVars.computeIfAbsent(type, k -> new HashMap<>());
+      Map<TypeVariable<?>, Type> map = typeVars.computeIfAbsent(type, k -> new HashMap<>(4));
       ParameterizedType pt = (ParameterizedType) gsc;
       Type[] ats = pt.getActualTypeArguments();
       TypeVariable<?>[] tps = type.getTypeParameters();

@@ -255,6 +255,24 @@ public final class Record {
   }
 
   /**
+   * 根据ids删除record
+   *
+   * @param clazz record
+   * @param ids 注解列表
+   * @param <T> 泛型
+   * @return updated
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> int deleteByIds(Class<T> clazz, List<?> ids) {
+    Model model = parseClass(clazz);
+    List<String> list = new ArrayList<>(ids.size());
+    ids.forEach(id -> list.add(SEAT));
+    String sql = DELETE + model.table + WHERE + AND + String
+        .format(IN_PARAM_STR, model.primary.name, String.join(COMMA, list));
+    return Jdbc.update(sql, (List<Object>) ids);
+  }
+
+  /**
    * 根据record属性删除
    *
    * @param obj record

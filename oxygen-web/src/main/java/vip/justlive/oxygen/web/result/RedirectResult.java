@@ -27,7 +27,7 @@ public class RedirectResult implements Result {
   private final int status;
 
   public RedirectResult(String url) {
-    this(url, 301);
+    this(url, 302);
   }
 
   public RedirectResult(String url, int status) {

@@ -30,11 +30,11 @@ public class AopWrapper {
   private final int order;
   private final Invoker invoke;
 
-  public Object invoke() throws ReflectiveOperationException {
+  public Object invoke() {
     return invoke.invoke();
   }
 
-  public Object invoke(Invocation invocation) throws ReflectiveOperationException {
+  public Object invoke(Invocation invocation) {
     return invoke.invoke(new Object[]{invocation});
   }
 }

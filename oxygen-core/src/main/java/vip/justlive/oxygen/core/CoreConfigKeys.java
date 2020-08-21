@@ -28,6 +28,8 @@ public class CoreConfigKeys {
 
   public ConfigKey CLASS_SCAN = new ConfigKey("oxygen.class.scan");
 
+  public ConfigKey AOP_ENABLED = new ConfigKey("oxygen.aop.enabled", "true");
+
   public ConfigKey COMPILER_OPTIONS = new ConfigKey("oxygen.compiler.options");
 
   public ConfigKey CONFIG_OVERRIDE_PATH = new ConfigKey("oxygen.config.override.path");

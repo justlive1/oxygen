@@ -13,10 +13,10 @@
  */
 package vip.justlive.oxygen.web.router;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import vip.justlive.oxygen.core.exception.Exceptions;
+import vip.justlive.oxygen.core.aop.invoke.Invoker;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.web.Context;
 import vip.justlive.oxygen.web.bind.DataBinder;
 import vip.justlive.oxygen.web.result.Result;
@@ -29,15 +29,15 @@ import vip.justlive.oxygen.web.result.Result;
 public class AnnotationRouteHandler implements RouteHandler {
 
   private final Object router;
-  private final Method proxyMethod;
   private final Method method;
   private final DataBinder[] dataBinders;
+  private final Invoker invoker;
 
   public AnnotationRouteHandler(Object router, Method proxyMethod, Method method) {
     this.router = router;
-    this.proxyMethod = proxyMethod;
     this.method = method;
     this.dataBinders = new DataBinder[method.getParameterCount()];
+    this.invoker = ClassUtils.generateInvoker(this.router, proxyMethod);
     parse();
   }
 
@@ -54,12 +54,7 @@ public class AnnotationRouteHandler implements RouteHandler {
     for (int i = 0; i < dataBinders.length; i++) {
       args[i] = dataBinders[i].getFunc().apply(ctx);
     }
-    Object result;
-    try {
-      result = proxyMethod.invoke(router, args);
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      throw Exceptions.wrap(e);
-    }
+    Object result = invoker.invoke(args);
     if (Result.class.isAssignableFrom(method.getReturnType())) {
       ctx.response().setResult((Result) result);
     } else if (result != null) {
@@ -69,6 +64,7 @@ public class AnnotationRouteHandler implements RouteHandler {
 
   @Override
   public String toString() {
-    return String.format("@Router->%s#%s", method.getDeclaringClass().getName(), method.getName());
+    return String
+        .format("@Router->%s#%s", ClassUtils.getActualClass(router.getClass()), method.getName());
   }
 }

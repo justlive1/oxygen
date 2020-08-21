@@ -15,6 +15,7 @@ package vip.justlive.oxygen.core.aop.invoke;
 
 import java.lang.reflect.Method;
 import lombok.RequiredArgsConstructor;
+import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
  * 原生反射调用
@@ -28,12 +29,12 @@ public class ReflectInvoker implements Invoker {
   private final Method method;
 
   @Override
-  public Object invoke() throws ReflectiveOperationException {
-    return method.invoke(target);
+  public Object invoke() {
+    return ClassUtils.methodInvoke(method, target);
   }
 
   @Override
-  public Object invoke(Object[] args) throws ReflectiveOperationException {
-    return method.invoke(target, args);
+  public Object invoke(Object[] args) {
+    return ClassUtils.methodInvoke(method, target, args);
   }
 }
