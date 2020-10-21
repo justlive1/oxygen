@@ -14,6 +14,8 @@
 package vip.justlive.oxygen.jdbc.record;
 
 import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -210,8 +212,14 @@ public final class Record {
     List<Object> params = new LinkedList<>();
     try {
       String sql = formatInsertSql(model, obj, params);
+      if (model.primary != null && canConvert(model.primary.type)) {
+        Connection conn = Jdbc.getConnection(Jdbc.currentUse());
+        int id = Jdbc.update(conn, sql, params, conn.getAutoCommit(), true);
+        convert(obj, model.primary, id);
+        return id;
+      }
       return Jdbc.update(sql, params);
-    } catch (IllegalAccessException e) {
+    } catch (IllegalAccessException | SQLException e) {
       throw JdbcException.wrap(e);
     }
   }
@@ -362,6 +370,22 @@ public final class Record {
         model.primary = property;
       }
     }
+  }
+
+  private static boolean canConvert(Class<?> type) {
+    return type == int.class || type == long.class || type == Integer.class || type == Long.class;
+  }
+
+  private static void convert(Object obj, Property property, int id) throws IllegalAccessException {
+    if (id == -1) {
+      return;
+    }
+    Object value = id;
+    if (property.type == long.class || property.type == Long.class) {
+      value = (long) id;
+    }
+    property.field.setAccessible(true);
+    property.field.set(obj, value);
   }
 
   static class Model {

@@ -17,9 +17,7 @@ package vip.justlive.oxygen.core.util.net.http;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
 import vip.justlive.oxygen.core.util.io.IoUtils;
@@ -32,46 +30,11 @@ import vip.justlive.oxygen.core.util.io.IoUtils;
 @Data
 public class HttpResponse implements Closeable {
 
-  private final HttpURLConnection connection;
   private final int code;
   private final String message;
   private final InputStream body;
   private final Charset charset;
   private Map<String, String> headers;
-
-  HttpResponse(HttpURLConnection connection, Charset charset) throws IOException {
-    this.connection = connection;
-    this.code = connection.getResponseCode();
-    this.message = connection.getResponseMessage();
-    InputStream in = connection.getErrorStream();
-    if (in == null) {
-      this.body = connection.getInputStream();
-    } else {
-      this.body = in;
-    }
-    this.charset = charset;
-  }
-
-  /**
-   * 获取headers
-   *
-   * @return headers
-   */
-  public Map<String, String> getHeaders() {
-    if (this.headers == null) {
-      this.headers = new HashMap<>(4);
-      // Header field 0 is the 'HTTP/1.1 200' line for most HttpURLConnections, but not on GAE
-      for (int i = 0; ; i++) {
-        String name = this.connection.getHeaderFieldKey(i);
-        if (name != null && name.trim().length() > 0) {
-          this.headers.put(name, this.connection.getHeaderField(i));
-        } else if (i > 0) {
-          break;
-        }
-      }
-    }
-    return this.headers;
-  }
 
   /**
    * body转字符串
@@ -100,6 +63,5 @@ public class HttpResponse implements Closeable {
       IoUtils.drain(this.body);
       this.body.close();
     }
-    this.connection.disconnect();
   }
 }

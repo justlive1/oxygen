@@ -151,7 +151,14 @@ class MultipartStream {
   }
 
   private void readFile(byte[] line, MultipartItem item) throws IOException {
-    Path path = Paths.get(BASE_DIR.getPath(), String.valueOf(SnowflakeId.defaultNextId()));
+    String filename = String.valueOf(SnowflakeId.defaultNextId());
+    if (item.getFilename() != null) {
+      String ext = FileUtils.extension(item.getFilename());
+      if (ext.length() > 0) {
+        filename += Strings.DOT + ext;
+      }
+    }
+    Path path = Paths.get(BASE_DIR.getPath(), filename);
     cleaner.track(path);
     item.setPath(path);
     while (true) {

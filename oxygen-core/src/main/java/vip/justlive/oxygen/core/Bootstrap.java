@@ -99,7 +99,7 @@ public class Bootstrap {
    */
   public void start() {
     if (STATE.compareAndSet(false, true)) {
-      log.info("starting bootstrap ...");
+      log.info("starting bootstrap with version {}", version());
       registerUncaughtExceptionHandler();
       addSystemPlugin();
       initPlugins();

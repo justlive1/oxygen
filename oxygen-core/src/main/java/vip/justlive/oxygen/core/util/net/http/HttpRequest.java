@@ -14,24 +14,20 @@
 
 package vip.justlive.oxygen.core.util.net.http;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.Proxy;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 import lombok.Getter;
-import vip.justlive.oxygen.core.util.base.HttpHeaders;
-import vip.justlive.oxygen.core.util.base.MoreObjects;
-import vip.justlive.oxygen.core.util.base.Strings;
-import vip.justlive.oxygen.core.util.json.Json;
 
 /**
  * http request
@@ -47,14 +43,17 @@ public class HttpRequest {
   private int readTimeout;
   private boolean followRedirects = true;
   private HttpMethod method;
+  private HttpBody httpBody = HttpBody.NONE;
   private Charset charset = StandardCharsets.UTF_8;
   private Object queryParam;
   private Object body;
-  private Multipart multipart;
+  private List<Part> parts;
   private Function<Object, byte[]> func;
   private Proxy proxy;
   private SSLSocketFactory sslSocketFactory;
   private HostnameVerifier hostnameVerifier;
+  private HttpRequestExecution httpRequestExecution;
+  private List<HttpRequestInterceptor> interceptors;
 
   private HttpRequest(String url) {
     this.url = url;
@@ -179,6 +178,28 @@ public class HttpRequest {
   }
 
   /**
+   * 设置执行器
+   *
+   * @param httpRequestExecution 执行器
+   * @return request
+   */
+  public HttpRequest httpRequestExecution(HttpRequestExecution httpRequestExecution) {
+    this.httpRequestExecution = httpRequestExecution;
+    return this;
+  }
+
+  /**
+   * 设置拦截器
+   *
+   * @param interceptors 拦截器
+   * @return request
+   */
+  public HttpRequest interceptors(List<HttpRequestInterceptor> interceptors) {
+    this.interceptors = interceptors;
+    return this;
+  }
+
+  /**
    * 添加header
    *
    * @param name name of header
@@ -209,8 +230,7 @@ public class HttpRequest {
    */
   public HttpRequest formBody(Object body) {
     this.body = body;
-    this.func = this::formBodyConvert;
-    this.headers.put(HttpHeaders.CONTENT_TYPE, HttpHeaders.APPLICATION_FORM_URLENCODED);
+    this.httpBody = HttpBody.FORM;
     return this;
   }
 
@@ -222,33 +242,67 @@ public class HttpRequest {
    */
   public HttpRequest jsonBody(Object body) {
     this.body = body;
-    this.func = this::jsonBodyConvert;
-    this.headers.put(HttpHeaders.CONTENT_TYPE, HttpHeaders.APPLICATION_JSON);
+    this.httpBody = HttpBody.JSON;
     return this;
   }
 
   /**
    * multipart body
    *
-   * @return multipart
+   * @param name 参数名称
+   * @param file 文件
+   * @return request
+   * @since 3.0.4
    */
-  public Multipart multipart() {
-    return multipart(null);
+  public HttpRequest multipart(String name, File file) {
+    return multipart(name, file, null);
+  }
+
+  /**
+   * multipart body
+   *
+   * @param name 参数名称
+   * @param value 值
+   * @return request
+   * @since 3.0.4
+   */
+  public HttpRequest multipart(String name, String value) {
+    this.httpBody = HttpBody.MULTIPART;
+    if (parts == null) {
+      parts = new ArrayList<>();
+    }
+    parts.add(new Part(name, value));
+    return this;
   }
 
   /**
    * multipart body
    *
    * @param body 请求体
-   * @return multipart
+   * @return request
    */
-  public Multipart multipart(Object body) {
-    this.multipart = new Multipart();
-    this.headers.put(HttpHeaders.CONTENT_TYPE,
-        HttpHeaders.MULTIPART_FORM_DATA_BOUNDARY + this.multipart.getBoundary());
+  public HttpRequest multipart(Object body) {
     this.body = body;
-    this.func = this::multipartConvert;
-    return multipart;
+    this.httpBody = HttpBody.MULTIPART;
+    return this;
+  }
+
+  /**
+   * multipart body
+   *
+   * @param name 参数名称
+   * @param file 文件
+   * @param filename 文件名称
+   * @return request
+   * @since 3.0.4
+   */
+  public HttpRequest multipart(String name, File file, String filename) {
+    this.httpBody = HttpBody.MULTIPART;
+    if (parts == null) {
+      parts = new ArrayList<>();
+    }
+    parts.add(new Part(name, file, filename));
+    return this;
   }
 
   /**
@@ -260,6 +314,7 @@ public class HttpRequest {
    */
   public HttpRequest body(Object body, Function<Object, byte[]> func) {
     this.body = body;
+    this.httpBody = HttpBody.OTHERS;
     this.func = func;
     return this;
   }
@@ -271,93 +326,14 @@ public class HttpRequest {
    * @throws IOException io异常
    */
   public HttpResponse execute() throws IOException {
-    String httpUrl = this.url;
-    if (queryParam != null) {
-      String queryString = MoreObjects.beanToQueryString(queryParam, true);
-      if (!url.contains(Strings.QUESTION_MARK)) {
-        httpUrl += Strings.QUESTION_MARK;
-      } else if (!url.endsWith(Strings.AND)) {
-        httpUrl += Strings.AND;
-      }
-      httpUrl += queryString;
+    Iterator<HttpRequestInterceptor> iterable = null;
+    if (interceptors != null) {
+      iterable = interceptors.iterator();
     }
-    HttpURLConnection connection = buildConnection(httpUrl);
-    if (this.connectTimeout >= 0) {
-      connection.setConnectTimeout(this.connectTimeout);
+    if (httpRequestExecution == null) {
+      httpRequestExecution = HucHttpRequestExecution.HUC;
     }
-    if (this.readTimeout >= 0) {
-      connection.setReadTimeout(this.readTimeout);
-    }
-    connection.setInstanceFollowRedirects(this.followRedirects);
-    connection.setRequestMethod(this.method.name());
-    connection.setUseCaches(false);
-    setContentType();
-    // add headers
-    headers.forEach(connection::addRequestProperty);
-    boolean nonOutput = this.method == HttpMethod.GET || (body == null && multipart == null);
-    connection.setDoOutput(!nonOutput);
-    if (nonOutput) {
-      connection.connect();
-    } else {
-      byte[] bytes = this.func.apply(body);
-      connection.setFixedLengthStreamingMode(bytes.length);
-      connection.connect();
-      try (OutputStream out = connection.getOutputStream()) {
-        out.write(bytes);
-        out.flush();
-      }
-    }
-    return new HttpResponse(connection, charset);
+    return new IteratorHttpRequestInterceptor(httpRequestExecution, iterable).execute(this);
   }
 
-  private HttpURLConnection buildConnection(String httpUrl) throws IOException {
-    HttpURLConnection connection;
-    if (proxy != null) {
-      connection = (HttpURLConnection) new URL(httpUrl).openConnection(proxy);
-    } else {
-      connection = (HttpURLConnection) new URL(httpUrl).openConnection();
-    }
-    if (connection instanceof HttpsURLConnection) {
-      HttpsURLConnection https = (HttpsURLConnection) connection;
-      if (sslSocketFactory != null) {
-        https.setSSLSocketFactory(sslSocketFactory);
-      }
-      if (hostnameVerifier != null) {
-        https.setHostnameVerifier(hostnameVerifier);
-      }
-    }
-    return connection;
-  }
-
-  private void setContentType() {
-    String contentType = headers.get(HttpHeaders.CONTENT_TYPE);
-    if (contentType != null && !contentType.contains(HttpHeaders.CHARSET)) {
-      headers.put(HttpHeaders.CONTENT_TYPE, contentType + ";charset=" + charset.name());
-    }
-  }
-
-  private byte[] formBodyConvert(Object obj) {
-    if (obj == null) {
-      return new byte[0];
-    }
-    return MoreObjects.beanToQueryString(obj, true).getBytes(charset);
-  }
-
-  private byte[] jsonBodyConvert(Object json) {
-    if (json == null) {
-      return new byte[0];
-    }
-    if (json instanceof String) {
-      return ((String) json).getBytes(charset);
-    } else {
-      return Json.toJson(json).getBytes(charset);
-    }
-  }
-
-  private byte[] multipartConvert(Object body) {
-    if (body != null) {
-      MoreObjects.beanToMap(body).forEach((k, v) -> multipart.add(k, v.toString()));
-    }
-    return multipart.toBytes(charset);
-  }
 }

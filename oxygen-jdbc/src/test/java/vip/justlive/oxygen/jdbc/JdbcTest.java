@@ -44,7 +44,7 @@ public class JdbcTest {
     Jdbc.use(dataSourceName);
     Jdbc.update("drop table if exists option");
     Jdbc.update(
-        "create table option (id int primary key, st varchar, it varchar, lo varchar, fl decimal, bl boolean, bd decimal, dt timestamp);");
+        "create table option (id int auto_increment primary key, st varchar, it varchar, lo varchar, fl decimal, bl boolean, bd decimal, dt timestamp);");
     Jdbc.update("insert into option values (1, 'st', '1', '1222', 3.5, true, 5.891, CURRENT_TIME)");
 
     String sql = "select * from option where id = ?";
@@ -96,13 +96,16 @@ public class JdbcTest {
     Record.deleteByIds(Option.class, Arrays.asList(1, 123L));
     Assert.assertEquals(0, Record.count(new Option()));
 
+    option = new Option().setSt("0.2f");
+    Record.insert(option);
+    Assert.assertNotNull(option.getId());
   }
 
   @Test
   public void testPage() {
     Jdbc.update("drop table if exists option");
     Jdbc.update(
-        "create table option (id int primary key, st varchar, it varchar, lo varchar, fl decimal, bl boolean, bd decimal, dt timestamp);");
+        "create table option (id int auto_increment primary key, st varchar, it varchar, lo varchar, fl decimal, bl boolean, bd decimal, dt timestamp);");
     Jdbc.update(
         "insert into option values (1, 'st1', '1', '1222', 3.5, true, 5.891, CURRENT_TIME)");
     Jdbc.update(

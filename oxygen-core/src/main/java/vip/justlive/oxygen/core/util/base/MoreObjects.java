@@ -66,14 +66,26 @@ public class MoreObjects {
    *
    * @param first first value
    * @param second second value
+   * @param others other values
    * @param <T> 泛型
    * @return nonNull
    */
-  public <T> T firstOrNull(T first, T second) {
+  @SafeVarargs
+  public <T> T firstOrNull(T first, T second, T... others) {
     if (first != null) {
       return first;
     }
-    return second;
+    if (second != null) {
+      return second;
+    }
+    if (others != null) {
+      for (T value : others) {
+        if (value != null) {
+          return value;
+        }
+      }
+    }
+    return null;
   }
 
   /**
@@ -81,11 +93,13 @@ public class MoreObjects {
    *
    * @param first first value
    * @param second second value
+   * @param others other values
    * @param <T> 泛型
    * @return nonNull
    */
-  public <T> T firstNonNull(T first, T second) {
-    T obj = firstOrNull(first, second);
+  @SafeVarargs
+  public <T> T firstNonNull(T first, T second, T... others) {
+    T obj = firstOrNull(first, second, others);
     if (obj != null) {
       return obj;
     }
