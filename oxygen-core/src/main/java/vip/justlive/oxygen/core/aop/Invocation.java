@@ -39,8 +39,8 @@ public final class Invocation {
   private Object returnValue;
 
   public void intercept(Callback callback) {
-    boolean interrupted = doIntercept(TYPE.BEFORE, method);
     try {
+      boolean interrupted = doIntercept(TYPE.BEFORE, method);
       if (interrupted && log.isDebugEnabled()) {
         log.debug("aop intercepted and return an updated value before invoke super method [{}]",
             method);
@@ -50,8 +50,9 @@ public final class Invocation {
     } catch (Throwable e) {
       doIntercept(TYPE.CATCHING, method);
       throw Exceptions.wrap(e);
+    } finally {
+      doIntercept(TYPE.AFTER, method);
     }
-    doIntercept(TYPE.AFTER, method);
   }
 
   private boolean doIntercept(TYPE type, Method method) {

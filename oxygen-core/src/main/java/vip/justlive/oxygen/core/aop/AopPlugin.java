@@ -15,6 +15,7 @@ package vip.justlive.oxygen.core.aop;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.aop.Aspect.TYPE;
 import vip.justlive.oxygen.core.aop.interceptor.AnnotationInterceptor;
@@ -38,6 +39,9 @@ public class AopPlugin implements Plugin {
 
   @Override
   public void start() {
+    if (!CoreConfigKeys.AOP_ENABLED.castValue(boolean.class)) {
+      return;
+    }
     Singleton.getAll().forEach(
         bean -> ClassUtils.getMethodsAnnotatedWith(bean.getClass(), Aspect.class)
             .forEach(method -> handleMethod(method, bean)));
@@ -46,7 +50,9 @@ public class AopPlugin implements Plugin {
 
   @Override
   public void stop() {
-    ProxyStore.clear();
+    if (CoreConfigKeys.AOP_ENABLED.castValue(boolean.class)) {
+      ProxyStore.clear();
+    }
   }
 
   private void handleMethod(Method method, Object bean) {

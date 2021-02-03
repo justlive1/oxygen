@@ -111,7 +111,7 @@ public class WriteWorker extends AbstractQueueWorker<Object> {
       WriteHandler.WriteContext ctx = new WriteHandler.WriteContext(future, buffer);
       channelContext.getChannel().write(ctx.buffer, ctx, channelContext.getWriteHandler());
     } catch (Exception e) {
-      log.error("write error", e);
+      log.error("{} write error", channelContext, e);
       future.completeExceptionally(e);
     }
   }

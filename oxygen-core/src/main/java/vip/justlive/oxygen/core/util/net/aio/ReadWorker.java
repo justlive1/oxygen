@@ -73,7 +73,7 @@ public class ReadWorker extends AbstractQueueWorker<ByteBuffer> {
           break;
         }
       } catch (Exception e) {
-        log.error("aio decode error", e);
+        log.error("{} aio decode error", channelContext, e);
         channelContext.close();
         return;
       }
