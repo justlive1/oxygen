@@ -6,7 +6,7 @@
 
   <groupId>vip.justlive</groupId>
   <artifactId>oxygen</artifactId>
-  <version>3.0.5</version>
+  <version>3.0.6</version>
   <modules>
     <module>oxygen-core</module>
     <module>oxygen-jdbc</module>
@@ -27,13 +27,13 @@
 
     <cglib.version>3.3.0</cglib.version>
     <junit.version>4.13.1</junit.version>
-    <lombok.version>1.18.16</lombok.version>
-    <slf4j.version>1.7.30</slf4j.version>
+    <lombok.version>1.18.20</lombok.version>
+    <slf4j.version>1.7.31</slf4j.version>
 
     <skipTests>true</skipTests>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
+    <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
     <maven-javadoc-plugin.version>3.1.0</maven-javadoc-plugin.version>
     <maven-source-plugin.version>3.1.0</maven-source-plugin.version>
     <maven-version-plugin.version>2.7</maven-version-plugin.version>

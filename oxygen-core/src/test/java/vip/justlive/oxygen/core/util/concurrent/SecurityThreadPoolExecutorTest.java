@@ -14,18 +14,25 @@
 package vip.justlive.oxygen.core.util.concurrent;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
+import vip.justlive.oxygen.core.Bootstrap;
+import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.SecurityChecker;
 import vip.justlive.oxygen.core.util.concurrent.SecurityThreadPoolExecutor.PoolQueue;
 
 /**
  * @author wubo
  */
+@Slf4j
 public class SecurityThreadPoolExecutorTest {
 
   @Test
   public void test() {
+
+    Bootstrap.registerUncaughtExceptionHandler();
 
     PoolQueue queue = new PoolQueue();
     SecurityThreadPoolExecutor pool = new SecurityThreadPoolExecutor(1, 1, 2, TimeUnit.SECONDS,
@@ -53,6 +60,32 @@ public class SecurityThreadPoolExecutorTest {
     }
 
     checker.delChecker(ock);
+
+    AtomicInteger f = new AtomicInteger();
+
+    TimingFuture<?> future = pool.submit(() -> {
+      log.info("start.");
+      ThreadUtils.sleep(3000);
+      log.info("completed.");
+    });
+
+    Assert.assertTrue(future.afterRunning(f::incrementAndGet, 2, TimeUnit.SECONDS));
+    Assert.assertTrue(future.afterRunning(() -> {
+      log.info("timing sleep 3100ms");
+      try {
+        Thread.sleep(3100);
+      } catch (InterruptedException e) {
+        throw Exceptions.wrap(e);
+      }
+      f.incrementAndGet();
+    }, 2, TimeUnit.SECONDS));
+
+    ThreadUtils.sleep(3500);
+
+    Assert.assertFalse(future.afterRunning(f::incrementAndGet, 2, TimeUnit.SECONDS));
+
+    Assert.assertEquals(1, f.get());
+
     pool.shutdown();
   }
 }

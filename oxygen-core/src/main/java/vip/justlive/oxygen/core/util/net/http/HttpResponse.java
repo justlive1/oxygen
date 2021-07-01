@@ -35,6 +35,7 @@ public class HttpResponse implements Closeable {
   private final InputStream body;
   private final Charset charset;
   private Map<String, String> headers;
+  private String bodyString;
 
   /**
    * body转字符串
@@ -53,8 +54,11 @@ public class HttpResponse implements Closeable {
    * @return body string
    * @throws IOException io异常
    */
-  public String bodyAsString(Charset charset) throws IOException {
-    return IoUtils.toString(body, charset);
+  public synchronized String bodyAsString(Charset charset) throws IOException {
+    if (bodyString == null) {
+      bodyString = IoUtils.toString(body, charset);
+    }
+    return bodyString;
   }
 
   @Override

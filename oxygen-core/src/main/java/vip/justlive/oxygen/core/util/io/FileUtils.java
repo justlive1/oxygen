@@ -98,7 +98,7 @@ public class FileUtils {
   /**
    * 创建多级目录
    *
-   * @param parent 父目录
+   * @param parent   父目录
    * @param children 子目录
    */
   public void mkdirs(String parent, String... children) {
@@ -202,7 +202,7 @@ public class FileUtils {
   /**
    * count files
    *
-   * @param file 文件
+   * @param file   文件
    * @param filter 过滤器
    * @return count
    */
@@ -240,7 +240,7 @@ public class FileUtils {
   /**
    * count dirs
    *
-   * @param file 文件
+   * @param file   文件
    * @param filter 过滤器
    * @return count
    */
@@ -283,7 +283,7 @@ public class FileUtils {
   /**
    * 是否是相同的文件路径
    *
-   * @param file 文件
+   * @param file    文件
    * @param another 另一文件
    * @return true为相同路径
    */
@@ -405,7 +405,7 @@ public class FileUtils {
   /**
    * 创建临时目录
    *
-   * @param first 第一层目录
+   * @param first    第一层目录
    * @param children 字目录
    * @return 目录
    */
@@ -455,6 +455,7 @@ public class FileUtils {
   public File download(String url) throws IOException {
     File file = new File(FileUtils.tempBaseDir(),
         SnowflakeId.defaultNextId() + Strings.DOT + FileUtils.extension(url));
+    mkdirsForFile(file);
     download(url, file);
     return file;
   }
@@ -462,7 +463,7 @@ public class FileUtils {
   /**
    * 下载文件
    *
-   * @param url 文件地址
+   * @param url  文件地址
    * @param file 文件
    * @throws IOException io异常
    */

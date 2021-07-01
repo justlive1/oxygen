@@ -18,6 +18,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -64,10 +65,10 @@ public class MoreObjects {
   /**
    * 获取第一个不为null的值，没有则返回null
    *
-   * @param first first value
+   * @param first  first value
    * @param second second value
    * @param others other values
-   * @param <T> 泛型
+   * @param <T>    泛型
    * @return nonNull
    */
   @SafeVarargs
@@ -91,10 +92,10 @@ public class MoreObjects {
   /**
    * 获取第一个不为null的值
    *
-   * @param first first value
+   * @param first  first value
    * @param second second value
    * @param others other values
-   * @param <T> 泛型
+   * @param <T>    泛型
    * @return nonNull
    */
   @SafeVarargs
@@ -113,21 +114,32 @@ public class MoreObjects {
    * @return map
    */
   public Map<String, Object> beanToMap(Object bean) {
+    return beanToMap(bean, false);
+  }
+
+  /**
+   * 对象转map 对象属性也同样转换
+   *
+   * @param bean 对象
+   * @param deep 是否深度转换
+   * @return map
+   */
+  public Map<String, Object> beanToMap(Object bean, boolean deep) {
     notNull(bean, "bean can not be null");
     Map<String, Object> map = new HashMap<>(4);
     if (Map.class.isAssignableFrom(bean.getClass())) {
       Map<?, ?> beanMap = (Map<?, ?>) bean;
-      beanMap.forEach((k, v) -> map.put(k.toString(), v));
+      beanMap.forEach((k, v) -> convert(map, k.toString(), v, deep));
     } else {
       for (Field field : ClassUtils.getAllDeclaredFields(bean.getClass())) {
         if (Modifier.isStatic(field.getModifiers())) {
           continue;
         }
-        field.setAccessible(true);
         try {
+          field.setAccessible(true);
           Object value = field.get(bean);
           if (value != null) {
-            map.put(field.getName(), value);
+            convert(map, field.getName(), value, deep);
           }
         } catch (IllegalAccessException e) {
           log.warn("field can not get value", e);
@@ -136,6 +148,7 @@ public class MoreObjects {
     }
     return map;
   }
+
 
   /**
    * bean转换成queryString
@@ -150,7 +163,7 @@ public class MoreObjects {
   /**
    * bean转换成queryString
    *
-   * @param bean 对象
+   * @param bean       对象
    * @param urlEncoded url encoded
    * @return queryString
    */
@@ -164,6 +177,26 @@ public class MoreObjects {
     }
     return sb.toString();
   }
+
+  /**
+   * map转换成properties
+   *
+   * @param bean 数据
+   * @return props
+   */
+  public Properties beanToProps(Object bean) {
+    Map<String, Object> map = beanToMap(bean, true);
+    Properties props = new Properties();
+    for (Map.Entry<?, ?> entry : map.entrySet()) {
+      if (entry.getValue() instanceof Map) {
+        convert((Map<?, ?>) entry.getValue(), props, entry.getKey().toString());
+      } else {
+        props.setProperty(entry.getKey().toString(), entry.getValue().toString());
+      }
+    }
+    return props;
+  }
+
 
   /**
    * always true
@@ -203,7 +236,7 @@ public class MoreObjects {
    *
    * @param iterable 迭代对象
    * @param consumer 处理单元
-   * @param <T> 泛型
+   * @param <T>      泛型
    */
   public <T> void caughtForeach(Iterable<T> iterable, Consumer<? super T> consumer) {
     if (consumer instanceof CaughtConsumer) {
@@ -227,8 +260,8 @@ public class MoreObjects {
   /**
    * 创建map
    *
-   * @param k 键
-   * @param v 值
+   * @param k   键
+   * @param v   值
    * @param <K> 泛型
    * @param <V> 泛型
    * @return map
@@ -242,10 +275,10 @@ public class MoreObjects {
   /**
    * 创建map
    *
-   * @param k1 第一个键
-   * @param v1 第一个值
-   * @param k2 第二个键
-   * @param v2 第二个值
+   * @param k1  第一个键
+   * @param v1  第一个值
+   * @param k2  第二个键
+   * @param v2  第二个值
    * @param <K> 泛型
    * @param <V> 泛型
    * @return map
@@ -260,12 +293,12 @@ public class MoreObjects {
   /**
    * 创建map
    *
-   * @param k1 第一个键
-   * @param v1 第一个值
-   * @param k2 第二个键
-   * @param v2 第二个值
-   * @param k3 第三个键
-   * @param v3 第三个值
+   * @param k1  第一个键
+   * @param v1  第一个值
+   * @param k2  第二个键
+   * @param v2  第二个值
+   * @param k3  第三个键
+   * @param v3  第三个值
    * @param <K> 泛型
    * @param <V> 泛型
    * @return map
@@ -281,10 +314,10 @@ public class MoreObjects {
   /**
    * 取交集
    *
-   * @param first 第一个集合
+   * @param first  第一个集合
    * @param second 第二个集合
    * @param others 其他集合
-   * @param <T> 泛型
+   * @param <T>    泛型
    * @return 交集
    */
   @SafeVarargs
@@ -307,10 +340,10 @@ public class MoreObjects {
   /**
    * 去并集
    *
-   * @param first 第一个集合
+   * @param first  第一个集合
    * @param second 第二个集合
    * @param others 其他集合
-   * @param <T> 泛型
+   * @param <T>    泛型
    * @return 并集
    */
   @SafeVarargs
@@ -333,5 +366,30 @@ public class MoreObjects {
    */
   public Executor directExecutor() {
     return Runnable::run;
+  }
+
+  private void convert(Map<?, ?> map, Properties result, String prefix) {
+    for (Map.Entry<?, ?> entry : map.entrySet()) {
+      if (entry.getValue() instanceof Map) {
+        convert((Map<?, ?>) entry.getValue(), result,
+            prefix + Strings.DOT + entry.getKey().toString());
+      } else {
+        result.setProperty(prefix + Strings.DOT + entry.getKey().toString(),
+            entry.getValue().toString());
+      }
+    }
+  }
+
+  private void convert(Map<String, Object> result, String key, Object value, boolean deep) {
+    if (!deep) {
+      result.put(key, value);
+      return;
+    }
+
+    if (ClassUtils.isJavaInternalType(value.getClass()) && !(value instanceof Map)) {
+      result.put(key, value);
+      return;
+    }
+    result.put(key, beanToMap(value, true));
   }
 }

@@ -47,4 +47,14 @@ public class Part {
   public boolean isFile() {
     return file != null;
   }
+
+  @Override
+  public String toString() {
+    String res = "{name:" + name + ", value:" + value;
+    if (isFile()) {
+      res += ", file:" + file + ", filename:" + filename;
+    }
+    res += "}";
+    return res;
+  }
 }

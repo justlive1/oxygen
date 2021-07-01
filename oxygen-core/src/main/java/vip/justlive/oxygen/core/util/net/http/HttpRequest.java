@@ -202,7 +202,7 @@ public class HttpRequest {
   /**
    * 添加header
    *
-   * @param name name of header
+   * @param name  name of header
    * @param value value of header
    * @return request
    */
@@ -261,7 +261,7 @@ public class HttpRequest {
   /**
    * multipart body
    *
-   * @param name 参数名称
+   * @param name  参数名称
    * @param value 值
    * @return request
    * @since 3.0.4
@@ -290,8 +290,8 @@ public class HttpRequest {
   /**
    * multipart body
    *
-   * @param name 参数名称
-   * @param file 文件
+   * @param name     参数名称
+   * @param file     文件
    * @param filename 文件名称
    * @return request
    * @since 3.0.4
@@ -336,4 +336,19 @@ public class HttpRequest {
     return new IteratorHttpRequestInterceptor(httpRequestExecution, iterable).execute(this);
   }
 
+  @Override
+  public String toString() {
+    String res = "{url:" + url + ", method:" + method + ", headers:" + headers;
+    if (queryParam != null) {
+      res += ", queryParam:" + queryParam;
+    }
+    if (body != null) {
+      res += ", body:" + body;
+    }
+    if (parts != null) {
+      res += ", parts:" + parts;
+    }
+    res += "}";
+    return res;
+  }
 }

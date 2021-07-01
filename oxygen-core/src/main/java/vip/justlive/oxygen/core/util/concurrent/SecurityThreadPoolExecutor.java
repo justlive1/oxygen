@@ -16,6 +16,7 @@ package vip.justlive.oxygen.core.util.concurrent;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -31,7 +32,7 @@ import vip.justlive.oxygen.core.util.base.SecurityChecker;
 
 /**
  * 增加安全校验的线程池
- *
+ * <p>
  * 使用PoolQueue可先创建线程达到maximumPoolSize，而不是等队列满了才创建线程
  *
  * @author wubo
@@ -93,6 +94,31 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
       securityChecker.checkPermission();
     }
     return super.shutdownNow();
+  }
+
+  @Override
+  protected <T> TimingFutureTask<T> newTaskFor(Callable<T> callable) {
+    return new TimingFutureTask<>(callable);
+  }
+
+  @Override
+  protected <T> TimingFutureTask<T> newTaskFor(Runnable runnable, T value) {
+    return new TimingFutureTask<>(runnable, value);
+  }
+
+  @Override
+  public TimingFuture<?> submit(Runnable task) {
+    return (TimingFuture<?>) super.submit(task);
+  }
+
+  @Override
+  public <T> TimingFuture<T> submit(Callable<T> task) {
+    return (TimingFuture<T>) super.submit(task);
+  }
+
+  @Override
+  public <T> TimingFuture<T> submit(Runnable task, T result) {
+    return (TimingFuture<T>) super.submit(task, result);
   }
 
   public int getSubmittedCount() {
