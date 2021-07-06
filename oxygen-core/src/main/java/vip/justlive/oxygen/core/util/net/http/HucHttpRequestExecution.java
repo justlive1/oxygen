@@ -90,12 +90,13 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
         out.flush();
       }
     }
+    int code = connection.getResponseCode();
+    String msg = connection.getResponseMessage();
     InputStream is = connection.getErrorStream();
     if (is == null) {
       is = connection.getInputStream();
     }
-    return new HucHttpResponse(connection, connection.getResponseCode(),
-        connection.getResponseMessage(), is, request.getCharset());
+    return new HucHttpResponse(connection, code, msg, is, request.getCharset());
   }
 
   private Function<Object, byte[]> getFunc(HttpRequest request) {

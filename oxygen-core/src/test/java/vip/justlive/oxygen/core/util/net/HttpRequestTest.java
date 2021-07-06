@@ -46,7 +46,7 @@ public class HttpRequestTest {
     Assert.assertEquals(1, count.get());
   }
 
-//  @Test
+  //  @Test
   public void test1() throws IOException {
     HttpResponse response = HttpRequest.post("http://localhost:8080/upload/2")
         .charset(StandardCharsets.UTF_8).connectTimeout(1000).readTimeout(1000)
@@ -74,7 +74,7 @@ public class HttpRequestTest {
     System.out.println(res);
   }
 
-//  @Test
+  //  @Test
   public void test3() throws IOException {
     HttpResponse response = HttpRequest.post("http://localhost:8080/upload/3")
         .charset(StandardCharsets.UTF_8).connectTimeout(1000).readTimeout(1000)
@@ -86,15 +86,26 @@ public class HttpRequestTest {
     System.out.println(response.bodyAsString());
   }
 
-//  @Test
+  //  @Test
   public void test4() throws IOException {
     HttpResponse response = HttpRequest.post("http://localhost:8080/upload/3")
         .charset(StandardCharsets.UTF_8).connectTimeout(1000).readTimeout(1000)
         .followRedirects(false).queryParam(new Body().mobile("1").captcha("2"))
-        .formBody(MoreObjects.mapOf("token", "三个","123",2))
+        .formBody(MoreObjects.mapOf("token", "三个", "123", 2))
         .execute();
     Assert.assertEquals(200, response.getCode());
     System.out.println(response.bodyAsString());
+  }
+
+  @Test
+  public void test5() {
+    try (HttpResponse response = HttpRequest.get(
+        "https://gitee.com/ld/1")
+        .execute()) {
+      Assert.assertEquals(404, response.getCode());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   @Data
