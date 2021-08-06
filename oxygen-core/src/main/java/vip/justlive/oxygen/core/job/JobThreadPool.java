@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 the original author or authors.
+ * Copyright (C) 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,24 +13,17 @@
  */
 package vip.justlive.oxygen.core.job;
 
-
-import org.junit.Assert;
-import org.junit.Test;
-import vip.justlive.oxygen.core.bean.Singleton;
-import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
-
 /**
+ * job执行线程池
+ *
  * @author wubo
  */
-public class JobPluginTest {
+public interface JobThreadPool {
 
-  @Test
-  public void test() {
-    Singleton.set(new Conf());
-    JobPlugin plugin = new JobPlugin();
-    plugin.start();
-//    Assert.assertEquals(4, JobPlugin.currentJobSize());
-    ThreadUtils.sleep(10000);
-    plugin.stop();
-  }
+  /**
+   * 执行任务
+   *
+   * @param runnable 任务
+   */
+  void execute(Runnable runnable);
 }

@@ -32,6 +32,7 @@ import vip.justlive.oxygen.core.util.concurrent.RepeatRunnable;
 import vip.justlive.oxygen.core.util.concurrent.SecurityThreadPoolExecutor;
 import vip.justlive.oxygen.core.util.concurrent.SecurityThreadPoolExecutor.PoolQueue;
 import vip.justlive.oxygen.core.util.concurrent.ThreadFactoryBuilder;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
  * 时间轮
@@ -98,7 +99,7 @@ public class WheelTimer {
     if (!state.compareAndSet(STATE_INIT, STATE_STARTED)) {
       return;
     }
-    FACTORY.newThread(worker).start();
+    ThreadUtils.residentPool().add(worker);
     worker.awaitRunning();
     wheel = new Wheel(duration, wheelSize, System.currentTimeMillis(), delayQueue);
     log.info("WheelTimer started");

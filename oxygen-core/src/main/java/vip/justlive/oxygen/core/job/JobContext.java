@@ -13,24 +13,30 @@
  */
 package vip.justlive.oxygen.core.job;
 
-
-import org.junit.Assert;
-import org.junit.Test;
-import vip.justlive.oxygen.core.bean.Singleton;
-import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
-
 /**
  * @author wubo
  */
-public class JobPluginTest {
+public interface JobContext {
 
-  @Test
-  public void test() {
-    Singleton.set(new Conf());
-    JobPlugin plugin = new JobPlugin();
-    plugin.start();
-//    Assert.assertEquals(4, JobPlugin.currentJobSize());
-    ThreadUtils.sleep(10000);
-    plugin.stop();
-  }
+  /**
+   * 获取job信息
+   *
+   * @return job信息
+   */
+  JobInfo getJobInfo();
+
+  /**
+   * 获取参数
+   *
+   * @return 参数
+   */
+  String getParam();
+
+  /**
+   * 获取预计触发时间
+   *
+   * @return 时间
+   */
+  long getExpectedFireTime();
+
 }

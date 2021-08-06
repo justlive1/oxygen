@@ -63,20 +63,4 @@ public @interface Scheduled {
    */
   String initialDelay() default "";
 
-  /**
-   * 项目启动执行
-   *
-   * @return true为执行
-   */
-  boolean onApplicationStart() default false;
-
-  /**
-   * 是否异步
-   * <br>
-   * 只对 onApplicationStart 方式有效
-   *
-   * @return true为异步
-   */
-  boolean async() default false;
-
 }

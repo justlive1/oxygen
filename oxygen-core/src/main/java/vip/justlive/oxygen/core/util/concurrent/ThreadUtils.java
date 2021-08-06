@@ -40,6 +40,7 @@ public class ThreadUtils {
   private ThreadFactory threadFactory;
   private SecurityThreadPoolExecutor globalPool;
   private WheelTimer globalTimer;
+  private ResidentPool residentPool;
 
   /**
    * 线程存储键值
@@ -215,7 +216,7 @@ public class ThreadUtils {
       globalPool = newThreadPool(1, CoreConfigKeys.THREAD_POOL_SIZE.castValue(int.class), 120,
           CoreConfigKeys.THREAD_POOL_QUEUE.castValue(int.class), "global-pool-%d");
       globalPool.setSecurityChecker(new SecurityChecker()
-          .addChecker(new OwnerThreadChecker(ShutdownHooks.add(globalTimer::shutdown))));
+          .addChecker(new OwnerThreadChecker(ShutdownHooks.add(globalPool::shutdown))));
     }
     return globalPool;
   }
@@ -227,12 +228,23 @@ public class ThreadUtils {
    */
   public synchronized WheelTimer globalTimer() {
     if (globalTimer == null) {
-      globalTimer = new WheelTimer(CoreConfigKeys.WHEEL_TIMER_DURATION.castValue(long.class),
-          CoreConfigKeys.WHEEL_TIMER_WHEEL_SIZE.castValue(int.class),
+      globalTimer = new WheelTimer(1, CoreConfigKeys.WHEEL_TIMER_WHEEL_SIZE.castValue(int.class),
           CoreConfigKeys.WHEEL_TIMER_POOL_SIZE.castValue(int.class));
       globalTimer.getSecurityChecker()
           .addChecker(new OwnerThreadChecker(ShutdownHooks.add(globalTimer::shutdown)));
     }
     return globalTimer;
+  }
+
+  /**
+   * 全局常驻线程池
+   *
+   * @return ResidentPool
+   */
+  public synchronized ResidentPool residentPool() {
+    if (residentPool == null) {
+      residentPool = new ResidentPool(CoreConfigKeys.RESIDENT_POOL_MAX_SIZE.castValue(int.class));
+    }
+    return residentPool;
   }
 }

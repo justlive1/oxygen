@@ -13,24 +13,31 @@
  */
 package vip.justlive.oxygen.core.job;
 
-
-import org.junit.Assert;
-import org.junit.Test;
-import vip.justlive.oxygen.core.bean.Singleton;
-import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
+import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
+ * 分片
+ *
  * @author wubo
  */
-public class JobPluginTest {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class JobSharding implements Serializable {
 
-  @Test
-  public void test() {
-    Singleton.set(new Conf());
-    JobPlugin plugin = new JobPlugin();
-    plugin.start();
-//    Assert.assertEquals(4, JobPlugin.currentJobSize());
-    ThreadUtils.sleep(10000);
-    plugin.stop();
-  }
+  private static final long serialVersionUID = 1L;
+
+  /**
+   * index
+   */
+  private int index;
+
+  /**
+   * 总数
+   */
+  private int total;
+
 }

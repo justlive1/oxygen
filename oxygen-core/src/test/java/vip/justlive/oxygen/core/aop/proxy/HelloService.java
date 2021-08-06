@@ -48,5 +48,6 @@ public class HelloService<T extends Map<String, Integer>> {
 
   public <R> void fun5(Class<R> type) {
     System.out.println("real fun5");
+    service.log();
   }
 }

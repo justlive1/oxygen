@@ -20,7 +20,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 特定时机任务实现
@@ -28,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
  * @param <T> 泛型
  * @author wubo
  */
-@Slf4j
 public class TimingFutureTask<T> extends FutureTask<T> implements TimingFuture<T> {
 
   private final List<Future<?>> timingFutures = new ArrayList<>();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 the original author or authors.
+ * Copyright (C) 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,24 +13,25 @@
  */
 package vip.justlive.oxygen.core.job;
 
-
-import org.junit.Assert;
-import org.junit.Test;
-import vip.justlive.oxygen.core.bean.Singleton;
-import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
+import lombok.Data;
+import vip.justlive.oxygen.core.config.ValueConfig;
 
 /**
+ * job配置
+ *
  * @author wubo
  */
-public class JobPluginTest {
+@Data
+@ValueConfig("oxygen.job")
+public class JobConf {
 
-  @Test
-  public void test() {
-    Singleton.set(new Conf());
-    JobPlugin plugin = new JobPlugin();
-    plugin.start();
-//    Assert.assertEquals(4, JobPlugin.currentJobSize());
-    ThreadUtils.sleep(10000);
-    plugin.stop();
-  }
+  private String jobStoreClass;
+  private String jobThreadPoolClass;
+
+  private int threadCorePoolSize = 10;
+  private String threadNameFormat = "job-%d";
+
+  private int fetchMaxSize = 100;
+  private long idleWaitTime = 30000;
+  private int idleWaitRandom = 7 * 1000;
 }

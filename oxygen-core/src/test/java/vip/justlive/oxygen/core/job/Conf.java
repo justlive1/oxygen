@@ -20,18 +20,18 @@ import java.util.concurrent.TimeUnit;
  */
 public class Conf {
 
-  @Scheduled(fixedDelay = "500")
+  @Scheduled(fixedDelay = "500", initialDelay = "300")
   public void run1() throws InterruptedException {
     System.out.println(Thread.currentThread() + "|fixedDelay|" + System.currentTimeMillis());
     TimeUnit.MILLISECONDS.sleep(300);
   }
 
-  @Scheduled(fixedRate = "${job.run2:500}")
+  @Scheduled(fixedRate = "${job.run2:500}", initialDelay = "300")
   public void run2() {
     System.out.println(Thread.currentThread() + "|fixedRate|" + System.currentTimeMillis());
   }
 
-  @Scheduled(onApplicationStart = true, cron = "0/3 * * * * ?", async = true)
+  @Scheduled(cron = "0/3 * * * * ?")
   public void run4() {
     System.out.println(Thread.currentThread() + "|cron|" + System.currentTimeMillis());
   }

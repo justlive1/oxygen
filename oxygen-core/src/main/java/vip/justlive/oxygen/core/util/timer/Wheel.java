@@ -77,6 +77,8 @@ public class Wheel {
   }
 
   private synchronized void addOverflowWheel() {
-    overflowWheel = new Wheel(interval, slots.length, currentTime, delayQueue);
+    if (overflowWheel == null) {
+      overflowWheel = new Wheel(interval, slots.length, currentTime, delayQueue);
+    }
   }
 }

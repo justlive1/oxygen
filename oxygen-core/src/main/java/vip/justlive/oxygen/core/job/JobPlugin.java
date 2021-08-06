@@ -14,18 +14,14 @@
 package vip.justlive.oxygen.core.job;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.Plugin;
+import vip.justlive.oxygen.core.aop.invoke.Invoker;
 import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
-import vip.justlive.oxygen.core.util.concurrent.ThreadFactoryBuilder;
-import vip.justlive.oxygen.core.util.timer.WheelTimer;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * job插件
@@ -35,18 +31,7 @@ import vip.justlive.oxygen.core.util.timer.WheelTimer;
 @Slf4j
 public class JobPlugin implements Plugin {
 
-  private static final List<Job> SCHEDULED_JOBS = new ArrayList<>();
-
-  private WheelTimer wheelTimer;
-
-  /**
-   * 获取当前job数量
-   *
-   * @return size of scheduled jobs
-   */
-  public static int currentJobSize() {
-    return SCHEDULED_JOBS.size();
-  }
+  private Scheduler scheduler;
 
   @Override
   public int order() {
@@ -61,14 +46,13 @@ public class JobPlugin implements Plugin {
 
   @Override
   public void stop() {
-    wheelTimer.shutdown();
-    SCHEDULED_JOBS.clear();
+    scheduler.shutdown();
   }
 
   private void init() {
-    wheelTimer = new WheelTimer(1, 60, CoreConfigKeys.JOB_CORE_POOL_SIZE.castValue(int.class),
-        new ThreadFactoryBuilder().setDaemon(true)
-            .setNameFormat(CoreConfigKeys.JOB_THREAD_NAME_FORMAT.getValue()).build());
+    JobConf conf = ConfigFactory.load(JobConf.class);
+    scheduler = SchedulerFactory.getScheduler(conf);
+    scheduler.start();
   }
 
   private void parseJobs() {
@@ -78,26 +62,53 @@ public class JobPlugin implements Plugin {
   }
 
   private void handleMethod(Method method, Object bean) {
-    Job job;
+    JobInfo jobInfo = new JobInfo().setKey(
+        ClassUtils.getActualClass(bean.getClass()).getName() + Strings.DOT + method.getName())
+        .setHandlerClass(AnnotationJob.class.getName());
+
+    Scheduled scheduled = method.getAnnotation(Scheduled.class);
+    check(scheduled);
+
+    JobTrigger trigger = null;
+    if (scheduled.fixedDelay().length() > 0) {
+      long fixedDelayVal = Long
+          .parseLong(ConfigFactory.getPlaceholderProperty(scheduled.fixedDelay()));
+      long initialDelayVal = 0;
+      if (scheduled.initialDelay().length() > 0) {
+        initialDelayVal = Long
+            .parseLong(ConfigFactory.getPlaceholderProperty(scheduled.initialDelay()));
+      }
+      trigger = new DelayOrRateJobTrigger(jobInfo.getKey(), initialDelayVal, fixedDelayVal, true);
+    }
+    if (scheduled.fixedRate().length() > 0) {
+      long fixedRateVal = Long
+          .parseLong(ConfigFactory.getPlaceholderProperty(scheduled.fixedRate()));
+      long initialDelayVal = 0;
+      if (scheduled.initialDelay().length() > 0) {
+        initialDelayVal = Long
+            .parseLong(ConfigFactory.getPlaceholderProperty(scheduled.initialDelay()));
+      }
+      trigger = new DelayOrRateJobTrigger(jobInfo.getKey(), initialDelayVal, fixedRateVal, false);
+    }
+    if (scheduled.cron().length() > 0) {
+      String cron = ConfigFactory.getPlaceholderProperty(scheduled.cron());
+      trigger = new CronJobTrigger(jobInfo.getKey(), cron);
+    }
+
+    log.info("job : {} {}", jobInfo, trigger);
+    if (trigger == null) {
+      return;
+    }
+
+    Invoker invoker;
     try {
-      job = new Job(bean, bean.getClass().getMethod(method.getName(), method.getParameterTypes()));
+      invoker = ClassUtils.generateInvoker(bean,
+          bean.getClass().getMethod(method.getName(), method.getParameterTypes()));
     } catch (NoSuchMethodException e) {
       throw Exceptions.wrap(e);
     }
-    Scheduled scheduled = method.getAnnotation(Scheduled.class);
-    check(scheduled);
-    if (scheduled.fixedDelay().length() > 0) {
-      addFixedDelayJob(job, scheduled.fixedDelay(), scheduled.initialDelay());
-    }
-    if (scheduled.fixedRate().length() > 0) {
-      addFixedRateJob(job, scheduled.fixedRate(), scheduled.initialDelay());
-    }
-    if (scheduled.cron().length() > 0) {
-      addCronJob(job, scheduled.cron());
-    }
-    if (scheduled.onApplicationStart()) {
-      addOnApplicationStartJob(job, scheduled.async());
-    }
+    AnnotationJob.put(jobInfo.getKey(), invoker);
+    scheduler.scheduleJob(jobInfo, trigger);
   }
 
   private void check(Scheduled scheduled) {
@@ -111,57 +122,10 @@ public class JobPlugin implements Plugin {
     if (scheduled.cron().length() > 0) {
       count++;
     }
-    boolean invalid = count > 1 || (count == 0 && !scheduled.onApplicationStart());
-    if (invalid) {
+    if (count > 1 || count == 0) {
       throw new IllegalArgumentException(
           "Specify 'fixedDelay', 'fixedRate', 'onApplicationStart' or 'cron'");
     }
-  }
-
-  private void addFixedDelayJob(Job job, String fixedDelay, String initialDelay) {
-    long fixedDelayVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(fixedDelay));
-    long initialDelayVal = 0;
-    if (initialDelay.length() > 0) {
-      initialDelayVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(initialDelay));
-    }
-    wheelTimer.scheduleWithFixedDelay(job.configFixedDelay(fixedDelayVal, initialDelayVal),
-        initialDelayVal, fixedDelayVal, TimeUnit.MILLISECONDS);
-    addJob(job);
-  }
-
-  private void addFixedRateJob(Job job, String fixedRate, String initialDelay) {
-    long fixedRateVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(fixedRate));
-    long initialDelayVal = 0;
-    if (initialDelay.length() > 0) {
-      initialDelayVal = Long.parseLong(ConfigFactory.getPlaceholderProperty(initialDelay));
-    }
-    wheelTimer
-        .scheduleAtFixedRate(job.configFixedRate(fixedRateVal, initialDelayVal), initialDelayVal,
-            fixedRateVal, TimeUnit.MILLISECONDS);
-    addJob(job);
-  }
-
-  private void addCronJob(Job job, String cron) {
-    cron = ConfigFactory.getPlaceholderProperty(cron);
-    wheelTimer.scheduleOnCron(job.configCron(cron), cron);
-    addJob(job);
-  }
-
-  private void addOnApplicationStartJob(Job job, boolean async) {
-    Job target = job.configOnApplicationStart(async);
-    if (async) {
-      wheelTimer.schedule(target, 0, TimeUnit.MILLISECONDS);
-    } else {
-      target.run();
-    }
-    addJob(target);
-  }
-
-  private void addJob(Job job) {
-    if (log.isDebugEnabled()) {
-      log.debug("add a job [{}]", job);
-    }
-    SCHEDULED_JOBS.add(job);
   }
 
 }

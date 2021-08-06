@@ -47,20 +47,19 @@ public class RepeatRunnable implements Runnable {
 
   @Override
   public void run() {
-    started = true;
-    log.info("[{}] starting", name);
-    workInitiated.countDown();
-    try {
-      while (shutdownInitiated.getCount() > 0) {
-        runnable.run();
-        rounds++;
-      }
-    } catch (Exception e) {
-      log.error("[{}] error due to", name, e);
-    } finally {
-      shutdownComplete.countDown();
+    String pre = Thread.currentThread().getName();
+    if (log.isDebugEnabled()) {
+      log.debug("thread name '{}' change to '{}'", pre, name);
     }
-    log.info("[{}] stopped", name);
+    Thread.currentThread().setName(name);
+    try {
+      doRun();
+    } finally {
+      Thread.currentThread().setName(pre);
+      if (log.isDebugEnabled()) {
+        log.debug("thread name '{}' return to '{}'", name, pre);
+      }
+    }
   }
 
   /**
@@ -95,6 +94,27 @@ public class RepeatRunnable implements Runnable {
    */
   public boolean isShutdown() {
     return shutdownInitiated.getCount() == 0 || shutdownComplete.getCount() == 0;
+  }
+
+  private void doRun() {
+    started = true;
+    log.info("[{}] starting", name);
+    workInitiated.countDown();
+    try {
+      while (shutdownInitiated.getCount() > 0) {
+        if (Thread.currentThread().isInterrupted()) {
+          log.info("[{}] thread is interrupted, stop repeat at {} rounds", name, rounds);
+          break;
+        }
+        runnable.run();
+        rounds++;
+      }
+    } catch (Exception e) {
+      log.error("[{}] error due to", name, e);
+    } finally {
+      shutdownComplete.countDown();
+    }
+    log.info("[{}] stopped", name);
   }
 
   private void await(CountDownLatch latch) {

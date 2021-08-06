@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 the original author or authors.
+ * Copyright (C) 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,24 +13,28 @@
  */
 package vip.justlive.oxygen.core.job;
 
-
-import org.junit.Assert;
-import org.junit.Test;
-import vip.justlive.oxygen.core.bean.Singleton;
-import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
+ * 固定时间trigger
+ *
  * @author wubo
  */
-public class JobPluginTest {
+@ToString
+@EqualsAndHashCode(callSuper = true)
+public class FixedTimeJobTrigger extends CoreJobTrigger {
 
-  @Test
-  public void test() {
-    Singleton.set(new Conf());
-    JobPlugin plugin = new JobPlugin();
-    plugin.start();
-//    Assert.assertEquals(4, JobPlugin.currentJobSize());
-    ThreadUtils.sleep(10000);
-    plugin.stop();
+  public FixedTimeJobTrigger(String key, String jobKey) {
+    super(key, jobKey);
   }
+
+  @Override
+  public Long getFireTimeAfter(long timestamp) {
+    if (startTime != null && timestamp <= startTime) {
+      return startTime;
+    }
+    return null;
+  }
+
 }
