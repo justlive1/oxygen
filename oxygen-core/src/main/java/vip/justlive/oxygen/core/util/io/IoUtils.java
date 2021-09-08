@@ -226,7 +226,6 @@ public class IoUtils {
    * @return channel
    * @throws IOException io异常时抛出
    */
-  @SuppressWarnings("squid:S2095")
   public AsynchronousSocketChannel create(AsynchronousChannelGroup channelGroup,
       InetSocketAddress address) throws IOException {
     return AsynchronousSocketChannel.open(channelGroup)

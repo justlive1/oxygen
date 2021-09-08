@@ -11,20 +11,44 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.job;
+package vip.justlive.oxygen.jdbc.job;
+
+import vip.justlive.oxygen.core.job.JobTrigger;
 
 /**
- * job执行线程池
+ * trigger转换
  *
  * @author wubo
  */
-public interface JobThreadPool {
+public interface Converter {
 
   /**
-   * 执行任务
+   * 类型
    *
-   * @param jobKey   任务key
-   * @param runnable 任务
+   * @return type
    */
-  void execute(String jobKey, Runnable runnable);
+  int type();
+
+  /**
+   * jobTrigger类型
+   *
+   * @return class
+   */
+  Class<? extends JobTrigger> classType();
+
+  /**
+   * 转换为实体
+   *
+   * @param trigger job触发器
+   * @return entity
+   */
+  JobTriggerEntity convert(JobTrigger trigger);
+
+  /**
+   * 实体转换为触发器
+   *
+   * @param entity 实体
+   * @return trigger
+   */
+  JobTrigger convert(JobTriggerEntity entity);
 }

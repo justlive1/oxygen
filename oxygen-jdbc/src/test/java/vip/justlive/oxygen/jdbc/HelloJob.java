@@ -11,20 +11,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.job;
+package vip.justlive.oxygen.jdbc;
 
-/**
- * job执行线程池
- *
- * @author wubo
- */
-public interface JobThreadPool {
+import vip.justlive.oxygen.core.job.Job;
+import vip.justlive.oxygen.core.job.JobContext;
 
-  /**
-   * 执行任务
-   *
-   * @param jobKey   任务key
-   * @param runnable 任务
-   */
-  void execute(String jobKey, Runnable runnable);
+public class HelloJob implements Job {
+
+  @Override
+  public void execute(JobContext ctx) {
+    java.lang.System.out.println("hello.");
+  }
 }

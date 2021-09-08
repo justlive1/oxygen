@@ -41,7 +41,7 @@ public class IocPlugin implements Plugin {
 
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 300;
+    return Integer.MIN_VALUE + 400;
   }
 
   @Override

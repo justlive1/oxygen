@@ -111,7 +111,6 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   /**
    * 实际数据
    */
-  @SuppressWarnings("squid:S1948")
   private final LruMap<K, ExpiringValue<V>> data;
 
   /**
@@ -245,8 +244,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   /**
    * 添加默认时间单位的会失效的键值
    *
-   * @param key 键
-   * @param value 值
+   * @param key      键
+   * @param value    值
    * @param duration 期限
    * @return 已存在的值
    */
@@ -257,8 +256,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
   /**
    * 添加会失效的键值
    *
-   * @param key 键
-   * @param value 值
+   * @param key      键
+   * @param value    值
    * @param duration 期限
    * @param timeUnit 时间单位
    * @return 已存在的值
@@ -622,7 +621,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     /**
      * 失效处理
      *
-     * @param key 建
+     * @param key   建
      * @param value 值
      * @param cause 原因
      */
@@ -823,7 +822,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     /**
      * 构造带过期时间的包装
      *
-     * @param value 值
+     * @param value    值
      * @param duration 期限
      * @param timeUnit 时间单位
      */

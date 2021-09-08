@@ -72,7 +72,6 @@ public class Request implements Serializable {
   /**
    * body params
    */
-  @SuppressWarnings("squid:S1948")
   private final Map<String, Object> bodyParams = new HashMap<>(4);
   /**
    * attributes

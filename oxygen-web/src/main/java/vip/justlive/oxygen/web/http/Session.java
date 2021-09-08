@@ -32,7 +32,7 @@ public class Session implements Serializable {
   public static final String SESSION_COOKIE_KEY = "OX_SESSION";
 
   private static final long serialVersionUID = 1L;
-  @SuppressWarnings("squid:S1948")
+
   private final HashMap<String, Object> data = new HashMap<>(4);
   private String id;
   @Setter
@@ -68,7 +68,7 @@ public class Session implements Serializable {
   /**
    * 添加属性
    *
-   * @param key 键
+   * @param key   键
    * @param value 值
    */
   public void put(String key, Object value) {

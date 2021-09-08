@@ -47,7 +47,6 @@ public class Page<T> implements Serializable {
   /**
    * 数据集合
    */
-  @SuppressWarnings("squid:S1948")
   private List<T> items;
 
   /**

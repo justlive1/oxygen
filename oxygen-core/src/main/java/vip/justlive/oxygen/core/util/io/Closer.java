@@ -35,7 +35,7 @@ public class Closer implements Closeable {
    * 注册需要关闭的资源
    *
    * @param closeable 资源
-   * @param <T> 泛型
+   * @param <T>       泛型
    * @return 资源
    */
   public <T extends Closeable> T register(T closeable) {
@@ -72,7 +72,7 @@ public class Closer implements Closeable {
     while (!stack.isEmpty()) {
       try {
         stack.pop().close();
-      } catch (@SuppressWarnings("squid:S1181") Throwable e) {
+      } catch (Throwable e) {
         if (thrown == null) {
           thrown = e;
         } else {

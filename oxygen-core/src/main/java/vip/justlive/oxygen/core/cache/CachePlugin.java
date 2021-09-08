@@ -26,7 +26,7 @@ public class CachePlugin implements Plugin {
 
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 500;
+    return Integer.MIN_VALUE + 800;
   }
 
   @Override

@@ -15,6 +15,7 @@ package vip.justlive.oxygen.core.job;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.base.Strings;
 
@@ -37,7 +38,9 @@ public class SchedulerFactory {
         log.warn("load jobStoreClass failed.", e);
       }
     }
-
+    if (jobStore == null) {
+      jobStore = Singleton.get(JobStore.class);
+    }
     if (jobStore == null) {
       jobStore = new MapJobStore();
     }
@@ -51,10 +54,13 @@ public class SchedulerFactory {
         log.warn("load JobThreadPool failed.", e);
       }
     }
-
     if (pool == null) {
-      pool = new SimpleJobThreadPool(conf.getThreadCorePoolSize(), conf.getThreadNameFormat());
+      pool = Singleton.get(JobThreadPool.class);
     }
+    if (pool == null) {
+      pool = new SimpleJobThreadPool(conf);
+    }
+    log.info("create scheduler with {} and {}", jobStore, pool);
     return new SchedulerImpl(new JobResource(conf, jobStore, pool));
   }
 }

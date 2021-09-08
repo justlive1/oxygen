@@ -115,6 +115,10 @@ public class SchedulerRunnable implements Runnable {
       resource.getJobStore().releaseTrigger(trigger);
       return;
     }
+    if (log.isDebugEnabled()) {
+      log.debug("add job {} to waiting task [{}ms]", job,
+          trigger.getNextFireTime() - System.currentTimeMillis());
+    }
     JobContext ctx = new JobContextImpl(jobInfo, trigger.getNextFireTime());
     ScheduledFuture<Void> future = ThreadUtils.globalTimer()
         .schedule(new WaitingTask(job, ctx, resource, trigger),

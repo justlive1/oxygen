@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.jdbc;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -29,14 +30,18 @@ import java.util.Map;
 
 public class Batch {
 
-  private final String dataSourceName;
+  private final Connection connection;
   private final Map<String, PreparedStatement> psts;
+
   private Statement statement;
 
-
   private Batch(String dataSourceName) {
-    this.dataSourceName = dataSourceName;
-    this.psts = new HashMap<>(2, 1);
+    this(Jdbc.getConnection(dataSourceName));
+  }
+
+  private Batch(Connection connection) {
+    this.connection = connection;
+    this.psts = new HashMap<>(4);
   }
 
   /**
@@ -60,6 +65,12 @@ public class Batch {
     return batch;
   }
 
+  public static Batch use(Connection connection) {
+    Batch batch = new Batch(connection);
+    Jdbc.startTx(connection);
+    return batch;
+  }
+
   /**
    * 添加sql
    *
@@ -69,7 +80,7 @@ public class Batch {
   public Batch addBatch(String sql) {
     try {
       if (statement == null) {
-        statement = Jdbc.getConnection(dataSourceName).createStatement();
+        statement = connection.createStatement();
       }
       statement.addBatch(sql);
       return this;
@@ -82,7 +93,7 @@ public class Batch {
   /**
    * 添加批处理
    *
-   * @param sql sql
+   * @param sql    sql
    * @param params 参数
    * @return batch
    */
@@ -93,7 +104,7 @@ public class Batch {
   /**
    * 添加批处理
    *
-   * @param sql sql
+   * @param sql    sql
    * @param params 参数
    * @return batch
    */
@@ -101,7 +112,7 @@ public class Batch {
     try {
       PreparedStatement ps = psts.get(sql);
       if (ps == null) {
-        ps = Jdbc.getConnection(dataSourceName).prepareStatement(sql);
+        ps = connection.prepareStatement(sql);
         psts.put(sql, ps);
       }
       Jdbc.fillStatement(ps, params);
@@ -127,7 +138,7 @@ public class Batch {
           ps.close();
         }
       }
-      Jdbc.closeTx(dataSourceName);
+      Jdbc.closeTx(connection);
     } catch (SQLException e) {
       throw JdbcException.wrap(e);
     }

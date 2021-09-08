@@ -47,6 +47,8 @@ public class MapJobStore implements JobStore {
       jobInfos.put(jobInfo.getKey(), new JobInfoWrapper(jobInfo));
     } else if (replaceExisting) {
       wrapper.jobInfo = jobInfo;
+    } else {
+      throw new IllegalArgumentException("job '" + jobInfo.getKey() + "' already exists");
     }
   }
 
@@ -77,9 +79,11 @@ public class MapJobStore implements JobStore {
       throw new IllegalArgumentException("trigger key '" + trigger.getKey() + "' already exists");
     }
     JobInfoWrapper wrapper = jobInfos.get(trigger.getJobKey());
-    if (wrapper != null) {
-      wrapper.triggers.add(triggerWrapper);
+    if (wrapper == null) {
+      throw new IllegalArgumentException(
+          "the job '" + trigger.getJobKey() + "' referenced by the trigger does not exist.");
     }
+    wrapper.triggers.add(triggerWrapper);
     timeTriggers.add(triggerWrapper);
   }
 

@@ -30,6 +30,11 @@ public class JobConf {
 
   private int threadCorePoolSize = 10;
   private String threadNameFormat = "job-%d";
+  private int threadQueueCapacity = 1000;
+
+  private long slowTimeWindow = 60000;
+  private long slowThresholdTime = 500;
+  private int slowHitLimit = 10;
 
   private int fetchMaxSize = 100;
   private long idleWaitTime = 30000;

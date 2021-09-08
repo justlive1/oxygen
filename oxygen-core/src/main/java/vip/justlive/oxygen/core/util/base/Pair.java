@@ -33,11 +33,9 @@ public class Pair<K, V> implements Serializable {
   /**
    * 键
    */
-  @SuppressWarnings("squid:S1948")
   private K key;
   /**
    * 值
    */
-  @SuppressWarnings("squid:S1948")
   private V value;
 }

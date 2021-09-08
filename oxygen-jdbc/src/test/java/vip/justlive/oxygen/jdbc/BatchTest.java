@@ -21,7 +21,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import vip.justlive.oxygen.core.Bootstrap;
-import vip.justlive.oxygen.jdbc.record.Record;
+import vip.justlive.oxygen.jdbc.record.Entity;
 
 /**
  * @author wubo
@@ -59,7 +59,7 @@ public class BatchTest {
     system.setValue(4);
     list.add(system);
 
-    Record.insertBatch(list);
+    Entity.parse(System.class).insertBatch(list);
     map = Jdbc.queryForMapList("select * from system");
     Assert.assertEquals(8, map.size());
   }

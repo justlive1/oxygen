@@ -181,7 +181,6 @@ public class SystemUtils {
     } catch (Exception ex) {
       try {
         // try a Linux-specific way
-        @SuppressWarnings("squid:S1075")
         File proc = new File("/proc/self").getCanonicalFile();
         if (proc.exists()) {
           return Integer.parseInt(proc.getName());

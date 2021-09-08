@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 the original author or authors.
+ * Copyright (C) 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,46 +11,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package vip.justlive.oxygen.core.util.base;
+package vip.justlive.oxygen.jdbc.job;
 
-import java.io.Serializable;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import vip.justlive.oxygen.jdbc.record.Column;
+import vip.justlive.oxygen.jdbc.record.Table;
 
 /**
- * 返回
+ * jobInfo实体
  *
- * @param <T> 泛型
  * @author wubo
- * @since 2.0.0
  */
 @Data
+@Table("oxy_job_info")
 @Accessors(chain = true)
-public class RespData<T> implements Serializable {
+public class JobInfoEntity {
 
-  /**
-   * 成功code
-   */
-  public static final String SUCCESS_CODE = "00000";
-  /**
-   * 失败code
-   */
-  public static final String DEFAULT_FAIL_CODE = "99999";
+  @Column(pk = true)
+  private Long id;
 
-  private static final long serialVersionUID = 1L;
-  /**
-   * 返回结果编码
-   */
-  private String code;
+  @Column("job_key")
+  private String jobKey;
 
-  /**
-   * 结果描述信息
-   */
-  private String message;
+  @Column
+  private String description;
 
-  /**
-   * T 返回数据
-   */
-  private T data;
+  @Column("handler_class")
+  private String handlerClass;
 
+  @Column
+  private String param;
 }

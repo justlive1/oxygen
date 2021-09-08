@@ -54,7 +54,6 @@ public class Slot implements Delayed {
     task.slot = this;
   }
 
-  @SuppressWarnings("squid:S1452")
   synchronized Task<?> remove(Task<?> task) {
     Task<?> next = task.next;
     if (task.prev != null) {

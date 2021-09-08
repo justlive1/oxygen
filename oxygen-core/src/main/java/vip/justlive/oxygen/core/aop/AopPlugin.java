@@ -34,12 +34,12 @@ public class AopPlugin implements Plugin {
 
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 600;
+    return Integer.MIN_VALUE + 500;
   }
 
   @Override
   public void start() {
-    if (!CoreConfigKeys.AOP_ENABLED.castValue(boolean.class)) {
+    if (!Boolean.TRUE.equals(CoreConfigKeys.AOP_ENABLED.castValue(boolean.class))) {
       return;
     }
     Singleton.getAll().forEach(
@@ -50,7 +50,7 @@ public class AopPlugin implements Plugin {
 
   @Override
   public void stop() {
-    if (CoreConfigKeys.AOP_ENABLED.castValue(boolean.class)) {
+    if (Boolean.TRUE.equals(CoreConfigKeys.AOP_ENABLED.castValue(boolean.class))) {
       ProxyStore.clear();
     }
   }

@@ -21,7 +21,7 @@ import org.junit.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
 import vip.justlive.oxygen.jdbc.page.Page;
-import vip.justlive.oxygen.jdbc.record.Record;
+import vip.justlive.oxygen.jdbc.record.Entity;
 
 /**
  * @author wubo
@@ -62,42 +62,44 @@ public class JdbcTest {
     Assert.assertNull(Jdbc.query(sql, Option.class, 2));
     Assert.assertEquals(0, Jdbc.queryForList(sql, Option.class, 2).size());
 
-    option = Record.findById(Option.class, 1);
+    Entity<Option> entity = Entity.parse(Option.class);
+
+    option = entity.findById(1);
     Assert.assertEquals(Long.valueOf(1222), option.getLl());
 
     option = new Option().setId(123L).setSt("0.2f");
-    Record.insert(option);
+    entity.insert(option);
 
-    Assert.assertEquals(option, Record.findOne(option));
+    Assert.assertEquals(option, entity.findOne(option));
 
     option.setSt("22x");
-    Record.updateById(option);
+    entity.updateById(option);
 
-    Assert.assertEquals("22x", Record.findById(Option.class, 123).getSt());
-    Assert.assertEquals(2, Record.findByIds(Option.class, Arrays.asList(1, 123)).size());
-    Assert.assertEquals(2, Record.count(new Option()));
-    Assert.assertEquals(1, Record.find(option).size());
-    Assert.assertEquals(2, Record.findAll(Option.class).size());
+    Assert.assertEquals("22x", entity.findById(123).getSt());
+    Assert.assertEquals(2, entity.findByIds(Arrays.asList(1, 123)).size());
+    Assert.assertEquals(2, entity.count(new Option()));
+    Assert.assertEquals(1, entity.find(option).size());
+    Assert.assertEquals(2, entity.findAll().size());
 
-    Record.deleteById(Option.class, 123);
+    entity.deleteById(123);
 
     Jdbc.startTx();
-    Record.delete(new Option());
+    entity.delete(new Option());
     Jdbc.rollbackTx();
 
     Jdbc.closeTx();
 
-    Assert.assertEquals(1, Record.count(new Option()));
+    Assert.assertEquals(1, entity.count(new Option()));
 
     option = new Option().setId(123L).setSt("0.2f");
-    Record.insert(option);
+    entity.insert(option);
 
-    Assert.assertEquals(2, Record.count(new Option()));
-    Record.deleteByIds(Option.class, Arrays.asList(1, 123L));
-    Assert.assertEquals(0, Record.count(new Option()));
+    Assert.assertEquals(2, entity.count(new Option()));
+    entity.deleteByIds(Arrays.asList(1, 123L));
+    Assert.assertEquals(0, entity.count(new Option()));
 
     option = new Option().setSt("0.2f");
-    Record.insert(option);
+    entity.insert(option);
     Assert.assertNotNull(option.getId());
   }
 
@@ -125,7 +127,7 @@ public class JdbcTest {
 
     page = new Page<>(2, 1);
     page.setSearchCount(false);
-    Record.page(new Option(), page);
+    Entity.parse(Option.class).page(new Option(), page);
     list = page.getItems();
     Assert.assertNotNull(list);
     Assert.assertEquals(1, list.size());

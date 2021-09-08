@@ -42,7 +42,7 @@ public class WebPlugin implements Plugin {
 
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 800;
+    return Integer.MIN_VALUE + 900;
   }
 
   @Override

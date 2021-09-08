@@ -48,6 +48,7 @@ public class WaitingTask implements Runnable {
       return;
     }
 
-    resource.getPool().execute(new JobRunTask(job, ctx, jobTrigger, resource));
+    resource.getPool()
+        .execute(jobTrigger.getJobKey(), new JobRunTask(job, ctx, jobTrigger, resource));
   }
 }

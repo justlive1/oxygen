@@ -52,7 +52,6 @@ public class Server {
    * @param address 地址
    * @throws IOException io异常时抛出
    */
-  @SuppressWarnings("squid:S2095")
   public void start(InetSocketAddress address) throws IOException {
     groupContext.setStopped(false);
     AsynchronousChannelGroup channelGroup = AsynchronousChannelGroup

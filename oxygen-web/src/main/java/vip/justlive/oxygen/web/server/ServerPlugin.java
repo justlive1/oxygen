@@ -14,8 +14,6 @@
 package vip.justlive.oxygen.web.server;
 
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.util.base.ServiceLoaderUtils;
 import vip.justlive.oxygen.web.WebConfigKeys;
@@ -26,17 +24,19 @@ import vip.justlive.oxygen.web.server.aio.AioWebServer;
  *
  * @author wubo
  */
-@RequiredArgsConstructor
 public class ServerPlugin implements Plugin {
 
   @Getter
-  @NonNull
   private int port;
   WebServer webServer;
 
+  public ServerPlugin(int port) {
+    this.port = port;
+  }
+
   @Override
   public int order() {
-    return Integer.MIN_VALUE + 200;
+    return Integer.MIN_VALUE + 300;
   }
 
   @Override

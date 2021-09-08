@@ -40,7 +40,6 @@ public class Wheel {
     this.delayQueue = delayQueue;
   }
 
-  @SuppressWarnings("squid:S899")
   boolean add(Task<?> task) {
     if (task.isCancelled()) {
       return false;

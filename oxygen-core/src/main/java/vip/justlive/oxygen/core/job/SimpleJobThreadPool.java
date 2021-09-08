@@ -13,7 +13,11 @@
  */
 package vip.justlive.oxygen.core.job;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
+import lombok.RequiredArgsConstructor;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
@@ -23,14 +27,67 @@ import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
  */
 public class SimpleJobThreadPool implements JobThreadPool {
 
-  private final ThreadPoolExecutor pool;
+  private final long slowTimeWindow;
+  private final long slowThreshold;
+  private final int slowHitLimit;
+  private final ThreadPoolExecutor fastPool;
+  private final ThreadPoolExecutor slowPool;
 
-  public SimpleJobThreadPool(int corePoolSize, String threadNameFormat) {
-    pool = ThreadUtils.newThreadPool(1, corePoolSize, 1, 1000, threadNameFormat);
+  private final Map<String, AtomicInteger> slowHits = new ConcurrentHashMap<>(4);
+
+  private long currentWindow;
+
+  public SimpleJobThreadPool(JobConf conf) {
+    slowTimeWindow = conf.getSlowTimeWindow();
+    slowThreshold = conf.getSlowThresholdTime();
+    slowHitLimit = conf.getSlowHitLimit();
+    fastPool = ThreadUtils
+        .newThreadPool(1, conf.getThreadCorePoolSize(), 60, conf.getThreadQueueCapacity(),
+            "Fast-" + conf.getThreadNameFormat());
+    slowPool = ThreadUtils
+        .newThreadPool(1, conf.getThreadCorePoolSize(), 60, conf.getThreadQueueCapacity(),
+            "Slow-" + conf.getThreadNameFormat());
+    currentWindow = System.currentTimeMillis();
   }
 
   @Override
-  public void execute(Runnable runnable) {
-    pool.execute(runnable);
+  public void execute(String jobKey, Runnable runnable) {
+    ThreadPoolExecutor pool = fastPool;
+
+    AtomicInteger count = slowHits.get(jobKey);
+    if (count != null && count.get() > slowHitLimit) {
+      pool = slowPool;
+    }
+
+    pool.execute(new Task(jobKey, runnable));
+  }
+
+  @RequiredArgsConstructor
+  class Task implements Runnable {
+
+    final String key;
+    final Runnable runnable;
+
+    @Override
+    public void run() {
+      long start = System.currentTimeMillis();
+      try {
+        runnable.run();
+      } finally {
+        long end = System.currentTimeMillis();
+
+        synchronized (slowHits) {
+          if (end - currentWindow > slowTimeWindow) {
+            currentWindow = end;
+            slowHits.clear();
+          }
+        }
+
+        if (end - start > slowThreshold) {
+          AtomicInteger count = slowHits.computeIfAbsent(key, k -> new AtomicInteger());
+          count.incrementAndGet();
+        }
+      }
+    }
   }
 }

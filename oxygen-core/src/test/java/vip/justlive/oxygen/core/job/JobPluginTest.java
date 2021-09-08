@@ -14,7 +14,6 @@
 package vip.justlive.oxygen.core.job;
 
 
-import org.junit.Assert;
 import org.junit.Test;
 import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
@@ -29,7 +28,6 @@ public class JobPluginTest {
     Singleton.set(new Conf());
     JobPlugin plugin = new JobPlugin();
     plugin.start();
-//    Assert.assertEquals(4, JobPlugin.currentJobSize());
     ThreadUtils.sleep(10000);
     plugin.stop();
   }

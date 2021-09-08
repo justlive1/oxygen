@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core.job;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author wubo
  */
 @Slf4j
+@Getter
 @RequiredArgsConstructor
 public class JobRunTask implements Runnable {
 
@@ -50,9 +52,9 @@ public class JobRunTask implements Runnable {
       log.debug("job {} elapsed {}ms", ctx.getJobInfo().getKey(), lastCompletedTime - startTime);
     }
 
-    int state = 0;
+    int state = NOOP;
     if (trigger.getNextFireTime() == null) {
-      state = 1;
+      state = DELETE;
     }
 
     resource.getJobStore().triggerCompleted(trigger, state);

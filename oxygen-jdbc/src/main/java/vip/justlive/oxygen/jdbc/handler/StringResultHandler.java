@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 the original author or authors.
+ * Copyright (C) 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,33 +11,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package vip.justlive.oxygen.jdbc.handler;
 
-package vip.justlive.oxygen.jdbc.page;
-
-import java.io.Serializable;
-import java.util.List;
-import lombok.Data;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import vip.justlive.oxygen.jdbc.JdbcException;
 
 /**
- * page row
+ * string 处理
  *
  * @author wubo
  */
-@Data
-public class Page<T> implements Serializable {
+public class StringResultHandler implements ResultSetHandler<String> {
 
-  private static final long serialVersionUID = -3277571898871978041L;
-
-  private final int pageIndex;
-  private final int pageSize;
-
-  private boolean searchCount = true;
-  private Long totalNumber;
-  private List<T> items;
-
-  private boolean hasPaged;
-
-  int getOffset() {
-    return (pageIndex - 1) * pageSize;
+  @Override
+  public String handle(ResultSet rs) {
+    try {
+      if (rs.next()) {
+        Object value = rs.getObject(1);
+        if (value != null) {
+          return rs.getString(1);
+        }
+      }
+      return null;
+    } catch (SQLException e) {
+      throw JdbcException.wrap(e);
+    }
   }
 }
