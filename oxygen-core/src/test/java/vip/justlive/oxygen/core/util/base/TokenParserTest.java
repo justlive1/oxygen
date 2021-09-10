@@ -14,8 +14,8 @@
 
 package vip.justlive.oxygen.core.util.base;
 
-import org.junit.Assert;
 import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author wubo
@@ -26,28 +26,28 @@ public class TokenParserTest {
   public void parse() {
     TokenParser parser = new TokenParser("${", "}", this::handle);
     String value = parser.parse(null);
-    Assert.assertEquals("", value);
+    assertEquals("", value);
 
     value = parser.parse("ax");
-    Assert.assertEquals("ax", value);
+    assertEquals("ax", value);
 
     value = parser.parse("ax${a}");
-    Assert.assertEquals("axA", value);
+    assertEquals("axA", value);
 
     value = parser.parse("ax${a}}");
-    Assert.assertEquals("axA}", value);
+    assertEquals("axA}", value);
 
     value = parser.parse("ax${a\\}x}");
-    Assert.assertEquals("axA}X", value);
+    assertEquals("axA}X", value);
 
     value = parser.parse("ax\\${ax}${ax}");
-    Assert.assertEquals("ax${ax}AX", value);
+    assertEquals("ax${ax}AX", value);
 
     value = parser.parse("ax$\\{ax}${ax}");
-    Assert.assertEquals("ax$\\{ax}AX", value);
+    assertEquals("ax$\\{ax}AX", value);
 
     value = parser.parse("ax$${ax}${ax}");
-    Assert.assertEquals("ax$AXAX", value);
+    assertEquals("ax$AXAX", value);
 
   }
 

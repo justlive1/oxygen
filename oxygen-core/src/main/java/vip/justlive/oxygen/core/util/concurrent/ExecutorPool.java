@@ -57,7 +57,7 @@ public class ExecutorPool<V> extends ExecutorCompletionService<V> {
   /**
    * 构造pool
    *
-   * @param executor 线程池
+   * @param executor        线程池
    * @param completionQueue 队列
    */
   public ExecutorPool(Executor executor, BlockingQueue<Future<V>> completionQueue) {
@@ -118,7 +118,7 @@ public class ExecutorPool<V> extends ExecutorCompletionService<V> {
    *
    * @return result
    * @throws InterruptedException 中断异常
-   * @throws ExecutionException 执行异常
+   * @throws ExecutionException   执行异常
    */
   public List<V> waitFor() throws InterruptedException, ExecutionException {
     List<V> list = new LinkedList<>();
@@ -138,6 +138,9 @@ public class ExecutorPool<V> extends ExecutorCompletionService<V> {
     while (count.get() > 0) {
       try {
         list.add(take().get());
+      } catch (InterruptedException e) {
+        log.error("interrupted.", e);
+        Thread.currentThread().interrupt();
       } catch (Exception e) {
         log.error("wait for result error", e);
       }

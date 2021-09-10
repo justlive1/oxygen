@@ -14,28 +14,29 @@
 
 package vip.justlive.oxygen.core.util.base;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.base.SnowflakeId.Cfg;
 
 /**
  * @author wubo
  */
-public class SnowflakeIdTest {
+class SnowflakeIdTest {
 
 
   @Test
-  public void test() {
+  void test() {
     SnowflakeId.defaultNextId();
 
     long curr = System.currentTimeMillis();
     long id = SnowflakeId.defaultNextId();
-    Assert.assertEquals(curr, SnowflakeId.defaultInstance().getCreatedAt(id));
+    assertEquals(curr, SnowflakeId.defaultInstance().getCreatedAt(id));
 
     SnowflakeId worker = new SnowflakeId(3, 12);
     id = worker.nextId();
-    Assert.assertEquals(3, worker.getWorkerId(id));
-    Assert.assertEquals(12, worker.getDataCenterId(id));
+    assertEquals(3, worker.getWorkerId(id));
+    assertEquals(12, worker.getDataCenterId(id));
 
     worker = new SnowflakeId(new Cfg().setWorkerId(1).setWorkerIdBits(4).setDataCenterIdBits(1));
     System.out.println(worker.nextId());

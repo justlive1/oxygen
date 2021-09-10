@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import vip.justlive.oxygen.core.util.base.SystemUtils;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
@@ -40,10 +40,10 @@ import vip.justlive.oxygen.core.util.net.aio.Server;
  * @author wubo
  */
 @Slf4j
-public class AioTest {
+class AioTest {
 
   //    @Test
-  public void c1000k() throws Exception {
+  void c1000k() throws Exception {
 
     InetSocketAddress address = new InetSocketAddress("localhost", 10086);
     GroupContext group = new GroupContext(new LengthFrameHandler());
@@ -87,7 +87,7 @@ public class AioTest {
   }
 
   @Test
-  public void test() throws IOException {
+  void test() throws IOException {
 
     LoggerContext ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
     ctx.getLogger("root").setLevel(Level.INFO);
@@ -102,7 +102,7 @@ public class AioTest {
   }
 
   //  @Test
-  public void test1() throws IOException {
+  void test1() throws IOException {
     int port = SystemUtils.findAvailablePort();
     InetSocketAddress address = new InetSocketAddress("localhost", port);
 
@@ -123,7 +123,7 @@ public class AioTest {
   }
 
   //  @Test
-  public void test2() throws IOException {
+  void test2() throws IOException {
     int port = SystemUtils.findAvailablePort();
     InetSocketAddress address = new InetSocketAddress("localhost", port);
     GroupContext group = new GroupContext(new LengthFrameHandler());
@@ -154,7 +154,7 @@ public class AioTest {
   }
 
   //  @Test
-  public void tx() throws IOException {
+  void tx() throws IOException {
     int port = SystemUtils.findAvailablePort();
     new Thread(() -> {
       InetSocketAddress address = new InetSocketAddress(port);

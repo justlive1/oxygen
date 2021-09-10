@@ -14,16 +14,17 @@
 
 package vip.justlive.oxygen.core.util.crypto;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wubo
  */
-public class MacEncoderTest {
+class MacEncoderTest {
 
   @Test
-  public void t0() {
+  void t0() {
 
     String algorithm = "HmacSHA256";
     String secret = "123xcef";
@@ -31,10 +32,10 @@ public class MacEncoderTest {
     MacEncoder encoder = new MacEncoder(algorithm, secret);
     String result = encoder.encode(source);
 
-    Assert.assertEquals("fafea2c76d82df6d21edb318754afe57f25a62b05ad4fa9f427a0b4cb9b498d7", result);
+    assertEquals("fafea2c76d82df6d21edb318754afe57f25a62b05ad4fa9f427a0b4cb9b498d7", result);
 
     result = encoder.useBase64(true).encode(source);
-    Assert.assertEquals("+v6ix22C320h7bMYdUr+V/JaYrBa1PqfQnoLTLm0mNc=", result);
+    assertEquals("+v6ix22C320h7bMYdUr+V/JaYrBa1PqfQnoLTLm0mNc=", result);
 
   }
 }

@@ -13,36 +13,37 @@
  */
 package vip.justlive.oxygen.jdbc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.jdbc.record.Entity;
 
 /**
  * @author wubo
  */
-public class BatchTest {
+class BatchTest {
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
     Bootstrap.start();
     Jdbc.update("create table system (id int primary key auto_increment, key int, value int);");
   }
 
   @Test
-  public void test() {
+  void test() {
     Batch.use().addBatch("insert into system (key, value) values (?,?)", 1, 3)
         .addBatch("insert into system (key, value) values (?,?)", Arrays.asList(4, 4))
         .addBatch("insert into system (key,value) values(1,2)")
         .addBatch("insert into system (key,value) values(2,2)").commit();
 
     List<Map<String, Object>> map = Jdbc.queryForMapList("select * from system");
-    Assert.assertEquals(4, map.size());
+    assertEquals(4, map.size());
 
     List<System> list = new ArrayList<>();
     System system = new System();
@@ -61,7 +62,7 @@ public class BatchTest {
 
     Entity.parse(System.class).insertBatch(list);
     map = Jdbc.queryForMapList("select * from system");
-    Assert.assertEquals(8, map.size());
+    assertEquals(8, map.size());
   }
 
 }

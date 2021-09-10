@@ -13,22 +13,21 @@
  */
 package vip.justlive.oxygen.core.util.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Predicate;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FileUtilsTest {
+class FileUtilsTest {
 
   @Test
-  public void mkdirs1() {
+  void mkdirs1() {
     String name = "/tmp/a/1/1";
     File file = new File(name);
     FileUtils.mkdirs(file);
@@ -51,7 +50,7 @@ public class FileUtilsTest {
   }
 
   @Test
-  public void mkdirs2() {
+  void mkdirs2() {
     String parent = "/tmp/a/4";
     FileUtils.mkdirs(parent, "1", "2");
     File file = new File(parent + "/1/2");
@@ -62,7 +61,7 @@ public class FileUtilsTest {
 
 
   @Test
-  public void mkdirsForFile() {
+  void mkdirsForFile() {
     FileUtils.mkdirsForFile(new File("/tmp/a/5/a.log"));
     File file = new File("/tmp/a/5");
     assertTrue(file.exists());
@@ -71,7 +70,7 @@ public class FileUtilsTest {
   }
 
   @Test
-  public void touch() {
+  void touch() {
     FileUtils.touch("/tmp/a/6/a.log");
     File file = new File("/tmp/a/6/a.log");
     assertTrue(file.exists());
@@ -81,12 +80,12 @@ public class FileUtilsTest {
 
 
   @Test
-  public void extension() {
+  void extension() {
     assertEquals("txt", FileUtils.extension("a.txt"));
   }
 
   @Test
-  public void t0() {
+  void t0() {
     Predicate<File> filter = file -> file.getName().endsWith(".log");
     assertEquals(0, FileUtils.countDirs(new File("/tmp/a/7")));
     assertEquals(0, FileUtils.countFiles(new File("/tmp/a/7")));
@@ -109,7 +108,7 @@ public class FileUtilsTest {
   }
 
   @Test
-  public void t1() {
+  void t1() {
     assertFalse(FileUtils.isRoot(null));
     assertFalse(FileUtils.isRoot(new File(".")));
     assertTrue(FileUtils.isRoot(new File("d:/")));
@@ -119,7 +118,7 @@ public class FileUtilsTest {
   }
 
   @Test
-  public void t2() {
+  void t2() {
     FileUtils.mkdirs((File) null);
     FileUtils.mkdirs((String) null);
     FileUtils.mkdirs((Path) null);
@@ -132,17 +131,17 @@ public class FileUtilsTest {
     FileUtils.touch(Paths.get("/tmp/a/8/a.log"));
     FileUtils.touch(Paths.get("/tmp/a/8/a.log"));
 
-    Assert.assertTrue(new File("/tmp/a/8/a.log").exists());
+    assertTrue(new File("/tmp/a/8/a.log").exists());
 
     FileUtils.delete(new File("/tmp/a"));
 
   }
 
   @Test
-  public void testDownload() throws IOException {
+  void testDownload() throws IOException {
     File file = new File("/tmp/baidu.png");
     FileUtils.download("https://www.baidu.com/img/bd_logo1.png", file);
-    Assert.assertTrue(file.exists());
+    assertTrue(file.exists());
     FileUtils.deleteFile(file);
     FileUtils.mkdirs(FileUtils.tempBaseDir());
     file = FileUtils.download("https://www.baidu.com/img/bd_logo1.png");

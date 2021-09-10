@@ -26,16 +26,18 @@
     <java.version>1.8</java.version>
 
     <cglib.version>3.3.0</cglib.version>
-    <junit.version>4.13.1</junit.version>
+    <junit.version>5.7.2</junit.version>
     <lombok.version>1.18.20</lombok.version>
-    <slf4j.version>1.7.31</slf4j.version>
+    <slf4j.version>1.7.32</slf4j.version>
 
     <skipTests>true</skipTests>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
+    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <maven-javadoc-plugin.version>3.1.0</maven-javadoc-plugin.version>
     <maven-source-plugin.version>3.1.0</maven-source-plugin.version>
+    <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     <maven-version-plugin.version>2.7</maven-version-plugin.version>
   </properties>
 
@@ -62,6 +64,14 @@
 
   <build>
     <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+      </plugin>
       <!-- Source -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -213,8 +223,8 @@
       </dependency>
 
       <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
         <version>${junit.version}</version>
         <scope>test</scope>
       </dependency>
@@ -236,15 +246,15 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.2.3</version>
+      <version>1.2.5</version>
       <scope>test</scope>
     </dependency>
 

@@ -15,19 +15,22 @@
 package vip.justlive.oxygen.core.util.base;
 
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.base.ExpiringMap.CleanPolicy;
 import vip.justlive.oxygen.core.util.base.ExpiringMap.ExpiringPolicy;
 import vip.justlive.oxygen.core.util.base.ExpiringMap.RemovalCause;
 
-public class ExpiringMapTest {
+class ExpiringMapTest {
 
   @Test
-  public void test1() throws Exception {
+  void test1() throws Exception {
 
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
         // 默认失效时间 50
@@ -38,11 +41,11 @@ public class ExpiringMapTest {
     String key = "key";
     expiringMap.put(key, 1);
 
-    Assert.assertNotNull(expiringMap.get(key));
+    assertNotNull(expiringMap.get(key));
 
     TimeUnit.MILLISECONDS.sleep(600);
 
-    Assert.assertNull(expiringMap.get(key));
+    assertNull(expiringMap.get(key));
 
     expiringMap.get(key);
     expiringMap.get(key);
@@ -51,12 +54,12 @@ public class ExpiringMapTest {
     // 等待清理线程执行完毕
     TimeUnit.MILLISECONDS.sleep(100);
 
-    Assert.assertEquals(0, expiringMap.realSize());
+    assertEquals(0, expiringMap.realSize());
 
   }
 
   @Test
-  public void test2() throws Exception {
+  void test2() throws Exception {
 
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
         // 默认失效时间 20
@@ -71,26 +74,26 @@ public class ExpiringMapTest {
     expiringMap.put(key, 1);
     expiringMap.put(k, 1);
 
-    Assert.assertNotNull(expiringMap.get(key));
-    Assert.assertNotNull(expiringMap.get(k));
+    assertNotNull(expiringMap.get(key));
+    assertNotNull(expiringMap.get(k));
 
     TimeUnit.MILLISECONDS.sleep(100);
 
-    Assert.assertNotNull(expiringMap.get(key));
+    assertNotNull(expiringMap.get(key));
 
     TimeUnit.MILLISECONDS.sleep(100);
 
-    Assert.assertNotNull(expiringMap.get(key));
+    assertNotNull(expiringMap.get(key));
 
     TimeUnit.MILLISECONDS.sleep(100);
 
-    Assert.assertNotNull(expiringMap.get(key));
-    Assert.assertNull(expiringMap.get(k));
+    assertNotNull(expiringMap.get(key));
+    assertNull(expiringMap.get(k));
 
   }
 
   @Test
-  public void test3() throws Exception {
+  void test3() throws Exception {
 
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
         // 默认失效时间 20
@@ -105,21 +108,21 @@ public class ExpiringMapTest {
     String key = "key";
     expiringMap.put(key, 1);
 
-    Assert.assertNotNull(expiringMap.get(key));
+    assertNotNull(expiringMap.get(key));
 
     TimeUnit.MILLISECONDS.sleep(300);
 
-    Assert.assertNull(expiringMap.get(key));
-    Assert.assertEquals(1, expiringMap.realSize());
+    assertNull(expiringMap.get(key));
+    assertEquals(1, expiringMap.realSize());
 
     TimeUnit.MILLISECONDS.sleep(1000);
 
-    Assert.assertEquals(0, expiringMap.realSize());
+    assertEquals(0, expiringMap.realSize());
 
   }
 
   @Test
-  public void test4() throws Exception {
+  void test4() throws Exception {
 
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
         // 默认失效时间 10
@@ -132,22 +135,22 @@ public class ExpiringMapTest {
     expiringMap.put(key, 1, 200, TimeUnit.MILLISECONDS);
     expiringMap.put(k, 1);
 
-    Assert.assertNotNull(expiringMap.get(key));
-    Assert.assertNotNull(expiringMap.get(k));
+    assertNotNull(expiringMap.get(key));
+    assertNotNull(expiringMap.get(k));
 
     TimeUnit.MILLISECONDS.sleep(150);
 
-    Assert.assertNull(expiringMap.get(k));
-    Assert.assertNotNull(expiringMap.get(key));
+    assertNull(expiringMap.get(k));
+    assertNotNull(expiringMap.get(key));
 
     TimeUnit.MILLISECONDS.sleep(100);
 
-    Assert.assertNull(expiringMap.get(key));
+    assertNull(expiringMap.get(key));
 
   }
 
   @Test
-  public void test5() throws InterruptedException {
+  void test5() throws InterruptedException {
     List<String> list = new ArrayList<>();
     List<String> size = new ArrayList<>();
     ExpiringMap<String, Integer> expiringMap = ExpiringMap.<String, Integer>builder()
@@ -170,12 +173,12 @@ public class ExpiringMapTest {
     expiringMap.get("3");
     TimeUnit.MILLISECONDS.sleep(200);
 
-    Assert.assertEquals(2, list.size());
-    Assert.assertEquals("1", list.get(0));
-    Assert.assertEquals("2", list.get(1));
+    assertEquals(2, list.size());
+    assertEquals("1", list.get(0));
+    assertEquals("2", list.get(1));
 
-    Assert.assertEquals(1, size.size());
-    Assert.assertEquals("1", size.get(0));
+    assertEquals(1, size.size());
+    assertEquals("1", size.get(0));
   }
 
 }

@@ -13,22 +13,25 @@
  */
 package vip.justlive.oxygen.core.util.retry;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
  * @author wubo
  */
-public class RetryerTest {
+class RetryerTest {
 
   @Test
-  public void test01() {
+  void test01() {
     AtomicInteger ato = new AtomicInteger(0);
     Integer value = RetryBuilder.<Integer>newBuilder().retryIfException().withMaxAttempt(3).build()
         .call(() -> {
@@ -37,12 +40,12 @@ public class RetryerTest {
           System.out.println(10 / i);
           return ato.get();
         });
-    Assert.assertNull(value);
-    Assert.assertEquals(3, ato.get());
+    assertNull(value);
+    assertEquals(3, ato.get());
   }
 
   @Test
-  public void test02() {
+  void test02() {
     AtomicInteger ato = new AtomicInteger(0);
     RetryBuilder.newBuilder().retryIfException(ArithmeticException.class).withMaxAttempt(4).build()
         .call(() -> {
@@ -51,47 +54,47 @@ public class RetryerTest {
           System.out.println(10 / i);
           return ato.get();
         });
-    Assert.assertEquals(4, ato.get());
+    assertEquals(4, ato.get());
   }
 
   @Test
-  public void test03() {
+  void test03() {
     AtomicInteger ato = new AtomicInteger(0);
     RetryBuilder.<Integer>newBuilder().retryIfResult(rs -> rs < 3).build()
         .call(ato::incrementAndGet);
-    Assert.assertEquals(3, ato.get());
+    assertEquals(3, ato.get());
   }
 
   @Test
-  public void test04() {
+  void test04() {
     AtomicInteger ato = new AtomicInteger(0);
     RetryBuilder.<Integer>newBuilder().retryIfResult(rs -> rs < 3).withMaxAttempt(2).build()
         .call(ato::incrementAndGet);
-    Assert.assertEquals(2, ato.get());
+    assertEquals(2, ato.get());
   }
 
   @Test
-  public void test05() {
+  void test05() {
     long start = System.currentTimeMillis();
     AtomicInteger ato = new AtomicInteger(0);
     RetryBuilder.<Integer>newBuilder().retryIfResult(rs -> rs < 3).withSleepBlock(100).build()
         .call(ato::incrementAndGet);
-    Assert.assertEquals(3, ato.get());
-    Assert.assertTrue(System.currentTimeMillis() - start > 200);
+    assertEquals(3, ato.get());
+    assertTrue(System.currentTimeMillis() - start > 200);
   }
 
   @Test
-  public void test06() {
+  void test06() {
     long start = System.currentTimeMillis();
     AtomicInteger ato = new AtomicInteger(0);
     RetryBuilder.<Integer>newBuilder().retryIfResult(rs -> rs < 3).withWaitBlock(100).build()
         .call(ato::incrementAndGet);
-    Assert.assertEquals(3, ato.get());
-    Assert.assertTrue(System.currentTimeMillis() - start > 200);
+    assertEquals(3, ato.get());
+    assertTrue(System.currentTimeMillis() - start > 200);
   }
 
   @Test
-  public void test07() throws InterruptedException {
+  void test07() throws InterruptedException {
     AtomicInteger ato = new AtomicInteger(0);
     Retryer<Integer> retryer = RetryBuilder.<Integer>newBuilder().retryIfResult(rs -> rs < 3)
         .withSleepBlock(100).build();
@@ -105,11 +108,11 @@ public class RetryerTest {
     pool.execute(r);
 
     ThreadUtils.sleep(1000);
-    Assert.assertEquals(4, ato.get());
+    assertEquals(4, ato.get());
   }
 
   @Test
-  public void test08() {
+  void test08() {
     AtomicInteger ato = new AtomicInteger(0);
     AtomicInteger fail = new AtomicInteger(0);
     RetryBuilder.<Integer>newBuilder().withTimeLimit(10, TimeUnit.MILLISECONDS)
@@ -122,46 +125,46 @@ public class RetryerTest {
       }
       return 1;
     });
-    Assert.assertEquals(1, fail.get());
+    assertEquals(1, fail.get());
   }
 
   @Test
-  public void test09() {
+  void test09() {
     AtomicInteger ato = new AtomicInteger(0);
     RetryBuilder.<Integer>newBuilder().retryIfResult(rs -> rs < 3)
         .withBlock(r -> ThreadUtils.sleep(100)).build().call(ato::incrementAndGet);
-    Assert.assertEquals(3, ato.get());
+    assertEquals(3, ato.get());
   }
 
   @Test
-  public void test10() {
+  void test10() {
     AtomicInteger ato = new AtomicInteger(0);
     AtomicInteger retryAto = new AtomicInteger(0);
     AtomicInteger success = new AtomicInteger(0);
     RetryBuilder.<Integer>newBuilder().retryIfResult(rs -> rs < 3)
         .onRetry(r -> retryAto.incrementAndGet()).onSuccess(r -> success.incrementAndGet()).build()
         .call(ato::incrementAndGet);
-    Assert.assertEquals(3, ato.get());
-    Assert.assertEquals(3, retryAto.get());
-    Assert.assertEquals(1, success.get());
+    assertEquals(3, ato.get());
+    assertEquals(3, retryAto.get());
+    assertEquals(1, success.get());
   }
 
   @Test
-  public void test11() {
+  void test11() {
     AtomicInteger ato = new AtomicInteger(0);
     RetryBuilder.<Integer>newBuilder().retryIfResult(rs -> rs < 31).withMaxDelay(500)
         .withBlock(r -> ThreadUtils.sleep(100)).build().call(ato::incrementAndGet);
-    Assert.assertEquals(6, ato.get());
+    assertEquals(6, ato.get());
   }
 
   @Test
-  public void test12() {
+  void test12() {
     AtomicInteger ato = new AtomicInteger(0);
     CompletableFuture<Integer> future = RetryBuilder.<Integer>newBuilder()
         .retryIfResult(rs -> rs < 3).buildAsync().callAsync(ato::incrementAndGet);
     future.thenAccept(r -> ato.incrementAndGet());
     future.join();
     ThreadUtils.sleep(100);
-    Assert.assertEquals(4, ato.get());
+    assertEquals(4, ato.get());
   }
 }

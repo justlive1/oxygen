@@ -13,38 +13,39 @@
  */
 package vip.justlive.oxygen.core.util.io;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.Arrays;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wubo
  */
-public class CsvWriterTest {
+class CsvWriterTest {
 
   @Test
-  public void test() {
+  void test() {
 
     CsvWriter writer = new CsvWriter();
     StringBuilder sb = new StringBuilder();
 
     writer.write(sb, new String[]{"a", "b"}, false);
-    Assert.assertEquals("a,b\r\n", sb.toString());
+    assertEquals("a,b\r\n", sb.toString());
 
     writer.write(sb, Arrays.asList("a", "b"));
-    Assert.assertEquals("a,b\r\n\"a\",\"b\"\r\n", sb.toString());
+    assertEquals("a,b\r\n\"a\",\"b\"\r\n", sb.toString());
 
     sb.setLength(0);
     writer.write(sb, Arrays.asList("a", "b,c"));
-    Assert.assertEquals("\"a\",\"b,c\"\r\n", sb.toString());
+    assertEquals("\"a\",\"b,c\"\r\n", sb.toString());
 
     sb.setLength(0);
     writer.writeAll(sb, Arrays.asList(new String[]{"1", "2"}, new String[]{"3", null, "5"}), false);
-    Assert.assertEquals("1,2\r\n3,,5\r\n", sb.toString());
+    assertEquals("1,2\r\n3,,5\r\n", sb.toString());
 
     sb.setLength(0);
     writer.writeAll(sb, Arrays.asList(new String[]{"1", "2"}, new String[]{"3"}, null));
-    Assert.assertEquals("\"1\",\"2\"\r\n\"3\"\r\n", sb.toString());
+    assertEquals("\"1\",\"2\"\r\n\"3\"\r\n", sb.toString());
 
   }
 }

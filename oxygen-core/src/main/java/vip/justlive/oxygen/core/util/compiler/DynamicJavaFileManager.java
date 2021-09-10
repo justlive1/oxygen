@@ -49,12 +49,7 @@ public class DynamicJavaFileManager extends ForwardingJavaFileManager<JavaFileMa
   public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind,
       FileObject sibling) throws IOException {
     if (kind == Kind.CLASS && location == StandardLocation.CLASS_OUTPUT) {
-      ByteCode byteCode = byteCodes.get(className);
-      if (byteCode == null) {
-        byteCode = new ByteCode(className, kind);
-        byteCodes.put(className, byteCode);
-      }
-      return byteCode;
+      return byteCodes.computeIfAbsent(className, k -> new ByteCode(k, kind));
     }
     return super.getJavaFileForOutput(location, className, kind, sibling);
   }

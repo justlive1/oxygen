@@ -80,7 +80,7 @@ public class FreemarkerResultHandler implements ResultHandler {
       cfg.setClassForTemplateLoading(Bootstrap.class,
           WebConfigKeys.VIEW_PREFIX_FREEMARKER.getValue());
       cfg.setNumberFormat(Strings.OCTOTHORP);
-      if (WebConfigKeys.VIEW_CACHE.castValue(boolean.class)) {
+      if (Boolean.TRUE.equals(WebConfigKeys.VIEW_CACHE.castValue(boolean.class))) {
         cfg.setCacheStorage(new MruCacheStorage(20, 250));
       } else {
         cfg.unsetCacheStorage();

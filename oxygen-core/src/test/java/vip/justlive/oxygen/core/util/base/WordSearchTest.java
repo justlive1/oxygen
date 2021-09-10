@@ -14,69 +14,69 @@
 package vip.justlive.oxygen.core.util.base;
 
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.base.WordSearch.Result;
 
-public class WordSearchTest {
+class WordSearchTest {
 
 
   @Test
-  public void findFirst() {
+  void findFirst() {
     WordSearch search = new WordSearch();
     search.addKeyword("123");
 
     Result res = search.findFirst("512231233,123");
-    Assert.assertNotNull(res);
-    Assert.assertEquals(5, res.getIndex());
+    Assertions.assertNotNull(res);
+    Assertions.assertEquals(5, res.getIndex());
   }
 
   @Test
-  public void testFindFirst() {
+  void testFindFirst() {
     WordSearch search = new WordSearch();
     search.addKeyword("123");
 
     Result res = search.findFirst("512231-2-33,123", true);
-    Assert.assertNotNull(res);
-    Assert.assertEquals(5, res.getIndex());
+    Assertions.assertNotNull(res);
+    Assertions.assertEquals(5, res.getIndex());
 
   }
 
   @Test
-  public void findAll() {
+  void findAll() {
 
     WordSearch search = new WordSearch();
     search.addKeyword("123");
 
     List<Result> res = search.findAll("512231233,123");
-    Assert.assertEquals(2, res.size());
+    Assertions.assertEquals(2, res.size());
 
   }
 
   @Test
-  public void testFindAll() {
+  void testFindAll() {
     WordSearch search = new WordSearch();
     search.addKeyword("123");
 
     List<Result> res = search.findAll("512231-2&33,123", true);
-    Assert.assertEquals(2, res.size());
+    Assertions.assertEquals(2, res.size());
   }
 
   @Test
-  public void replace() {
+  void replace() {
     WordSearch search = new WordSearch();
     search.addKeyword("123");
 
     String res = search.replace("512231-2&33,123", "$");
-    Assert.assertEquals("512231-2&33,$", res);
+    Assertions.assertEquals("512231-2&33,$", res);
   }
 
   @Test
-  public void testReplace() {
+  void testReplace() {
     WordSearch search = new WordSearch();
     search.addKeyword("123");
 
     String res = search.replace("512231-2&33,123", "$", true);
-    Assert.assertEquals("51223$3,$", res);
+    Assertions.assertEquals("51223$3,$", res);
   }
 }

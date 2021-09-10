@@ -14,16 +14,18 @@
 
 package vip.justlive.oxygen.core.config;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.util.Properties;
 import lombok.Data;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.net.aio.Server;
 
 /**
  * @author wubo
  */
-public class BinderTest {
+class BinderTest {
 
   static Properties props() {
     Properties prop = new Properties();
@@ -44,54 +46,54 @@ public class BinderTest {
   }
 
   @Test
-  public void bind() {
+  void bind() {
     Binder binder = new Binder(BinderTest::props);
     Obj obj = binder.bind(Obj.class);
-    Assert.assertEquals("1", obj.f1);
-    Assert.assertEquals("3", obj.f2);
+    assertEquals("1", obj.f1);
+    assertEquals("3", obj.f2);
 
     Obj1 obj1 = binder.bind(Obj1.class);
-    Assert.assertEquals("4", obj1.f1);
-    Assert.assertEquals("3", obj1.f2);
+    assertEquals("4", obj1.f1);
+    assertEquals("3", obj1.f2);
 
   }
 
   @Test
-  public void testBind() {
+  void testBind() {
     Binder binder = new Binder(BinderTest::props);
     Obj obj = binder.bind(Obj.class, "lc");
-    Assert.assertEquals("4", obj.f1);
-    Assert.assertEquals("3", obj.f2);
+    assertEquals("4", obj.f1);
+    assertEquals("3", obj.f2);
 
     Obj1 obj1 = binder.bind(Obj1.class, "rp");
-    Assert.assertEquals("6", obj1.f1);
-    Assert.assertEquals("3", obj1.f2);
-    Assert.assertNotNull(obj1.f3);
-    Assert.assertEquals("7", obj1.f3.f1);
-    Assert.assertEquals("3", obj1.f3.f2);
+    assertEquals("6", obj1.f1);
+    assertEquals("3", obj1.f2);
+    assertNotNull(obj1.f3);
+    assertEquals("7", obj1.f3.f1);
+    assertEquals("3", obj1.f3.f2);
   }
 
   @Test
-  public void testBind1() {
+  void testBind1() {
     Binder binder = new Binder(BinderTest::props);
     Obj obj = new Obj();
     obj.f1 = "8";
     obj.f2 = "9";
     binder.bind(obj, "lc");
-    Assert.assertEquals("4", obj.f1);
-    Assert.assertEquals("3", obj.f2);
+    assertEquals("4", obj.f1);
+    assertEquals("3", obj.f2);
 
     Obj obj1 = new Obj();
     obj1.f1 = "8";
     obj1.f2 = "9";
     binder.bind(obj1, "rp");
-    Assert.assertEquals("6", obj1.f1);
-    Assert.assertEquals("3", obj1.f2);
+    assertEquals("6", obj1.f1);
+    assertEquals("3", obj1.f2);
 
   }
 
   @Test
-  public void testArray() {
+  void testArray() {
     Properties prop = new Properties();
     prop.setProperty("f1", "1");
     prop.setProperty("f2", "2");
@@ -99,9 +101,9 @@ public class BinderTest {
 
     Binder binder = new Binder(() -> prop);
     Obj obj = binder.bind(Obj.class);
-    Assert.assertNotNull(obj.f3);
-    Assert.assertEquals(2, obj.f3.length);
-    Assert.assertEquals(new Integer(3), obj.f3[0]);
+    assertNotNull(obj.f3);
+    assertEquals(2, obj.f3.length);
+    assertEquals(new Integer(3), obj.f3[0]);
   }
 
   @Data

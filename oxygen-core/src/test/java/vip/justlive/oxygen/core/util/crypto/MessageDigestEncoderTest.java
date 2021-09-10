@@ -14,17 +14,17 @@
 
 package vip.justlive.oxygen.core.util.crypto;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wubo
  */
-public class MessageDigestEncoderTest {
+class MessageDigestEncoderTest {
 
   @Test
-  public void test() {
+  void test() {
 
     MessageDigestEncoder encoder = new MessageDigestEncoder("MD5");
 

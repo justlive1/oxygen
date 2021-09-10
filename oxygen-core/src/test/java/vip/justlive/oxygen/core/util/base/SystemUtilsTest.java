@@ -13,28 +13,31 @@
  */
 package vip.justlive.oxygen.core.util.base;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wubo
  */
-public class SystemUtilsTest {
+class SystemUtilsTest {
 
   @Test
-  public void test() {
-    Assert.assertTrue(SystemUtils.isValidPort(10000));
-    Assert.assertFalse(SystemUtils.isValidPort(-2));
-    Assert.assertFalse(SystemUtils.isValidPort(65536));
+  void test() {
+    assertTrue(SystemUtils.isValidPort(10000));
+    assertFalse(SystemUtils.isValidPort(-2));
+    assertFalse(SystemUtils.isValidPort(65536));
 
     SystemUtils.findAvailablePort();
     InetAddress address = SystemUtils.getLocalAddress();
 
-    Assert.assertTrue(SystemUtils.pid() > -1);
+    assertTrue(SystemUtils.pid() > -1);
 
-    Assert.assertEquals(new InetSocketAddress(address.getHostAddress(), 8080),
+    assertEquals(new InetSocketAddress(address.getHostAddress(), 8080),
         SystemUtils.parseAddress(address.getHostAddress() + ":8080"));
 
   }

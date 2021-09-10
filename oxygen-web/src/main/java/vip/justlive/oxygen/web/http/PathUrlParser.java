@@ -40,8 +40,8 @@ public class PathUrlParser implements Parser {
   @Override
   public void parse(Request request) {
     RouteHandler handler;
-    if (request.method == HttpMethod.OPTIONS && !WebConfigKeys.REQUEST_HANDLE_OPTIONS
-        .castValue(boolean.class)) {
+    if (request.method == HttpMethod.OPTIONS && !Boolean.TRUE
+        .equals(WebConfigKeys.REQUEST_HANDLE_OPTIONS.castValue(boolean.class))) {
       handler = OptionsRouteHandler.INSTANCE;
     } else {
       handler = Router.lookupStatic(request.getPath());

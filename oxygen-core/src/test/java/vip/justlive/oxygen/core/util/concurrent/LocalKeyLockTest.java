@@ -14,16 +14,17 @@
 
 package vip.justlive.oxygen.core.util.concurrent;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wubo
  */
-public class LocalKeyLockTest {
+class LocalKeyLockTest {
 
   @Test
-  public void test() {
+  void test() {
     final Bank bank = new Bank();
     bank.money = 500;
     new Thread(() -> {
@@ -44,7 +45,7 @@ public class LocalKeyLockTest {
 
     ThreadUtils.sleep(400);
 
-    Assert.assertEquals(200, bank.money);
+    assertEquals(200, bank.money);
   }
 
   static class Bank {

@@ -14,39 +14,42 @@
 
 package vip.justlive.oxygen.core.config;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import lombok.Data;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wubo
  */
-public class ConfigFactoryTest {
+class ConfigFactoryTest {
 
   @Test
-  public void testLoadOneProp() {
+  void testLoadOneProp() {
 
     ConfigFactory.loadProperties("classpath*:config.properties", "classpath*:/config/*.properties");
 
-    Assert.assertTrue(ConfigFactory.keys().contains("fc.age"));
+    assertTrue(ConfigFactory.keys().contains("fc.age"));
 
     Prop prop = ConfigFactory.load(Prop.class);
 
-    Assert.assertNotNull(prop);
-    Assert.assertEquals("jack", prop.getName());
+    assertNotNull(prop);
+    assertEquals("jack", prop.getName());
 
-    Assert.assertEquals(new Integer(19), prop.getAge());
+    assertEquals(new Integer(19), prop.getAge());
 
     System.setProperty("fc.age", "23");
     ConfigFactory.setProperty("fc.name", "321");
 
     prop = ConfigFactory.load(Prop.class);
-    Assert.assertEquals(new Integer(23), prop.getAge());
+    assertEquals(new Integer(23), prop.getAge());
 
     ConfigFactory.setProperty("fc.age", "32");
     prop = ConfigFactory.load(Prop.class);
 
-    Assert.assertEquals(new Integer(32), prop.getAge());
+    assertEquals(new Integer(32), prop.getAge());
   }
 
   @Data

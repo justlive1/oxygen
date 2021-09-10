@@ -13,16 +13,16 @@
  */
 package vip.justlive.oxygen.core.aop.proxy;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.aop.LogService;
 
 /**
  * @author wubo
  */
-public class CompilerBeanProxyTest {
+class CompilerBeanProxyTest {
 
   @Test
-  public void test() {
+  void test() {
 
     LogService logService = new LogService();
     CompilerBeanProxy beanProxy = new CompilerBeanProxy();

@@ -13,8 +13,8 @@
  */
 package vip.justlive.oxygen.jdbc;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.bean.Singleton;
@@ -25,7 +25,7 @@ import vip.justlive.oxygen.core.job.Scheduler;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 import vip.justlive.oxygen.jdbc.job.JdbcJobStore;
 
-public class JobJdbcTest implements Plugin {
+class JobJdbcTest implements Plugin {
 
   @Override
   public int order() {
@@ -48,8 +48,8 @@ public class JobJdbcTest implements Plugin {
 
   }
 
-  @Before
-  public void before() {
+  @BeforeEach
+  void before() {
 
     ConfigFactory.setProperty("oxygen.job.jobStoreClass", JdbcJobStore.class.getName());
 
@@ -60,7 +60,7 @@ public class JobJdbcTest implements Plugin {
   }
 
   @Test
-  public void test() {
+  void test() {
 
     Scheduler scheduler = Singleton.get(Scheduler.class);
 

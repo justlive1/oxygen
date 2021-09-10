@@ -13,9 +13,11 @@
  */
 package vip.justlive.oxygen.core.aop;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.util.concurrent.TimeUnit;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.cache.Cache;
@@ -23,16 +25,16 @@ import vip.justlive.oxygen.core.cache.Cache;
 /**
  * @author wubo
  */
-public class CacheAspectTest {
+class CacheAspectTest {
 
   @Test
-  public void test() throws InterruptedException {
+  void test() throws InterruptedException {
 
     Bootstrap.start();
 
     CacheService cacheService = Singleton.get(CacheService.class);
 
-    Assert.assertNotNull(cacheService);
+    assertNotNull(cacheService);
 
     cacheService.time();
     cacheService.time();
@@ -40,12 +42,12 @@ public class CacheAspectTest {
     cacheService.time1(2);
     cacheService.time1(2);
 
-    Assert.assertEquals(3, Cache.cache().keys().size());
+    assertEquals(3, Cache.cache().keys().size());
 
     TimeUnit.SECONDS.sleep(1);
 
     cacheService.time1(1);
-    Assert.assertEquals(2, Cache.cache().keys().size());
+    assertEquals(2, Cache.cache().keys().size());
 
   }
 }

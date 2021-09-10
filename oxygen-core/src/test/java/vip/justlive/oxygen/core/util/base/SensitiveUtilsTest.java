@@ -14,57 +14,58 @@
 
 package vip.justlive.oxygen.core.util.base;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
 
 /**
  * @author wubo
  */
-public class SensitiveUtilsTest {
+class SensitiveUtilsTest {
 
   @Test
-  public void nameHide() {
-    Assert.assertEquals("赵**", SensitiveUtils.nameHide("赵倩"));
-    Assert.assertEquals("赵**", SensitiveUtils.nameHide("赵倩倩"));
+  void nameHide() {
+    assertEquals("赵**", SensitiveUtils.nameHide("赵倩"));
+    assertEquals("赵**", SensitiveUtils.nameHide("赵倩倩"));
   }
 
   @Test
-  public void idCardNoHide() {
-    Assert.assertEquals("11**************97", SensitiveUtils.idCardNoHide("110101199003072797"));
+  void idCardNoHide() {
+    assertEquals("11**************97", SensitiveUtils.idCardNoHide("110101199003072797"));
   }
 
   @Test
-  public void bankCardNoHide() {
-    Assert
-        .assertEquals("330104*********2007", SensitiveUtils.bankCardNoHide("3301040160000852007"));
-    Assert.assertEquals("33010*****0008", SensitiveUtils.bankCardNoHide("33010401600008"));
+  void bankCardNoHide() {
+    assertEquals("330104*********2007", SensitiveUtils.bankCardNoHide("3301040160000852007"));
+    assertEquals("33010*****0008", SensitiveUtils.bankCardNoHide("33010401600008"));
   }
 
   @Test
   public void cellphoneHide() {
-    Assert.assertEquals("130******58", SensitiveUtils.cellphoneHide("13071835358"));
-    Assert.assertEquals("307****358", SensitiveUtils.cellphoneHide("3071835358"));
-    Assert.assertEquals("07****358", SensitiveUtils.cellphoneHide("071835358"));
-    Assert.assertEquals("8****8", SensitiveUtils.cellphoneHide("835358"));
+    assertEquals("130******58", SensitiveUtils.cellphoneHide("13071835358"));
+    assertEquals("307****358", SensitiveUtils.cellphoneHide("3071835358"));
+    assertEquals("07****358", SensitiveUtils.cellphoneHide("071835358"));
+    assertEquals("8****8", SensitiveUtils.cellphoneHide("835358"));
   }
 
   @Test
   public void emailHide() {
-    Assert.assertEquals("835***@163.com", SensitiveUtils.emailHide("835358@163.com"));
-    Assert.assertEquals("83***@163.com", SensitiveUtils.emailHide("83@163.com"));
+    assertEquals("835***@163.com", SensitiveUtils.emailHide("835358@163.com"));
+    assertEquals("83***@163.com", SensitiveUtils.emailHide("83@163.com"));
   }
 
   @Test
   public void defaultHide() {
-    Assert.assertEquals("t*t", SensitiveUtils.defaultHide("ttt"));
-    Assert.assertEquals("123***78", SensitiveUtils.defaultHide("12345678"));
+    assertEquals("t*t", SensitiveUtils.defaultHide("ttt"));
+    assertEquals("123***78", SensitiveUtils.defaultHide("12345678"));
   }
 
   @Test
   public void customizeHide() {
-    Assert.assertEquals("135****4561", SensitiveUtils.customizeHide("13568794561", 3, 4, 4));
-    Assert.assertEquals("****4561", SensitiveUtils.customizeHide("13568794561", 0, 4, 4));
-    Assert.assertEquals("135****", SensitiveUtils.customizeHide("13568794561", 3, 0, 4));
-    Assert.assertEquals("135********", SensitiveUtils.customizeHide("13568794561", 3, 0, 8));
+    assertEquals("135****4561", SensitiveUtils.customizeHide("13568794561", 3, 4, 4));
+    assertEquals("****4561", SensitiveUtils.customizeHide("13568794561", 0, 4, 4));
+    assertEquals("135****", SensitiveUtils.customizeHide("13568794561", 3, 0, 4));
+    assertEquals("135********", SensitiveUtils.customizeHide("13568794561", 3, 0, 8));
   }
 }

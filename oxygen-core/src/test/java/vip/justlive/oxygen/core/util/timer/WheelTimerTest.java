@@ -14,6 +14,11 @@
 
 package vip.justlive.oxygen.core.util.timer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -21,19 +26,18 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
  * @author wubo
  */
 @Slf4j
-public class WheelTimerTest {
+class WheelTimerTest {
 
 
   @Test
-  public void test() throws ExecutionException, InterruptedException {
+  void test() throws ExecutionException, InterruptedException {
     WheelTimer timer = new WheelTimer(1000, 5);
     timer.start();
 
@@ -48,26 +52,27 @@ public class WheelTimerTest {
     timer.schedule(callable, 3, TimeUnit.SECONDS);
     Future<Integer> future = timer.schedule(callable, 7, TimeUnit.SECONDS);
 
-    Assert.assertEquals(0, count.get());
+    assertEquals(0, count.get());
 
     ThreadUtils.sleep(2000);
-    Assert.assertEquals(1, count.get());
+    assertEquals(1, count.get());
 
     ThreadUtils.sleep(3000);
-    Assert.assertEquals(2, count.get());
+    assertEquals(2, count.get());
 
     ThreadUtils.sleep(3000);
-    Assert.assertEquals(3, count.get());
+    assertEquals(3, count.get());
 
     System.out.println(future.get());
 
     timer.shutdown();
 
-    Assert.assertTrue(timer.isShutdown());
+    assertTrue(timer.isShutdown());
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void test1() {
+  @Test
+    // TODO
+  void test1() {
     WheelTimer timer = ThreadUtils.globalTimer();
 
     AtomicInteger count = new AtomicInteger();
@@ -87,21 +92,21 @@ public class WheelTimerTest {
     timer.schedule(callable, 365 * 400, TimeUnit.DAYS);
 
     ThreadUtils.sleep(5900);
-    Assert.assertEquals(5, count.get());
+    assertEquals(5, count.get());
 
     rate.cancel(true);
 
     ThreadUtils.sleep(8000);
 
-    Assert.assertTrue(rate.isDone());
-    Assert.assertFalse(delay.isDone());
+    assertTrue(rate.isDone());
+    assertFalse(delay.isDone());
 
-    timer.shutdown();
+    assertThrows(IllegalStateException.class, timer::shutdown);
 
   }
 
   @Test
-  public void test2() {
+  void test2() {
     WheelTimer timer = new WheelTimer(1000, 20, 2);
 
     AtomicInteger count = new AtomicInteger();
@@ -119,15 +124,15 @@ public class WheelTimerTest {
     timer.schedule(runnable, 7, TimeUnit.SECONDS);
 
     ThreadUtils.sleep(5900);
-    Assert.assertEquals(5, count.get());
+    assertEquals(5, count.get());
 
     rate.cancel(true);
     f.cancel(true);
 
     ThreadUtils.sleep(8000);
 
-    Assert.assertTrue(rate.isDone());
-    Assert.assertFalse(delay.isDone());
+    assertTrue(rate.isDone());
+    assertFalse(delay.isDone());
 
     timer.shutdown();
 

@@ -13,44 +13,48 @@
  */
 package vip.justlive.oxygen.core.bean;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wubo
  */
-public class SingletonTest {
+class SingletonTest {
 
   @Test
-  public void test() {
+  void test() {
     Singleton.set("echo0", new EchoImpl0(), 0);
     Singleton.set("echo1", new EchoImpl1(), 1);
 
-    Assert.assertTrue(Singleton.get("echo0") instanceof EchoImpl0);
-    Assert.assertNotNull(Singleton.get(Echo0.class));
-    Assert.assertNotNull(Singleton.get(EchoImpl0.class));
-    Assert.assertNotNull(Singleton.get("echo0", Echo0.class));
+    assertTrue(Singleton.get("echo0") instanceof EchoImpl0);
+    assertNotNull(Singleton.get(Echo0.class));
+    assertNotNull(Singleton.get(EchoImpl0.class));
+    assertNotNull(Singleton.get("echo0", Echo0.class));
 
-    Assert.assertEquals(2, Singleton.getMap(Echo0.class).size());
-    Assert.assertEquals(1, Singleton.getMap(Echo1.class).size());
-    Assert.assertEquals(2, Singleton.getMap(EchoImpl0.class).size());
-    Assert.assertEquals(2, Singleton.getCastMap(Echo0.class).size());
-    Assert.assertEquals(1, Singleton.getCastMap(Echo1.class).size());
-    Assert.assertEquals(2, Singleton.getCastMap(EchoImpl0.class).size());
+    assertEquals(2, Singleton.getMap(Echo0.class).size());
+    assertEquals(1, Singleton.getMap(Echo1.class).size());
+    assertEquals(2, Singleton.getMap(EchoImpl0.class).size());
+    assertEquals(2, Singleton.getCastMap(Echo0.class).size());
+    assertEquals(1, Singleton.getCastMap(Echo1.class).size());
+    assertEquals(2, Singleton.getCastMap(EchoImpl0.class).size());
 
-    Assert.assertEquals(2, Singleton.getList(Echo0.class).size());
-    Assert.assertEquals(1, Singleton.getList(Echo1.class).size());
-    Assert.assertEquals(2, Singleton.getList(EchoImpl0.class).size());
+    assertEquals(2, Singleton.getList(Echo0.class).size());
+    assertEquals(1, Singleton.getList(Echo1.class).size());
+    assertEquals(2, Singleton.getList(EchoImpl0.class).size());
 
     Singleton.set("echo2", new EchoImpl0(), 0);
     try {
       Singleton.get(Echo0.class);
-      Assert.fail();
+      fail();
     } catch (Exception e) {
       // ignore
     }
 
     Singleton.clear();
-    Assert.assertEquals(0, Singleton.names().size());
+    assertEquals(0, Singleton.names().size());
   }
 }

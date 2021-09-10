@@ -14,39 +14,40 @@
 
 package vip.justlive.oxygen.core.util.template;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
 
 /**
  * @author wubo
  */
-public class CalculatorTest {
+class CalculatorTest {
 
   @Test
-  public void calculate() {
+  void calculate() {
     String formula = "2 * 4 + 3";
     BigDecimal value = Calculator.calculate(formula);
-    Assert.assertEquals(new BigDecimal(11), value);
+    assertEquals(new BigDecimal(11), value);
   }
 
   @Test
-  public void calculate1() {
+  void calculate1() {
     String formula = "2 * a + 3 * b - c";
     BigDecimal value = Calculator.calculate(formula, MoreObjects.mapOf("a", 3, "b", 4.2, "c", 2.5));
-    Assert.assertEquals(new BigDecimal(2).multiply(new BigDecimal(3))
+    assertEquals(new BigDecimal(2).multiply(new BigDecimal(3))
             .add(new BigDecimal(3).multiply(new BigDecimal("4.2")).subtract(new BigDecimal("2.5"))),
         value);
   }
 
   @Test
-  public void calculate2() {
+  void calculate2() {
     String formula = "3 * b / c";
     BigDecimal value = Calculator
         .calculate(formula, MoreObjects.mapOf("b", 4.2, "c", 2.3), 2);
-    Assert.assertEquals(new BigDecimal("3")
+    assertEquals(new BigDecimal("3")
             .multiply(new BigDecimal("4.2").divide(new BigDecimal("2.3"), 5, RoundingMode.HALF_DOWN))
             .setScale(2, RoundingMode.HALF_DOWN),
         value);

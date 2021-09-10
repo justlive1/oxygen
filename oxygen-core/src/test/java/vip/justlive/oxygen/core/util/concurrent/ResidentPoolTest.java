@@ -13,14 +13,15 @@
  */
 package vip.justlive.oxygen.core.util.concurrent;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ResidentPoolTest {
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.Test;
+
+class ResidentPoolTest {
 
   @Test
-  public void test() {
+  void test() {
     AtomicInteger count = new AtomicInteger();
 
     ResidentPool pool = new ResidentPool(3);
@@ -32,12 +33,12 @@ public class ResidentPoolTest {
 
     ThreadUtils.sleep(3000);
 
-    Assert.assertEquals(3, count.get());
+    assertEquals(3, count.get());
 
     pool.shutdown();
 
     ThreadUtils.sleep(3000);
 
-    Assert.assertEquals(3, count.get());
+    assertEquals(3, count.get());
   }
 }

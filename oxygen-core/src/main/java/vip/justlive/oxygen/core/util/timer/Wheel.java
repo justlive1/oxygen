@@ -54,9 +54,8 @@ public class Wheel {
       Slot slot = slots[(int) (virtualId % slots.length)];
       slot.addTask(task);
       // 只会添加到队列中一次
-      if (slot.setDeadline(virtualId * duration)) {
-        // always true
-        delayQueue.offer(slot);
+      if (slot.setDeadline(virtualId * duration) && !delayQueue.offer(slot)) {
+        // nothing to do, add Queue is always true
       }
       return true;
     }

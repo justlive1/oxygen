@@ -46,6 +46,10 @@ public class FixedTimeLimiter<V> implements TimeLimiter<V> {
     Future<V> future = executorService.submit(callable);
     try {
       return future.get(timeout, timeUnit);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      future.cancel(true);
+      throw Exceptions.wrap(e);
     } catch (Exception e) {
       future.cancel(true);
       throw Exceptions.wrap(e);

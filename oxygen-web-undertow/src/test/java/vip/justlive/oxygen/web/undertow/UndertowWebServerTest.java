@@ -13,8 +13,10 @@
  */
 package vip.justlive.oxygen.web.undertow;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.base.SystemUtils;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
@@ -26,10 +28,10 @@ import vip.justlive.oxygen.web.server.Server;
 /**
  * @author wubo
  */
-public class UndertowWebServerTest {
+class UndertowWebServerTest {
 
   @Test
-  public void test() {
+  void test() {
 
     String msg = "hello world";
     int port = SystemUtils.findAvailablePort();
@@ -42,22 +44,22 @@ public class UndertowWebServerTest {
     ThreadUtils.sleep(3000);
 
     try (HttpResponse response = HttpRequest.get("http://localhost:" + port + "/a").execute()) {
-      Assert.assertEquals(msg, response.bodyAsString());
+      assertEquals(msg, response.bodyAsString());
     } catch (Exception e) {
-      Assert.fail();
+      fail();
     }
 
     try (HttpResponse response = HttpRequest.post("http://localhost:" + port + "/a").execute()) {
-      Assert.assertEquals(msg + "!", response.bodyAsString());
+      assertEquals(msg + "!", response.bodyAsString());
     } catch (Exception e) {
-      Assert.fail();
+      fail();
     }
 
     try (HttpResponse response = HttpRequest.post("http://localhost:" + port + "/b/123")
         .execute()) {
-      Assert.assertEquals("123", response.bodyAsString());
+      assertEquals("123", response.bodyAsString());
     } catch (Exception e) {
-      Assert.fail();
+      fail();
     }
 
     Server.stop();

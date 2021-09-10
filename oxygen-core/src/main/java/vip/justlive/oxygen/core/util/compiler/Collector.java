@@ -19,12 +19,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 可多次使用的收集器
  *
  * @author wubo
  */
+@Slf4j
 public class Collector<S> implements DiagnosticListener<S> {
 
   private BlockingQueue<Diagnostic<? extends S>> queue = new LinkedBlockingQueue<>();
@@ -34,7 +36,9 @@ public class Collector<S> implements DiagnosticListener<S> {
     if (diagnostic == null) {
       return;
     }
-    queue.offer(diagnostic);
+    if (!queue.offer(diagnostic)) {
+      log.warn("diagnostic {} cannot add to queue", diagnostic);
+    }
   }
 
   /**

@@ -24,85 +24,88 @@ import vip.justlive.oxygen.core.config.ConfigKey;
 @UtilityClass
 public class WebConfigKeys {
 
+  private final String DEFAULT_TEMPLATE = "/templates";
+
   /**
    * embedded 启动端口
    */
-  public ConfigKey SERVER_PORT = new ConfigKey("oxygen.server.port");
+  public final ConfigKey SERVER_PORT = new ConfigKey("oxygen.server.port");
 
   /**
    * context path
    */
-  public ConfigKey SERVER_CONTEXT_PATH = new ConfigKey("oxygen.server.contextPath", "");
+  public final ConfigKey SERVER_CONTEXT_PATH = new ConfigKey("oxygen.server.contextPath", "");
 
   /**
    * request默认编码
    */
-  public ConfigKey REQUEST_CHARSET = new ConfigKey("oxygen.web.request.charset", "utf-8");
+  public final ConfigKey REQUEST_CHARSET = new ConfigKey("oxygen.web.request.charset", "utf-8");
 
   /**
    * 是否处理options请求，默认不返回数据
    */
-  public ConfigKey REQUEST_HANDLE_OPTIONS = new ConfigKey("oxygen.web.request.handleOptions",
+  public final ConfigKey REQUEST_HANDLE_OPTIONS = new ConfigKey("oxygen.web.request.handleOptions",
       "false");
 
   /**
    * session失效时间，单位秒
    */
-  public ConfigKey SESSION_EXPIRED = new ConfigKey("oxygen.web.session.expired", "3600");
+  public final ConfigKey SESSION_EXPIRED = new ConfigKey("oxygen.web.session.expired", "3600");
 
   /**
    * 默认静态资源请求前缀
    */
-  public ConfigKey STATIC_PREFIX = new ConfigKey("oxygen.web.static.prefix", "/public");
+  public final ConfigKey STATIC_PREFIX = new ConfigKey("oxygen.web.static.prefix", "/public");
 
   /**
    * 默认静态资源目录
    */
-  public ConfigKey STATIC_PATH = new ConfigKey("oxygen.web.static.path",
+  public final ConfigKey STATIC_PATH = new ConfigKey("oxygen.web.static.path",
       "/public,/static,classpath:/META-INF/resources/webjars");
 
   /**
    * 静态资源缓存时间
    */
-  public ConfigKey STATIC_CACHE = new ConfigKey("oxygen.web.static.cache", "3600");
+  public final ConfigKey STATIC_CACHE = new ConfigKey("oxygen.web.static.cache", "3600");
 
   /**
    * web jsp路径前缀
    */
-  public ConfigKey VIEW_PREFIX_JSP = new ConfigKey("oxygen.web.view.jsp.prefix", "WEB-INF");
+  public final ConfigKey VIEW_PREFIX_JSP = new ConfigKey("oxygen.web.view.jsp.prefix", "WEB-INF");
 
   /**
    * thymeleaf 路径前缀
    */
-  public ConfigKey VIEW_PREFIX_THYMELEAF = new ConfigKey("oxygen.web.view.thymeleaf.prefix",
-      "/templates");
+  public final ConfigKey VIEW_PREFIX_THYMELEAF = new ConfigKey("oxygen.web.view.thymeleaf.prefix",
+      DEFAULT_TEMPLATE);
 
   /**
    * thymeleaf 视图后缀
    */
-  public ConfigKey VIEW_SUFFIX_THYMELEAF = new ConfigKey("oxygen.web.view.thymeleaf.suffix",
+  public final ConfigKey VIEW_SUFFIX_THYMELEAF = new ConfigKey("oxygen.web.view.thymeleaf.suffix",
       ".html");
 
   /**
    * freemarker 路径前缀
    */
-  public ConfigKey VIEW_PREFIX_FREEMARKER = new ConfigKey("oxygen.web.view.freemarker.prefix",
-      "/templates");
+  public final ConfigKey VIEW_PREFIX_FREEMARKER = new ConfigKey("oxygen.web.view.freemarker.prefix",
+      DEFAULT_TEMPLATE);
 
   /**
    * simple 路径前缀
    */
-  public ConfigKey VIEW_PREFIX_SIMPLE = new ConfigKey("oxygen.web.view.simple.prefix",
-      "/templates");
+  public final ConfigKey VIEW_PREFIX_SIMPLE = new ConfigKey("oxygen.web.view.simple.prefix",
+      DEFAULT_TEMPLATE);
 
   /**
    * simple 视图后缀
    */
-  public ConfigKey VIEW_SUFFIX_SIMPLE = new ConfigKey("oxygen.web.view.simple.suffix", ".htm");
+  public final ConfigKey VIEW_SUFFIX_SIMPLE = new ConfigKey("oxygen.web.view.simple.suffix",
+      ".htm");
 
   /**
    * view cache
    */
-  public ConfigKey VIEW_CACHE = new ConfigKey("oxygen.web.view.cache.enabled", "true");
+  public final ConfigKey VIEW_CACHE = new ConfigKey("oxygen.web.view.cache.enabled", "true");
 
 }

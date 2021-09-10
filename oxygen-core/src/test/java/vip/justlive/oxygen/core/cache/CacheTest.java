@@ -13,18 +13,18 @@
  */
 package vip.justlive.oxygen.core.cache;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 
 /**
  * @author wubo
  */
-public class CacheTest {
+class CacheTest {
 
   @Test
-  public void test() {
+  void test() {
 
     Bootstrap.start();
 

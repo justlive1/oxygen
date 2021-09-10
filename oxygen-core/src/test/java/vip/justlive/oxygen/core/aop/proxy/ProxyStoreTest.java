@@ -13,21 +13,22 @@
  */
 package vip.justlive.oxygen.core.aop.proxy;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.aop.Aspect.TYPE;
 
 /**
  * @author wubo
  */
-public class ProxyStoreTest {
+class ProxyStoreTest {
 
   @Test
-  public void test() {
+  void test() {
     NoLogService service = CglibProxy.proxy(NoLogService.class);
     ProxyStore.addInterceptor(TYPE.BEFORE, new NoLogInterceptor());
     ProxyStore.addInterceptor(TYPE.AFTER, new NoLogInterceptor());
     service.log();
-    Assert.assertEquals(((1 * 10 + 2) * 100 + 1) * 10 + 2, NoLogService.ato.get());
+    assertEquals(((1 * 10 + 2) * 100 + 1) * 10 + 2, NoLogService.ato.get());
   }
 }

@@ -232,7 +232,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       return value.value;
     } finally {
       readLock.unlock();
-      record();
+      count();
     }
   }
 
@@ -278,7 +278,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       return null;
     } finally {
       writeLock.unlock();
-      record();
+      count();
     }
   }
 
@@ -311,7 +311,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       }
     } finally {
       writeLock.unlock();
-      record();
+      count();
     }
   }
 
@@ -478,12 +478,12 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
       return preVal.value;
     } finally {
       writeLock.unlock();
-      record();
+      count();
     }
   }
 
 
-  private void record() {
+  private void count() {
     accumulate.getAndIncrement();
     checkAccumulate();
   }
@@ -787,7 +787,9 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
    *
    * @param <V> 泛型
    */
-  private static final class ExpiringValue<V> {
+  private static final class ExpiringValue<V> implements Serializable {
+
+    private static final long serialVersionUID = -6489885088822385194L;
 
     /**
      * 不过期

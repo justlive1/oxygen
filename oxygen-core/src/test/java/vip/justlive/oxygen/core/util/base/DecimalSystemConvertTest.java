@@ -13,23 +13,24 @@
  */
 package vip.justlive.oxygen.core.util.base;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DecimalSystemConvertTest {
+import org.junit.jupiter.api.Test;
+
+class DecimalSystemConvertTest {
 
   @Test
-  public void convert() {
+  void convert() {
     int value = 1233;
-    Assert.assertEquals(Integer.toOctalString(value), DecimalSystemConvert.convert(value, 8));
-    Assert.assertEquals(Integer.toHexString(value), DecimalSystemConvert.convert(value, 16));
+    assertEquals(Integer.toOctalString(value), DecimalSystemConvert.convert(value, 8));
+    assertEquals(Integer.toHexString(value), DecimalSystemConvert.convert(value, 16));
   }
 
   @Test
-  public void recover() {
+  void recover() {
     int value = 2131244;
     String result = Integer.toHexString(value);
     int rs = DecimalSystemConvert.recover(result, 16);
-    Assert.assertEquals(value, rs);
+    assertEquals(value, rs);
   }
 }

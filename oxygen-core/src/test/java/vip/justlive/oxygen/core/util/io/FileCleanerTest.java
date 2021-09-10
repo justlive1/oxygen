@@ -14,22 +14,22 @@
 
 package vip.justlive.oxygen.core.util.io;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.base.SnowflakeId;
 
 /**
  * @author wubo
  */
-public class FileCleanerTest {
+class FileCleanerTest {
 
   @Test
-  public void test() {
+  void test() {
     File file = new File("./" + SnowflakeId.defaultNextId());
     Path path = Paths.get(".", SnowflakeId.defaultNextId() + "");
     try (FileCleaner cleaner = new FileCleaner()) {

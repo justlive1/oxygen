@@ -14,16 +14,17 @@
 
 package vip.justlive.oxygen.core.util.base;
 
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Properties;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wubo
  */
-public class PlaceHolderHelperTest {
+class PlaceHolderHelperTest {
 
   Properties props = new Properties();
 
@@ -31,7 +32,7 @@ public class PlaceHolderHelperTest {
       PlaceHolderHelper.DEFAULT_PLACEHOLDER_SUFFIX, PlaceHolderHelper.DEFAULT_VALUE_SEPARATOR,
       true);
 
-  @Before
+  @BeforeEach
   public void before() {
 
     props.put("a", "a");
@@ -43,7 +44,7 @@ public class PlaceHolderHelperTest {
   }
 
   @Test
-  public void testHelper() {
+  void testHelper() {
 
     assertEquals("a", helper.replacePlaceholders(props.getProperty("a"), props));
     assertEquals("a", helper.replacePlaceholders(props.getProperty("b"), props));

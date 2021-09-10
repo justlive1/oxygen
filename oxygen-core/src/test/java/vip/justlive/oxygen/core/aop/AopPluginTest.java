@@ -13,21 +13,22 @@
  */
 package vip.justlive.oxygen.core.aop;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.bean.Singleton;
 
 /**
  * @author wubo
  */
-public class AopPluginTest {
+class AopPluginTest {
 
   @Test
-  public void test() {
+  void test() {
     Bootstrap.start();
     Conf conf = Singleton.get(Conf.class);
-    Assert.assertNotNull(conf);
+    assertNotNull(conf);
     conf.print();
   }
 }

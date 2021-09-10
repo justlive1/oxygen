@@ -13,7 +13,6 @@
  */
 package vip.justlive.oxygen.core.util.base;
 
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -65,8 +64,8 @@ public class ClassUtils {
   public final String NON_PRIMITIVE_ARRAY_PREFIX = "[L";
 
   private final boolean HAS_FAST_METHOD = ClassUtils.isPresent("net.sf.cglib.reflect.FastMethod");
-  private final boolean HAS_CGLIB_PROXY = ClassUtils
-      .isPresent("net.sf.cglib.proxy.MethodInterceptor");
+  private final boolean HAS_CGLIB_PROXY =
+      ClassUtils.isPresent("net.sf.cglib.proxy.MethodInterceptor");
 
   private final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER_TYPE;
   private final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE_TYPE;
@@ -89,8 +88,11 @@ public class ClassUtils {
     WRAPPER_TO_PRIMITIVE_TYPE = Collections.unmodifiableMap(wrapToPrim);
   }
 
-  private void add(Map<Class<?>, Class<?>> forward, Map<Class<?>, Class<?>> backward,
-      Class<?> key, Class<?> value) {
+  private void add(
+      Map<Class<?>, Class<?>> forward,
+      Map<Class<?>, Class<?>> backward,
+      Class<?> key,
+      Class<?> value) {
     forward.put(key, value);
     backward.put(value, key);
   }
@@ -117,14 +119,14 @@ public class ClassUtils {
    * 获取包装类型
    *
    * @param type 类型
-   * @param <T> 泛型
+   * @param <T>  泛型
    * @return 包装类
    */
   public <T> Class<T> wrap(Class<T> type) {
     MoreObjects.notNull(type);
     // cast is safe: long.class and Long.class are both of type Class<Long>
-    @SuppressWarnings("unchecked") Class<T> wrapped = (Class<T>) PRIMITIVE_TO_WRAPPER_TYPE
-        .get(type);
+    @SuppressWarnings("unchecked")
+    Class<T> wrapped = (Class<T>) PRIMITIVE_TO_WRAPPER_TYPE.get(type);
     return (wrapped == null) ? type : wrapped;
   }
 
@@ -132,14 +134,14 @@ public class ClassUtils {
    * 获取包装类的基本类型
    *
    * @param type 类型
-   * @param <T> 泛型
+   * @param <T>  泛型
    * @return 基本类型
    */
   public <T> Class<T> unwrap(Class<T> type) {
     MoreObjects.notNull(type);
     // cast is safe: long.class and Long.class are both of type Class<Long>
-    @SuppressWarnings("unchecked") Class<T> unwrapped = (Class<T>) WRAPPER_TO_PRIMITIVE_TYPE
-        .get(type);
+    @SuppressWarnings("unchecked")
+    Class<T> unwrapped = (Class<T>) WRAPPER_TO_PRIMITIVE_TYPE.get(type);
     return (unwrapped == null) ? type : unwrapped;
   }
 
@@ -150,8 +152,8 @@ public class ClassUtils {
    * @return true则为基本类型或包装类
    */
   public boolean isPrimitive(Class<?> type) {
-    return PRIMITIVE_TO_WRAPPER_TYPE.containsKey(type) || WRAPPER_TO_PRIMITIVE_TYPE
-        .containsKey(type);
+    return PRIMITIVE_TO_WRAPPER_TYPE.containsKey(type)
+        || WRAPPER_TO_PRIMITIVE_TYPE.containsKey(type);
   }
 
   /**
@@ -194,7 +196,7 @@ public class ClassUtils {
   /**
    * 获取Class实例
    *
-   * @param name 类名
+   * @param name        类名
    * @param classLoader 类加载器
    * @return class
    */
@@ -232,7 +234,8 @@ public class ClassUtils {
         String innerClassName =
             name.substring(0, lastDotIndex) + Strings.DOLLAR + name.substring(lastDotIndex + 1);
         try {
-          return (clToUse != null ? clToUse.loadClass(innerClassName)
+          return (clToUse != null
+              ? clToUse.loadClass(innerClassName)
               : Class.forName(innerClassName));
         } catch (ClassNotFoundException ex2) {
           // Swallow - let original exception get through
@@ -255,7 +258,7 @@ public class ClassUtils {
   /**
    * 类是否存在
    *
-   * @param className 类名
+   * @param className   类名
    * @param classLoader 类加载器
    * @return true为存在
    */
@@ -335,12 +338,12 @@ public class ClassUtils {
   /**
    * 获取类下被注解的方法
    *
-   * @param clazz 类
+   * @param clazz      类
    * @param annotation 注解
    * @return methods
    */
-  public Set<Method> getMethodsAnnotatedWith(Class<?> clazz,
-      Class<? extends Annotation> annotation) {
+  public Set<Method> getMethodsAnnotatedWith(
+      Class<?> clazz, Class<? extends Annotation> annotation) {
     Set<Method> methods = new HashSet<>();
     Class<?> actualClass = getActualClass(clazz);
     if (actualClass == null) {
@@ -358,8 +361,8 @@ public class ClassUtils {
    * 执行方法
    *
    * @param method 方法
-   * @param bean 对象
-   * @param args 参数
+   * @param bean   对象
+   * @param args   参数
    * @return 结果
    */
   public Object methodInvoke(Method method, Object bean, Object... args) {
@@ -372,7 +375,6 @@ public class ClassUtils {
       throw Exceptions.wrap(e.getTargetException());
     }
   }
-
 
   /**
    * 获取类所有方法
@@ -394,7 +396,7 @@ public class ClassUtils {
    * 获取构造参数类型
    *
    * @param clazz 类
-   * @param args 参数
+   * @param args  参数
    * @return class[]
    */
   public Class<?>[] getConstructorArgsTypes(Class<?> clazz, Object... args) {
@@ -420,12 +422,12 @@ public class ClassUtils {
   /**
    * 获取被注解的构造方法
    *
-   * @param clazz 类
+   * @param clazz      类
    * @param annotation 注解
    * @return Constructor
    */
-  public Constructor<?> getConstructorAnnotatedWith(Class<?> clazz,
-      Class<? extends Annotation> annotation) {
+  public Constructor<?> getConstructorAnnotatedWith(
+      Class<?> clazz, Class<? extends Annotation> annotation) {
     return getConstructorAnnotatedWith(clazz.getConstructors(), annotation);
   }
 
@@ -433,11 +435,11 @@ public class ClassUtils {
    * 获取被注解的构造方法
    *
    * @param constructors 构造方法
-   * @param annotation 注解
+   * @param annotation   注解
    * @return Constructor
    */
-  public Constructor<?> getConstructorAnnotatedWith(Constructor<?>[] constructors,
-      Class<? extends Annotation> annotation) {
+  public Constructor<?> getConstructorAnnotatedWith(
+      Constructor<?>[] constructors, Class<? extends Annotation> annotation) {
     for (Constructor<?> constructor : constructors) {
       if (constructor.isAnnotationPresent(annotation)) {
         return constructor;
@@ -459,21 +461,20 @@ public class ClassUtils {
   /**
    * 是否存在注解
    *
-   * @param clazz 类型
+   * @param clazz      类型
    * @param annotation 注解
    * @return true表示存在注解
    */
-  public boolean isAnnotationPresent(Class<?> clazz,
-      Class<? extends Annotation> annotation) {
+  public boolean isAnnotationPresent(Class<?> clazz, Class<? extends Annotation> annotation) {
     return getAnnotation(clazz, annotation) != null;
   }
 
   /**
    * 获取注解 支持派生注解
    *
-   * @param clazz 类型
+   * @param clazz      类型
    * @param annotation 注解
-   * @param <A> 泛型
+   * @param <A>        泛型
    * @return 注解
    */
   @SuppressWarnings("unchecked")
@@ -522,7 +523,7 @@ public class ClassUtils {
   /**
    * 根据属性名，在当前Class类实例的所有Field对象中（包括父类的Field）检索对应的属性值
    *
-   * @param clazz Class类实例
+   * @param clazz        Class类实例
    * @param propertyName 属性名
    * @return Field 对象
    */
@@ -539,7 +540,7 @@ public class ClassUtils {
   /**
    * 根据属性名来获取属性的值
    *
-   * @param object 需要得到属性值的对象
+   * @param object       需要得到属性值的对象
    * @param propertyName 属性名
    * @return Object 属性值
    */
@@ -552,7 +553,7 @@ public class ClassUtils {
    * 获取属性值
    *
    * @param object 需要得到属性值的对象
-   * @param field 字段
+   * @param field  字段
    * @return Object 属性值
    */
   public Object getValue(Object object, Field field) {
@@ -573,8 +574,8 @@ public class ClassUtils {
    * 根据field设置值
    *
    * @param object 目标对象
-   * @param field 属性
-   * @param value 值
+   * @param field  属性
+   * @param value  值
    */
   public void setValue(Object object, Field field, Object value) {
     try {
@@ -590,7 +591,7 @@ public class ClassUtils {
   /**
    * 实例化一个类型为clazz的对象。
    *
-   * @param <T> 实例化对象类型
+   * @param <T>   实例化对象类型
    * @param clazz 实例化类型
    * @return 实例化的对象
    */
@@ -655,7 +656,7 @@ public class ClassUtils {
   /**
    * 生成invoker
    *
-   * @param bean 实例
+   * @param bean   实例
    * @param method 方法
    * @return Invoker
    */
@@ -672,7 +673,7 @@ public class ClassUtils {
    * @return BeanProxy
    */
   public BeanProxy generateBeanProxy() {
-    if (CoreConfigKeys.AOP_ENABLED.castValue(boolean.class)) {
+    if (Boolean.TRUE.equals(CoreConfigKeys.AOP_ENABLED.castValue(boolean.class))) {
       List<BeanProxy> list = ServiceLoaderUtils.loadServices(BeanProxy.class);
       if (!list.isEmpty()) {
         Collections.sort(list);
@@ -691,11 +692,12 @@ public class ClassUtils {
     return new SimpleBeanProxy();
   }
 
-  private void recursivelyCollectAnnotations(Set<Annotation> visited,
-      Annotation annotation) {
+  private void recursivelyCollectAnnotations(Set<Annotation> visited, Annotation annotation) {
     Class<? extends Annotation> annotationType = annotation.annotationType();
-    if (annotationType == null || isInJavaLangAnnotationPackage(annotationType) || !Modifier
-        .isPublic(annotationType.getModifiers()) || !visited.add(annotation)) {
+    if (annotationType == null
+        || isInJavaLangAnnotationPackage(annotationType)
+        || !Modifier.isPublic(annotationType.getModifiers())
+        || !visited.add(annotation)) {
       return;
     }
 

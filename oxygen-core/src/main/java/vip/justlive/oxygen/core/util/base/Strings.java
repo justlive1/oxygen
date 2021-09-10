@@ -78,7 +78,7 @@ public class Strings {
   /**
    * 获取第一个不为null或空字符串的值
    *
-   * @param first first value
+   * @param first  first value
    * @param second second value
    * @param others other values
    * @return nonEmpty
@@ -95,7 +95,7 @@ public class Strings {
   /**
    * 获取第一个不为null或空字符串的值
    *
-   * @param first first value
+   * @param first  first value
    * @param second second value
    * @param others other values
    * @return nonEmpty
@@ -177,7 +177,7 @@ public class Strings {
     // 全集，两个集合直接加起来
     int aSize = aChars.size();
     int bSize = bChars.size();
-    return (2 * (float) intersect) / ((float) (aSize + bSize));
+    return (2 * (float) intersect) / (aSize + bSize);
   }
 
   /**
@@ -274,7 +274,7 @@ public class Strings {
     for (int i : bVec) {
       p3 += (i * i);
     }
-    return ((float) p1) / (p2 * (float) Math.sqrt(p3));
+    return p1 / (p2 * (float) Math.sqrt(p3));
   }
 
   private int editDis(String a, String b) {

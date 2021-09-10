@@ -19,7 +19,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * aspect
@@ -57,7 +56,7 @@ public @interface Aspect {
    *
    * <br>
    */
-  String method() default Strings.EMPTY;
+  String method() default "";
 
   /**
    * 优先级，越小优先级越大

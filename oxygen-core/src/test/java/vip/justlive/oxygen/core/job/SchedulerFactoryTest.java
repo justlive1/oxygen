@@ -13,17 +13,18 @@
  */
 package vip.justlive.oxygen.core.job;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 @Slf4j
-public class SchedulerFactoryTest {
+class SchedulerFactoryTest {
 
   @Test
-  public void test() {
+  void test() {
 
     ThreadUtils.globalTimer().start();
 
@@ -42,7 +43,7 @@ public class SchedulerFactoryTest {
 
     log.info("pause job");
     scheduler.pauseJob(jobInfo.getKey());
-    Assert.assertEquals(0, resource.futures.size());
+    assertEquals(0, resource.futures.size());
 
     jobInfo = new JobInfo().setKey("j2").setHandlerClass(HelloJob1.class.getName());
     scheduler.scheduleJob(jobInfo, new DelayOrRateJobTrigger(jobInfo.getKey(), 3000, true));
@@ -53,7 +54,7 @@ public class SchedulerFactoryTest {
   }
 
   @Test
-  public void test1() {
+  void test1() {
 
     ThreadUtils.globalTimer().start();
 

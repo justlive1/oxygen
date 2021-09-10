@@ -455,7 +455,6 @@ public class FileUtils {
   public File download(String url) throws IOException {
     File file = new File(FileUtils.tempBaseDir(),
         SnowflakeId.defaultNextId() + Strings.DOT + FileUtils.extension(url));
-    mkdirsForFile(file);
     download(url, file);
     return file;
   }
@@ -468,6 +467,7 @@ public class FileUtils {
    * @throws IOException io异常
    */
   public void download(String url, File file) throws IOException {
+    mkdirsForFile(file);
     try (HttpResponse response = HttpRequest.get(url)
         .execute(); FileOutputStream out = new FileOutputStream(file)) {
       IoUtils.copy(response.getBody(), out);

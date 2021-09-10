@@ -13,20 +13,20 @@
  */
 package vip.justlive.oxygen.core.util.base;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MoreObjectsTest {
+ class MoreObjectsTest {
 
   @Test
-  public void beanToMap() {
+   void beanToMap() {
 
     Map<String, Object> source = new HashMap<>(4);
     source.put("1", 1);
@@ -45,7 +45,7 @@ public class MoreObjectsTest {
   }
 
   @Test
-  public void beanToProps() {
+   void beanToProps() {
     Bean1 source = new Bean1().setA(1).setB(new Bean().setA(3));
 
     Properties props = MoreObjects.beanToProps(source);

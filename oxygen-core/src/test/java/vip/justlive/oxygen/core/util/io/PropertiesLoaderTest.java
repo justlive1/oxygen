@@ -14,19 +14,20 @@
 
 package vip.justlive.oxygen.core.util.io;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.exception.CodedException;
 
 /**
  * @author wubo
  */
-public class PropertiesLoaderTest {
+class PropertiesLoaderTest {
 
   String classpath = "classpath:/config/*.properties";
   String defaultPath = "/config/config.properties";
@@ -36,7 +37,7 @@ public class PropertiesLoaderTest {
 
 
   @Test
-  public void testDefault() {
+  void testDefault() {
 
     PropertiesLoader loader = new PropertiesLoader(defaultPath);
     loader.init();
@@ -47,7 +48,7 @@ public class PropertiesLoaderTest {
   }
 
   @Test
-  public void testClasspath() {
+  void testClasspath() {
 
     PropertiesLoader loader = new PropertiesLoader(classpath);
     loader.init();
@@ -64,7 +65,7 @@ public class PropertiesLoaderTest {
   }
 
   @Test
-  public void testFile() {
+  void testFile() {
 
     makeFile();
 
@@ -76,18 +77,18 @@ public class PropertiesLoaderTest {
 
   }
 
-  @Test(expected = CodedException.class)
-  public void testNotFound() {
+  @Test
+  void testNotFound() {
     PropertiesLoader loader = new PropertiesLoader("classpath:/xxx.properties");
-    loader.init();
+    assertThrows(CodedException.class, loader::init);
   }
 
   @Test
-  public void testIgnoreNotFound() {
+  void testIgnoreNotFound() {
     PropertiesLoader loader = new PropertiesLoader("classpath:/xxx.properties");
     loader.ignoreNotFound = true;
     loader.init();
-    Assert.assertTrue(loader.props().isEmpty());
+    assertTrue(loader.props().isEmpty());
   }
 
   void makeFile() {

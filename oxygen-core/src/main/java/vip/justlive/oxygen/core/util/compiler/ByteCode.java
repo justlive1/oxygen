@@ -33,7 +33,7 @@ public class ByteCode extends SimpleJavaFileObject {
   @Setter
   private boolean defined;
   private final String name;
-  private final ByteArrayOutputStream bytecode = new ByteArrayOutputStream();
+  private final ByteArrayOutputStream code = new ByteArrayOutputStream();
 
   public ByteCode(String name, Kind kind) {
     super(URI.create("mem:///target/" + name + kind), kind);
@@ -47,7 +47,7 @@ public class ByteCode extends SimpleJavaFileObject {
 
   @Override
   public OutputStream openOutputStream() {
-    return bytecode;
+    return code;
   }
 
   @Override
@@ -56,6 +56,6 @@ public class ByteCode extends SimpleJavaFileObject {
   }
 
   public byte[] getByteCode() {
-    return bytecode.toByteArray();
+    return code.toByteArray();
   }
 }

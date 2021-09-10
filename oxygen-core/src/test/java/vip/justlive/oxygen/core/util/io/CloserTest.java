@@ -14,20 +14,21 @@
 
 package vip.justlive.oxygen.core.util.io;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wubo
  */
-public class CloserTest {
+class CloserTest {
 
   @Test
-  public void test() {
+  void test() {
     AtomicInteger count = new AtomicInteger();
     @SuppressWarnings("resource")
     Closer closer = new Closer();
@@ -39,7 +40,7 @@ public class CloserTest {
     } finally {
       closer.closeQuietly();
     }
-    Assert.assertEquals(7, count.get());
+    assertEquals(7, count.get());
   }
 
   @RequiredArgsConstructor

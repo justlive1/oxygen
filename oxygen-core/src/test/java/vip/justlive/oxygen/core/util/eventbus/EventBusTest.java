@@ -13,18 +13,19 @@
  */
 package vip.justlive.oxygen.core.util.eventbus;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
  * @author wubo
  */
-public class EventBusTest {
+class EventBusTest {
 
   @Test
-  public void test0() {
+  void test0() {
 
     EventBus eb = new EventBus();
     eb.register(new MySubscriber());
@@ -35,7 +36,7 @@ public class EventBusTest {
 
     ThreadUtils.sleep(1000);
 
-    Assert.assertEquals(3, event.getRes().size());
+    assertEquals(3, event.getRes().size());
 
     event.getRes().clear();
 
@@ -44,12 +45,12 @@ public class EventBusTest {
     eb.post("ax", new MsgEvent());
     ThreadUtils.sleep(1000);
 
-    Assert.assertEquals(1, ds.deadCount);
+    assertEquals(1, ds.deadCount);
 
   }
 
   @Test
-  public void test1() {
+  void test1() {
 
     MySubscriber subscriber = new MySubscriber();
     EventBus eb = new EventBus("sync", MoreObjects.directExecutor(),
@@ -61,19 +62,19 @@ public class EventBusTest {
 
     eb.post("acc", event);
 
-    Assert.assertEquals(2, event.getRes().size());
+    assertEquals(2, event.getRes().size());
 
     event.getRes().clear();
 
     eb.post("", event);
     eb.post("m3", new MsgEvent());
-    Assert.assertEquals(0, ds.deadCount);
+    assertEquals(0, ds.deadCount);
 
     eb.unregister(subscriber);
 
     eb.post("acc", event);
     eb.post("m3", new MsgEvent());
-    Assert.assertEquals(2, ds.deadCount);
+    assertEquals(2, ds.deadCount);
 
   }
 }

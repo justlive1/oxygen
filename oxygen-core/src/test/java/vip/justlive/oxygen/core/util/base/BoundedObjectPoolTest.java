@@ -13,6 +13,8 @@
  */
 package vip.justlive.oxygen.core.util.base;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -21,20 +23,19 @@ import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
  * @author wubo
  */
 @Slf4j
-public class BoundedObjectPoolTest {
+class BoundedObjectPoolTest {
 
   AtomicLong c = new AtomicLong();
 
   @Test
-  public void test() throws InterruptedException {
+  void test() throws InterruptedException {
     BoundedObjectPool<Entity> pool = new BoundedObjectPool<>(2, this::create);
 
     List<Callable<Integer>> list = new ArrayList<>();
@@ -52,7 +53,7 @@ public class BoundedObjectPoolTest {
     ThreadUtils.sleep(1000);
     int size = ((List<?>) ClassUtils.getValue(pool, "pool")).size();
 
-    Assert.assertEquals(2, size);
+    assertEquals(2, size);
   }
 
   private Entity create() {

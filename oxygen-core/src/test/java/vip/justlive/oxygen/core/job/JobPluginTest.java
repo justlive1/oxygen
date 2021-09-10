@@ -14,17 +14,17 @@
 package vip.justlive.oxygen.core.job;
 
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
  * @author wubo
  */
-public class JobPluginTest {
+class JobPluginTest {
 
   @Test
-  public void test() {
+  void test() {
     Singleton.set(new Conf());
     JobPlugin plugin = new JobPlugin();
     plugin.start();

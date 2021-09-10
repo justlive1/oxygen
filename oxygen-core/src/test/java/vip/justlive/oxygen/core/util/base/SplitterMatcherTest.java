@@ -14,18 +14,18 @@
 
 package vip.justlive.oxygen.core.util.base;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wubo
  */
-public class SplitterMatcherTest {
+class SplitterMatcherTest {
 
   @Test
-  public void test() {
+  void test() {
     SplitterMatcher matcher = new SplitterMatcher('.');
 
     String pattern = ".a.b";
