@@ -39,4 +39,6 @@ public class JobConf {
   private int fetchMaxSize = 100;
   private long idleWaitTime = 30000;
   private int idleWaitRandom = 7 * 1000;
+  private long misfireThreshold = 60000;
+  private long lostThreshold = 600000;
 }

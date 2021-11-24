@@ -28,7 +28,7 @@ import vip.justlive.oxygen.core.util.base.Strings;
 @UtilityClass
 public class SchedulerFactory {
 
-  public Scheduler getScheduler(JobConf conf) {
+  public Scheduler getScheduler(JobConf conf, SchedulerPlugin... plugins) {
     JobStore jobStore = null;
     if (Strings.hasText(conf.getJobStoreClass())) {
       try {
@@ -61,6 +61,30 @@ public class SchedulerFactory {
       pool = new SimpleJobThreadPool(conf);
     }
     log.info("create scheduler with {} and {}", jobStore, pool);
-    return new SchedulerImpl(new JobResource(conf, jobStore, pool));
+
+    JobResource resource = new JobResource(conf, jobStore, pool);
+
+    SchedulerImpl scheduler = new SchedulerImpl(resource);
+
+    // plugins
+    addSchedulerPlugin(new MisfireSchedulerPlugin(), resource, scheduler);
+    addSchedulerPlugin(new LostSchedulerPlugin(), resource, scheduler);
+
+    if (plugins == null || plugins.length == 0) {
+      return scheduler;
+    }
+
+    for (SchedulerPlugin plugin : plugins) {
+      addSchedulerPlugin(plugin, resource, scheduler);
+    }
+
+    return scheduler;
   }
+
+  private void addSchedulerPlugin(SchedulerPlugin plugin, JobResource resource,
+      Scheduler scheduler) {
+    plugin.initialize(resource, scheduler);
+    resource.getSchedulerPlugins().add(plugin);
+  }
+
 }

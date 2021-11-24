@@ -26,15 +26,15 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @RequiredArgsConstructor
 public class JobRunTask implements Runnable {
-
+  
   public static final int NOOP = 0;
   public static final int DELETE = 1;
-
+  
   private final Job job;
   private final JobContext ctx;
   private final JobTrigger trigger;
   private final JobResource resource;
-
+  
   @Override
   public void run() {
     long startTime = System.currentTimeMillis();
@@ -45,19 +45,19 @@ public class JobRunTask implements Runnable {
       job.execute(ctx);
     } catch (Exception e) {
       log.info("job {} throw exception", ctx.getJobInfo().getKey(), e);
+    } finally {
+      long lastCompletedTime = System.currentTimeMillis();
+      if (log.isDebugEnabled()) {
+        log.debug("job {} elapsed {}ms", ctx.getJobInfo().getKey(), lastCompletedTime - startTime);
+      }
+      
+      int state = NOOP;
+      if (trigger.getNextFireTime() == null) {
+        state = DELETE;
+      }
+      
+      resource.getJobStore().triggerCompleted(trigger, state);
+      resource.getSignaler().triggerCompleted(trigger.getKey(), ctx.getExpectedFireTime());
     }
-
-    long lastCompletedTime = System.currentTimeMillis();
-    if (log.isDebugEnabled()) {
-      log.debug("job {} elapsed {}ms", ctx.getJobInfo().getKey(), lastCompletedTime - startTime);
-    }
-
-    int state = NOOP;
-    if (trigger.getNextFireTime() == null) {
-      state = DELETE;
-    }
-
-    resource.getJobStore().triggerCompleted(trigger, state);
-    resource.getSignaler().triggerCompleted(trigger.getKey(), ctx.getExpectedFireTime());
   }
 }

@@ -5,7 +5,7 @@
   <parent>
     <artifactId>oxygen</artifactId>
     <groupId>vip.justlive</groupId>
-    <version>3.0.7</version>
+    <version>3.0.7.2</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>oxygen-web-jetty</artifactId>
@@ -18,7 +18,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <jetty.version>9.4.43.v20210629</jetty.version>
+    <jetty.version>9.4.44.v20210927</jetty.version>
   </properties>
 
   <dependencies>

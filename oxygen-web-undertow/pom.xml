@@ -5,7 +5,7 @@
   <parent>
     <artifactId>oxygen</artifactId>
     <groupId>vip.justlive</groupId>
-    <version>3.0.7</version>
+    <version>3.0.7.2</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>oxygen-web-undertow</artifactId>
@@ -18,7 +18,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <undertow.version>2.2.10.Final</undertow.version>
+    <undertow.version>2.2.12.Final</undertow.version>
   </properties>
 
   <dependencies>

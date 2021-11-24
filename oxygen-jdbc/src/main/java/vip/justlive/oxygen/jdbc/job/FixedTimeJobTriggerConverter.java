@@ -37,12 +37,9 @@ public class FixedTimeJobTriggerConverter implements Converter {
   public JobTriggerEntity convert(JobTrigger trigger) {
     if (trigger instanceof FixedTimeJobTrigger) {
       FixedTimeJobTrigger jobTrigger = (FixedTimeJobTrigger) trigger;
-      return new JobTriggerEntity().setJobKey(trigger.getJobKey()).setTriggerKey(trigger.getKey())
-          .setTriggerType(type()).setStartTime(jobTrigger.getEndTime())
-          .setEndTime(jobTrigger.getEndTime())
-          .setPreviousFireTime(jobTrigger.getPreviousFireTime())
-          .setNextFireTime(jobTrigger.getNextFireTime())
-          .setLastCompletedTime(jobTrigger.getLastCompletedTime());
+      JobTriggerEntity entity = new JobTriggerEntity().setTriggerType(type());
+      Utils.fillEntityProperty(entity, jobTrigger);
+      return entity;
     }
     return null;
   }
@@ -52,11 +49,7 @@ public class FixedTimeJobTriggerConverter implements Converter {
     if (entity.getTriggerType() != null && entity.getTriggerType() == type()) {
       FixedTimeJobTrigger trigger = new FixedTimeJobTrigger(entity.getTriggerKey(),
           entity.getJobKey());
-      trigger.setStartTime(entity.getStartTime());
-      trigger.setEndTime(entity.getEndTime());
-      trigger.setNextFireTime(entity.getNextFireTime());
-      trigger.setPreviousFireTime(entity.getPreviousFireTime());
-      trigger.setLastCompletedTime(entity.getLastCompletedTime());
+      Utils.fillTriggerProperty(trigger, entity);
       return trigger;
     }
     return null;

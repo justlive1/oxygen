@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Collector<S> implements DiagnosticListener<S> {
 
-  private BlockingQueue<Diagnostic<? extends S>> queue = new LinkedBlockingQueue<>();
+  private final BlockingQueue<Diagnostic<? extends S>> queue = new LinkedBlockingQueue<>();
 
   @Override
   public void report(Diagnostic<? extends S> diagnostic) {

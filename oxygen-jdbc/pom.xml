@@ -5,7 +5,7 @@
   <parent>
     <artifactId>oxygen</artifactId>
     <groupId>vip.justlive</groupId>
-    <version>3.0.7</version>
+    <version>3.0.7.2</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>oxygen-jdbc</artifactId>
@@ -19,7 +19,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <hikaricp.version>3.3.1</hikaricp.version>
-    <h2.version>1.4.199</h2.version>
+    <h2.version>1.4.200</h2.version>
   </properties>
 
 

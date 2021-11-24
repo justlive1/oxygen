@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.core.job;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +37,7 @@ public class JobResource {
   private Signaler signaler;
 
   Map<String, List<WaitingTaskFuture>> futures = new ConcurrentHashMap<>(4);
+  List<SchedulerPlugin> schedulerPlugins = new ArrayList<>();
 
   static class WaitingTaskFuture {
 

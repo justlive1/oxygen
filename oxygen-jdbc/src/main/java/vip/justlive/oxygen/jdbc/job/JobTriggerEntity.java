@@ -46,6 +46,9 @@ public class JobTriggerEntity {
   @Column
   private Integer state;
 
+  @Column
+  private Long rounds;
+
   @Column("start_time")
   private Long startTime;
 

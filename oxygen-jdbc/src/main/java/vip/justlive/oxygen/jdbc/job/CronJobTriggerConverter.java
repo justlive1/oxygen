@@ -39,13 +39,10 @@ public class CronJobTriggerConverter implements Converter {
   public JobTriggerEntity convert(JobTrigger trigger) {
     if (trigger instanceof CronJobTrigger) {
       CronJobTrigger jobTrigger = (CronJobTrigger) trigger;
-      return new JobTriggerEntity().setJobKey(trigger.getJobKey()).setTriggerKey(trigger.getKey())
-          .setTriggerType(type()).setStartTime(jobTrigger.getEndTime())
-          .setTriggerValue(jobTrigger.getCron() + Strings.SEMICOLON + jobTrigger.getTimeZoneId())
-          .setEndTime(jobTrigger.getEndTime())
-          .setPreviousFireTime(jobTrigger.getPreviousFireTime())
-          .setNextFireTime(jobTrigger.getNextFireTime())
-          .setLastCompletedTime(jobTrigger.getLastCompletedTime());
+      JobTriggerEntity entity = new JobTriggerEntity().setTriggerType(type())
+          .setTriggerValue(jobTrigger.getCron() + Strings.SEMICOLON + jobTrigger.getTimeZoneId());
+      Utils.fillEntityProperty(entity, jobTrigger);
+      return entity;
     }
     return null;
   }
@@ -56,11 +53,7 @@ public class CronJobTriggerConverter implements Converter {
       String[] arr = entity.getTriggerValue().split(Strings.SEMICOLON);
       CronJobTrigger trigger = new CronJobTrigger(entity.getTriggerKey(), entity.getJobKey(),
           arr[0], TimeZone.getTimeZone(arr[1]));
-      trigger.setStartTime(entity.getStartTime());
-      trigger.setEndTime(entity.getEndTime());
-      trigger.setNextFireTime(entity.getNextFireTime());
-      trigger.setPreviousFireTime(entity.getPreviousFireTime());
-      trigger.setLastCompletedTime(entity.getLastCompletedTime());
+      Utils.fillTriggerProperty(trigger, entity);
       return trigger;
     }
     return null;

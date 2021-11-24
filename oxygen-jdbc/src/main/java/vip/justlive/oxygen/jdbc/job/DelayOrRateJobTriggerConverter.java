@@ -38,15 +38,11 @@ public class DelayOrRateJobTriggerConverter implements Converter {
   public JobTriggerEntity convert(JobTrigger trigger) {
     if (trigger instanceof DelayOrRateJobTrigger) {
       DelayOrRateJobTrigger jobTrigger = (DelayOrRateJobTrigger) trigger;
-      return new JobTriggerEntity().setJobKey(trigger.getJobKey()).setTriggerKey(trigger.getKey())
-          .setTriggerType(type()).setStartTime(jobTrigger.getEndTime())
-          .setTriggerValue(
-              jobTrigger.getInitialDelay() + Strings.SEMICOLON + jobTrigger.getFixedOffset()
-                  + Strings.SEMICOLON + jobTrigger.isDelay())
-          .setEndTime(jobTrigger.getEndTime())
-          .setPreviousFireTime(jobTrigger.getPreviousFireTime())
-          .setNextFireTime(jobTrigger.getNextFireTime())
-          .setLastCompletedTime(jobTrigger.getLastCompletedTime());
+      JobTriggerEntity entity = new JobTriggerEntity().setTriggerType(type()).setTriggerValue(
+          jobTrigger.getInitialDelay() + Strings.SEMICOLON + jobTrigger.getFixedOffset()
+              + Strings.SEMICOLON + jobTrigger.isDelay());
+      Utils.fillEntityProperty(entity, jobTrigger);
+      return entity;
     }
     return null;
   }
@@ -58,11 +54,7 @@ public class DelayOrRateJobTriggerConverter implements Converter {
       DelayOrRateJobTrigger trigger = new DelayOrRateJobTrigger(entity.getTriggerKey(),
           entity.getJobKey(), Long.parseLong(arr[0]), Long.parseLong(arr[1]),
           Boolean.parseBoolean(arr[2]));
-      trigger.setStartTime(entity.getStartTime());
-      trigger.setEndTime(entity.getEndTime());
-      trigger.setNextFireTime(entity.getNextFireTime());
-      trigger.setPreviousFireTime(entity.getPreviousFireTime());
-      trigger.setLastCompletedTime(entity.getLastCompletedTime());
+      Utils.fillTriggerProperty(trigger, entity);
       return trigger;
     }
     return null;

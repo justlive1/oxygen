@@ -21,14 +21,14 @@ import java.util.List;
  * @author wubo
  */
 public interface JobStore {
-
+  
   /**
    * 初始化信号器
    *
    * @param signaler 信号器
    */
   void initialize(Signaler signaler);
-
+  
   /**
    * 保存job
    *
@@ -36,7 +36,7 @@ public interface JobStore {
    * @param replaceExisting 是否替换已存在
    */
   void storeJob(JobInfo jobInfo, boolean replaceExisting);
-
+  
   /**
    * 根据jobKey获取任务信息
    *
@@ -44,21 +44,34 @@ public interface JobStore {
    * @return 任务信息
    */
   JobInfo getJobInfo(String jobKey);
-
+  
   /**
    * 删除任务
    *
    * @param jobKey 任务key
    */
   void removeJob(String jobKey);
-
+  
   /**
    * 保存任务触发器
    *
-   * @param trigger 触发器
+   * @param trigger         触发器
+   * @param replaceExisting 是否替换已存在
    */
-  void storeTrigger(JobTrigger trigger);
-
+  default void storeTrigger(JobTrigger trigger, boolean replaceExisting) {
+    storeTrigger(trigger, JobConstants.STATE_WAITING, replaceExisting);
+  }
+  
+  /**
+   * 保存任务触发器
+   *
+   * @param trigger         触发器
+   * @param state           状态
+   * @param replaceExisting 是否替换已存在
+   */
+  void storeTrigger(JobTrigger trigger, int state, boolean replaceExisting);
+  
+  
   /**
    * 获取任务下关联的触发器
    *
@@ -66,42 +79,42 @@ public interface JobStore {
    * @return list
    */
   List<JobTrigger> getJobTrigger(String jobKey);
-
+  
   /**
    * 删除触发器
    *
    * @param triggerKey 触发器key
    */
   void removeTrigger(String triggerKey);
-
+  
   /**
    * 暂停任务
    *
    * @param jobKey 任务key
    */
   void pauseJob(String jobKey);
-
+  
   /**
    * 暂停触发器
    *
    * @param triggerKey 触发器key
    */
   void pauseTrigger(String triggerKey);
-
+  
   /**
    * 恢复任务
    *
    * @param jobKey 任务key
    */
   void resumeJob(String jobKey);
-
+  
   /**
    * 恢复触发器
    *
    * @param triggerKey 触发器key
    */
   void resumeTrigger(String triggerKey);
-
+  
   /**
    * 获取最近可执行的触发器
    *
@@ -110,14 +123,14 @@ public interface JobStore {
    * @return list
    */
   List<JobTrigger> acquireNextTriggers(long maxTimestamp, int maxSize);
-
+  
   /**
    * 释放获取的触发器
    *
    * @param trigger 触发器
    */
   void releaseTrigger(JobTrigger trigger);
-
+  
   /**
    * 触发器准备执行
    *
@@ -125,7 +138,7 @@ public interface JobStore {
    * @return result
    */
   TriggerFiredResult triggerFired(JobTrigger trigger);
-
+  
   /**
    * 触发器执行完成
    *
@@ -133,4 +146,14 @@ public interface JobStore {
    * @param state   状态
    */
   void triggerCompleted(JobTrigger trigger, int state);
+  
+  /**
+   * 获取触发器
+   *
+   * @param maxTimestamp 最大时间戳
+   * @param state        状态
+   * @return 触发器
+   */
+  List<JobTrigger> acquireTriggersInState(long maxTimestamp, int state);
+  
 }

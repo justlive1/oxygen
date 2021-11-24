@@ -26,19 +26,19 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class DelayOrRateJobTrigger extends CoreJobTrigger {
-
+  
   private final long initialDelay;
   private final long fixedOffset;
   private final boolean delay;
-
+  
   public DelayOrRateJobTrigger(String jobKey, long fixedOffset, boolean delay) {
     this(jobKey, fixedOffset, fixedOffset, delay);
   }
-
+  
   public DelayOrRateJobTrigger(String jobKey, long initialDelay, long fixedOffset, boolean delay) {
     this(jobKey, jobKey, initialDelay, fixedOffset, delay);
   }
-
+  
   public DelayOrRateJobTrigger(String key, String jobKey, long initialDelay, long fixedOffset,
       boolean delay) {
     super(key, jobKey);
@@ -46,7 +46,7 @@ public class DelayOrRateJobTrigger extends CoreJobTrigger {
     this.fixedOffset = fixedOffset;
     this.delay = delay;
   }
-
+  
   @Override
   public Long getFireTimeAfter(long timestamp) {
     long offset = fixedOffset;
@@ -62,23 +62,31 @@ public class DelayOrRateJobTrigger extends CoreJobTrigger {
     }
     return time;
   }
-
+  
   @Override
   public void setLastCompletedTime(Long lastCompletedTime) {
     super.setLastCompletedTime(lastCompletedTime);
-    if (isDelay()) {
+    if (lastCompletedTime != null && isDelay()) {
       nextFireTime = getFireTimeAfter(lastCompletedTime);
     }
   }
-
+  
   @Override
-  public Long computeNextFireTime(long timestamp) {
+  public Long triggerFired(long timestamp) {
     if (isDelay() && lastCompletedTime != null && lastCompletedTime < nextFireTime) {
       return Long.MAX_VALUE;
     }
     if (!isDelay() && nextFireTime != null) {
       timestamp = nextFireTime;
     }
-    return super.computeNextFireTime(timestamp);
+    return super.triggerFired(timestamp);
+  }
+  
+  @Override
+  public Long computeNextFireTime() {
+    if (!isDelay() && nextFireTime != null) {
+      return super.triggerFired(nextFireTime);
+    }
+    return super.computeNextFireTime();
   }
 }

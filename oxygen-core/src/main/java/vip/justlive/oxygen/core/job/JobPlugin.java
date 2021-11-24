@@ -125,8 +125,7 @@ public class JobPlugin implements Plugin {
       count++;
     }
     if (count > 1 || count == 0) {
-      throw new IllegalArgumentException(
-          "Specify 'fixedDelay', 'fixedRate', 'onApplicationStart' or 'cron'");
+      throw new IllegalArgumentException("Specify 'fixedDelay', 'fixedRate' or 'cron'");
     }
   }
 

@@ -14,43 +14,44 @@
 
 package vip.justlive.oxygen.core.util.base;
 
-import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wubo
  */
-public class TokenParserTest {
-
+class TokenParserTest {
+  
   @Test
-  public void parse() {
+  void parse() {
     TokenParser parser = new TokenParser("${", "}", this::handle);
     String value = parser.parse(null);
     assertEquals("", value);
-
+    
     value = parser.parse("ax");
     assertEquals("ax", value);
-
+    
     value = parser.parse("ax${a}");
     assertEquals("axA", value);
-
+    
     value = parser.parse("ax${a}}");
     assertEquals("axA}", value);
-
+    
     value = parser.parse("ax${a\\}x}");
     assertEquals("axA}X", value);
-
+    
     value = parser.parse("ax\\${ax}${ax}");
     assertEquals("ax${ax}AX", value);
-
+    
     value = parser.parse("ax$\\{ax}${ax}");
     assertEquals("ax$\\{ax}AX", value);
-
+    
     value = parser.parse("ax$${ax}${ax}");
     assertEquals("ax$AXAX", value);
-
+    
   }
-
+  
   private String handle(String text) {
     return text.toUpperCase();
   }

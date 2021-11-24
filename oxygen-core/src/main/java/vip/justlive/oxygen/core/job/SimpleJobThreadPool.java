@@ -42,10 +42,10 @@ public class SimpleJobThreadPool implements JobThreadPool {
     slowThreshold = conf.getSlowThresholdTime();
     slowHitLimit = conf.getSlowHitLimit();
     fastPool = ThreadUtils
-        .newThreadPool(1, conf.getThreadCorePoolSize(), 60, conf.getThreadQueueCapacity(),
+        .newThreadPool(1, conf.getThreadCorePoolSize(), 360, conf.getThreadQueueCapacity(),
             "Fast-" + conf.getThreadNameFormat());
     slowPool = ThreadUtils
-        .newThreadPool(1, conf.getThreadCorePoolSize(), 60, conf.getThreadQueueCapacity(),
+        .newThreadPool(1, conf.getThreadCorePoolSize(), 360, conf.getThreadQueueCapacity(),
             "Slow-" + conf.getThreadNameFormat());
     currentWindow = System.currentTimeMillis();
   }

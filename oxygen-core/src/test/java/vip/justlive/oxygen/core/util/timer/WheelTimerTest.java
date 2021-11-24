@@ -71,7 +71,6 @@ class WheelTimerTest {
   }
 
   @Test
-    // TODO
   void test1() {
     WheelTimer timer = ThreadUtils.globalTimer();
 

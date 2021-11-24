@@ -69,10 +69,12 @@ public class SchedulerImpl implements Scheduler {
   public void start() {
     ThreadUtils.residentPool().add(schedulerThread);
     schedulerThread.awaitRunning();
+    resource.getSchedulerPlugins().forEach(SchedulerPlugin::start);
   }
 
   @Override
   public void shutdown() {
+    resource.getSchedulerPlugins().forEach(SchedulerPlugin::shutdown);
     schedulerRunnable.shutdown();
     schedulerThread.shutdown();
   }
@@ -89,24 +91,24 @@ public class SchedulerImpl implements Scheduler {
 
   @Override
   public void scheduleJob(JobInfo jobInfo, JobTrigger trigger) {
-    Long nextFireTime = trigger.computeNextFireTime(System.currentTimeMillis());
+    Long nextFireTime = trigger.computeNextFireTime();
     if (nextFireTime == null) {
       throw new IllegalArgumentException(
           "job will never fire with triggerKey '" + trigger.getKey() + "'");
     }
     resource.getJobStore().storeJob(jobInfo, true);
-    resource.getJobStore().storeTrigger(trigger);
+    resource.getJobStore().storeTrigger(trigger, true);
     resource.getSignaler().schedulingChange();
   }
 
   @Override
   public void scheduleJob(JobTrigger trigger) {
-    Long nextFireTime = trigger.computeNextFireTime(System.currentTimeMillis());
+    Long nextFireTime = trigger.computeNextFireTime();
     if (nextFireTime == null) {
       throw new IllegalArgumentException(
           "job will never fire with triggerKey '" + trigger.getKey() + "'");
     }
-    resource.getJobStore().storeTrigger(trigger);
+    resource.getJobStore().storeTrigger(trigger, false);
     resource.getSignaler().schedulingChange();
   }
 
@@ -122,8 +124,8 @@ public class SchedulerImpl implements Scheduler {
         jobKey);
     long now = System.currentTimeMillis();
     trigger.setStartTime(now);
-    trigger.computeNextFireTime(now);
-    resource.getJobStore().storeTrigger(trigger);
+    trigger.computeNextFireTime();
+    resource.getJobStore().storeTrigger(trigger, false);
     resource.getSignaler().schedulingChange();
   }
 

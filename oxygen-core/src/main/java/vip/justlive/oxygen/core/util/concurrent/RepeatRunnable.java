@@ -41,12 +41,17 @@ public class RepeatRunnable implements Runnable {
   @Getter
   private int rounds;
 
+  private Thread currentRunningThread;
+
   public RepeatRunnable(Runnable runnable) {
     this("Unnamed-" + COUNT.getAndIncrement(), runnable);
   }
 
   @Override
   public void run() {
+
+    currentRunningThread = Thread.currentThread();
+
     String pre = Thread.currentThread().getName();
     if (log.isDebugEnabled()) {
       log.debug("thread name '{}' change to '{}'", pre, name);
@@ -79,6 +84,11 @@ public class RepeatRunnable implements Runnable {
         shutdownInitiated.countDown();
       }
     }
+
+    if (currentRunningThread != null) {
+      currentRunningThread.interrupt();
+    }
+
     if (isStarted()) {
       await(shutdownComplete);
       if (shutdownComplete.getCount() == 0) {
