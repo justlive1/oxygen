@@ -40,7 +40,7 @@ class JobJdbcTest implements Plugin {
 
     Jdbc.update("drop table if exists oxy_job_trigger");
     Jdbc.update(
-        "create table oxy_job_trigger (id int auto_increment primary key, job_key varchar, trigger_key varchar, trigger_type int, trigger_value varchar, state int, start_time bigint, end_time bigint, previous_fire_time bigint, next_fire_time bigint, last_completed_time bigint);");
+        "create table oxy_job_trigger (id int auto_increment primary key, job_key varchar, trigger_key varchar, trigger_type int, trigger_value varchar, state int, rounds int default 0, start_time bigint, end_time bigint, previous_fire_time bigint, next_fire_time bigint, last_completed_time bigint);");
 
     Jdbc.update("drop table if exists oxy_lock");
     Jdbc.update("create table oxy_lock (id int auto_increment primary key, name varchar);");
@@ -67,7 +67,7 @@ class JobJdbcTest implements Plugin {
     scheduler.scheduleJob(new JobInfo().setKey("job-1").setDescription("test 1")
         .setHandlerClass(HelloJob.class.getName()), new CronJobTrigger("job-1", "0/5 * * * * ?"));
 
-    ThreadUtils.sleep(100000);
+    ThreadUtils.sleep(10000);
 
   }
 }

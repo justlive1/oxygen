@@ -27,7 +27,7 @@ public class System {
   @Column(pk = true)
   private Integer id;
   @Column
-  private Integer key;
+  private Integer skey;
   @Column
-  private Integer value;
+  private Integer svalue;
 }

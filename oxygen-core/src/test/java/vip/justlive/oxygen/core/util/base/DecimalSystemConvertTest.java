@@ -28,9 +28,9 @@ class DecimalSystemConvertTest {
 
   @Test
   void recover() {
-    int value = 2131244;
-    String result = Integer.toHexString(value);
-    int rs = DecimalSystemConvert.recover(result, 16);
+    long value = 2131244;
+    String result = Long.toHexString(value);
+    long rs = DecimalSystemConvert.recover(result, 16);
     assertEquals(value, rs);
   }
 }

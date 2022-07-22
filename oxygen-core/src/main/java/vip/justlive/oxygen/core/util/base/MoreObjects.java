@@ -15,8 +15,10 @@ package vip.justlive.oxygen.core.util.base;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -35,7 +37,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 @Slf4j
 @UtilityClass
 public class MoreObjects {
-
+  
   /**
    * 非空检查
    *
@@ -46,7 +48,7 @@ public class MoreObjects {
   public <T> T notNull(T obj) {
     return notNull(obj, "can not be null");
   }
-
+  
   /**
    * 非空检查
    *
@@ -61,7 +63,7 @@ public class MoreObjects {
     }
     return obj;
   }
-
+  
   /**
    * 获取第一个不为null的值，没有则返回null
    *
@@ -88,7 +90,7 @@ public class MoreObjects {
     }
     return null;
   }
-
+  
   /**
    * 获取第一个不为null的值
    *
@@ -106,7 +108,7 @@ public class MoreObjects {
     }
     throw new IllegalArgumentException();
   }
-
+  
   /**
    * 对象转map
    *
@@ -116,7 +118,7 @@ public class MoreObjects {
   public Map<String, Object> beanToMap(Object bean) {
     return beanToMap(bean, false);
   }
-
+  
   /**
    * 对象转map 对象属性也同样转换
    *
@@ -148,8 +150,47 @@ public class MoreObjects {
     }
     return map;
   }
-
-
+  
+  /**
+   * 解析queryString转成Map
+   *
+   * @param queryString qs
+   * @return map
+   */
+  public Map<String, String> parseQueryString(String queryString) {
+    Map<String, String> queryMap = new HashMap<>(8);
+    if (!Strings.hasText(queryString)) {
+      return queryMap;
+    }
+    String[] params = queryString.split(Strings.AND);
+    for (String param : params) {
+      String[] p = param.split(Strings.EQUAL);
+      if (p.length == 2) {
+        queryMap.put(p[0], p[1]);
+      }
+    }
+    return queryMap;
+  }
+  
+  /**
+   * @param queryString
+   * @return
+   */
+  public Map<String, List<String>> parseMultiQueryString(String queryString) {
+    Map<String, List<String>> queryMap = new HashMap<>(8);
+    if (!Strings.hasText(queryString)) {
+      return queryMap;
+    }
+    String[] params = queryString.split(Strings.AND);
+    for (String param : params) {
+      String[] p = param.split(Strings.EQUAL);
+      if (p.length == 2) {
+        queryMap.computeIfAbsent(p[0], k -> new ArrayList<>()).add(p[1]);
+      }
+    }
+    return queryMap;
+  }
+  
   /**
    * bean转换成queryString
    *
@@ -159,7 +200,7 @@ public class MoreObjects {
   public String beanToQueryString(Object bean) {
     return beanToQueryString(bean, false);
   }
-
+  
   /**
    * bean转换成queryString
    *
@@ -177,7 +218,7 @@ public class MoreObjects {
     }
     return sb.toString();
   }
-
+  
   /**
    * map转换成properties
    *
@@ -196,8 +237,8 @@ public class MoreObjects {
     }
     return props;
   }
-
-
+  
+  
   /**
    * always true
    *
@@ -207,7 +248,7 @@ public class MoreObjects {
   public <T> Predicate<T> alwaysTrue() {
     return t -> true;
   }
-
+  
   /**
    * always false
    *
@@ -217,7 +258,7 @@ public class MoreObjects {
   public <T> Predicate<T> alwaysFalse() {
     return t -> false;
   }
-
+  
   /**
    * toString
    *
@@ -230,7 +271,7 @@ public class MoreObjects {
     }
     return obj.toString();
   }
-
+  
   /**
    * 捕获异常的foreach
    *
@@ -245,7 +286,7 @@ public class MoreObjects {
       iterable.forEach(new CaughtConsumer<>(consumer));
     }
   }
-
+  
   /**
    * 创建map
    *
@@ -256,7 +297,7 @@ public class MoreObjects {
   public <K, V> Map<K, V> mapOf() {
     return new HashMap<>(2);
   }
-
+  
   /**
    * 创建map
    *
@@ -271,7 +312,7 @@ public class MoreObjects {
     map.put(notNull(k), v);
     return map;
   }
-
+  
   /**
    * 创建map
    *
@@ -289,7 +330,7 @@ public class MoreObjects {
     map.put(notNull(k2), v2);
     return map;
   }
-
+  
   /**
    * 创建map
    *
@@ -310,7 +351,7 @@ public class MoreObjects {
     map.put(notNull(k3), v3);
     return map;
   }
-
+  
   /**
    * 取交集
    *
@@ -336,7 +377,7 @@ public class MoreObjects {
     }
     return intersection;
   }
-
+  
   /**
    * 去并集
    *
@@ -358,7 +399,7 @@ public class MoreObjects {
     }
     return union;
   }
-
+  
   /**
    * 当前线程直接运行
    *
@@ -367,7 +408,7 @@ public class MoreObjects {
   public Executor directExecutor() {
     return Runnable::run;
   }
-
+  
   private void convert(Map<?, ?> map, Properties result, String prefix) {
     for (Map.Entry<?, ?> entry : map.entrySet()) {
       if (entry.getValue() instanceof Map) {
@@ -379,13 +420,13 @@ public class MoreObjects {
       }
     }
   }
-
+  
   private void convert(Map<String, Object> result, String key, Object value, boolean deep) {
     if (!deep) {
       result.put(key, value);
       return;
     }
-
+    
     if (ClassUtils.isJavaInternalType(value.getClass()) && !(value instanceof Map)) {
       result.put(key, value);
       return;

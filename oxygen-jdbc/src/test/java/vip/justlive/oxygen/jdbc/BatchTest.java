@@ -28,41 +28,41 @@ import vip.justlive.oxygen.jdbc.record.Entity;
  * @author wubo
  */
 class BatchTest {
-
+  
   @BeforeEach
   void before() {
     Bootstrap.start();
-    Jdbc.update("create table system (id int primary key auto_increment, key int, value int);");
+    Jdbc.update("create table system (id int primary key auto_increment, skey int, svalue int);");
   }
-
+  
   @Test
   void test() {
-    Batch.use().addBatch("insert into system (key, value) values (?,?)", 1, 3)
-        .addBatch("insert into system (key, value) values (?,?)", Arrays.asList(4, 4))
-        .addBatch("insert into system (key,value) values(1,2)")
-        .addBatch("insert into system (key,value) values(2,2)").commit();
-
+    Batch.use().addBatch("insert into system (skey, svalue) values (?,?)", 1, 3)
+        .addBatch("insert into system (skey, svalue) values (?,?)", Arrays.asList(4, 4))
+        .addBatch("insert into system (skey,svalue) values(1,2)")
+        .addBatch("insert into system (skey,svalue) values(2,2)").commit();
+    
     List<Map<String, Object>> map = Jdbc.queryForMapList("select * from system");
     assertEquals(4, map.size());
-
+    
     List<System> list = new ArrayList<>();
     System system = new System();
-    system.setValue(1);
+    system.setSvalue(1);
     list.add(system);
     system = new System();
-    system.setValue(2);
+    system.setSvalue(2);
     list.add(system);
     system = new System();
-    system.setKey(3);
+    system.setSkey(3);
     list.add(system);
     system = new System();
-    system.setKey(3);
-    system.setValue(4);
+    system.setSkey(3);
+    system.setSvalue(4);
     list.add(system);
-
+    
     Entity.parse(System.class).insertBatch(list);
     map = Jdbc.queryForMapList("select * from system");
     assertEquals(8, map.size());
   }
-
+  
 }
