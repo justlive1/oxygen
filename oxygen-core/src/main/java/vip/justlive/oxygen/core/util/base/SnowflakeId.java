@@ -23,27 +23,27 @@ import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
  *
  * @author wubo
  */
-public class SnowflakeId {
-
+public class SnowflakeId implements Sequence<Long> {
+  
   private static final long START_TIME = 1570000000000L;
   private static final long WORKER_ID_BITS = 5L;
   private static final long DATA_CENTER_ID_BITS = 5L;
   private static final long SEQUENCE_BITS = 12L;
-
+  
   private final long baseTime;
   private final long workerId;
   private final long dataCenterId;
-
+  
   private final long sequenceMask;
   private final long maxWorkerId;
   private final long maxDataCenterId;
   private final long workerIdShift;
   private final long dataCenterIdShift;
   private final long timestampLeftShift;
-
+  
   private long sequence = 0L;
   private long lastTimestamp = -1L;
-
+  
   /**
    * 基于Snowflake创建分布式ID生成器
    *
@@ -53,7 +53,7 @@ public class SnowflakeId {
   public SnowflakeId(long workerId, long dataCenterId) {
     this(new Cfg().setWorkerId(workerId).setDataCenterId(dataCenterId));
   }
-
+  
   /**
    * 基于Snowflake创建分布式ID生成器
    *
@@ -82,8 +82,8 @@ public class SnowflakeId {
     this.dataCenterId = cfg.dataCenterId;
     this.baseTime = cfg.baseTime > 0 ? cfg.baseTime : START_TIME;
   }
-
-
+  
+  
   /**
    * 获取id 使用默认worker
    *
@@ -92,7 +92,7 @@ public class SnowflakeId {
   public static long defaultNextId() {
     return defaultInstance().nextId();
   }
-
+  
   /**
    * 获取默认实例
    *
@@ -101,8 +101,8 @@ public class SnowflakeId {
   public static SnowflakeId defaultInstance() {
     return InstanceHolder.INSTANCE;
   }
-
-
+  
+  
   /**
    * 根据生成的ID，获取生成时间
    *
@@ -112,7 +112,7 @@ public class SnowflakeId {
   public long getCreatedAt(long id) {
     return (id >> timestampLeftShift & ~(-1L << 41L)) + baseTime;
   }
-
+  
   /**
    * 根据生成的ID，获取机器id
    *
@@ -122,7 +122,7 @@ public class SnowflakeId {
   public long getWorkerId(long id) {
     return id >> workerIdShift & maxWorkerId;
   }
-
+  
   /**
    * 根据生成的ID，获取数据中心id
    *
@@ -132,22 +132,23 @@ public class SnowflakeId {
   public long getDataCenterId(long id) {
     return id >> dataCenterIdShift & maxDataCenterId;
   }
-
+  
   /**
    * 获取id0
    *
    * @return id
    */
+  @Override
   public synchronized Long nextId() {
     long timestamp = this.timeGen();
-
+    
     // 如果当前时间小于上一次ID生成的时间戳，说明系统时钟回退过这个时候应当抛出异常
     if (timestamp < lastTimestamp) {
       throw new IllegalArgumentException(String
           .format("Clock moved backwards.Refusing to generate id for %d milliseconds",
               lastTimestamp - timestamp));
     }
-
+    
     // 如果是同一时间生成的，则进行毫秒内序列
     if (lastTimestamp == timestamp) {
       // 通过位与运算保证计算的结果范围始终是 [0, -1L^(-1L<<sequenceBits)]
@@ -159,12 +160,12 @@ public class SnowflakeId {
       // 时间戳改变，毫秒内序列重置
       sequence = 0L;
     }
-
+    
     lastTimestamp = timestamp;
     return ((timestamp - baseTime) << timestampLeftShift) | (dataCenterId << dataCenterIdShift) | (
         workerId << workerIdShift) | sequence;
   }
-
+  
   private long tilNextMillis(long lastTimestamp) {
     while (true) {
       long timestamp = this.timeGen();
@@ -184,15 +185,15 @@ public class SnowflakeId {
       }
     }
   }
-
+  
   private long timeGen() {
     return System.currentTimeMillis();
   }
-
+  
   @Data
   @Accessors(chain = true)
   public static class Cfg {
-
+    
     /**
      * 起始时间
      */
@@ -218,14 +219,14 @@ public class SnowflakeId {
      */
     private long sequenceBits = -1;
   }
-
+  
   private static class InstanceHolder {
-
+    
     static final SnowflakeId INSTANCE = new SnowflakeId(0,
         ThreadLocalRandom.current().nextLong(~(-1L << DATA_CENTER_ID_BITS)));
-
+    
     private InstanceHolder() {
     }
   }
-
+  
 }
