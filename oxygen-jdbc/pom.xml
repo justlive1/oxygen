@@ -19,7 +19,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <hikaricp.version>4.0.3</hikaricp.version>
-    <h2.version>2.1.214</h2.version>
+    <h2.version>2.2.220</h2.version>
   </properties>
 
 
