@@ -56,4 +56,8 @@ public class CoreConfigKeys {
       "100");
 
   public final ConfigKey AIO_USE_FUTURE = new ConfigKey("oxygen.aio.future", "false");
+
+  public final ConfigKey HTTP_REQUEST_HOLDER_ENABLED = new ConfigKey(
+      "oxygen.httpRequest.holder.enabled", "true");
+
 }

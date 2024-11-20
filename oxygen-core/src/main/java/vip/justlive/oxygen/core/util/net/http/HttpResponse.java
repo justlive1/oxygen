@@ -55,7 +55,7 @@ public class HttpResponse implements Closeable {
    * @throws IOException io异常
    */
   public synchronized String bodyAsString(Charset charset) throws IOException {
-    if (bodyString == null) {
+    if (bodyString == null && body != null) {
       bodyString = IoUtils.toString(body, charset);
     }
     return bodyString;

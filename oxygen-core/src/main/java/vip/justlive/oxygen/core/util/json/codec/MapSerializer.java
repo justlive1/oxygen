@@ -48,8 +48,9 @@ public class MapSerializer implements Serializer {
       del = true;
     }
     if (del) {
-      buf.deleteCharAt(buf.length() - 1).append('}');
+      buf.deleteCharAt(buf.length() - 1);
     }
+    buf.append('}');
   }
 
   private String getKey(Map.Entry<?, ?> entry) {

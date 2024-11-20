@@ -51,7 +51,7 @@ public class HikariBuilder {
    */
   public static DataSource build(DataSourceConf conf) {
     HikariConfig config = new HikariConfig();
-    ConfigFactory.load(config, "datasource.hikari");
+    ConfigFactory.load(config, "oxygen.datasource.hikari");
     marge(conf, config);
     return new HikariDataSource(config);
   }
@@ -65,7 +65,7 @@ public class HikariBuilder {
    */
   public static DataSource build(DataSourceConf conf, String name) {
     HikariConfig config = new HikariConfig();
-    ConfigFactory.load(config, String.format("datasource.%s.hikari", name));
+    ConfigFactory.load(config, String.format("oxygen.datasource.%s.hikari", name));
     marge(conf, config);
     return new HikariDataSource(config);
   }

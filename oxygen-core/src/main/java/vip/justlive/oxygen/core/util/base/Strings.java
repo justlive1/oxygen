@@ -32,6 +32,8 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 @UtilityClass
 public class Strings {
 
+  final char[] ALPHA_NUMERIC = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKKLZXCVBNM1234567890"
+      .toCharArray();
   public final String AND = "&";
   public final String ANY = "*";
   public final String ANY_PATH = "/*";
@@ -115,6 +117,20 @@ public class Strings {
       }
     }
     return null;
+  }
+
+  /**
+   * 生成随机数字和字母
+   *
+   * @param count 字符个数
+   * @return str
+   */
+  public String randomAlphanumeric(int count) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      sb.append(ALPHA_NUMERIC[MoreObjects.RANDOM.nextInt(ALPHA_NUMERIC.length)]);
+    }
+    return sb.toString();
   }
 
   /**

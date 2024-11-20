@@ -25,6 +25,7 @@ import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
 import vip.justlive.oxygen.jdbc.page.Page;
 import vip.justlive.oxygen.jdbc.record.Entity;
+import vip.justlive.oxygen.jdbc.record.Where;
 
 /**
  * @author wubo
@@ -74,6 +75,9 @@ class JdbcTest {
     entity.insert(option);
 
     assertEquals(option, entity.findOne(option));
+
+    assertNull(entity.findOne(option, new Where().setSql("lo = 1222")));
+    assertNull(entity.findOne(option, new Where().setSql("lo = ?").setParam(1222)));
 
     option.setSt("22x");
     entity.updateById(option);
@@ -136,6 +140,19 @@ class JdbcTest {
     assertEquals(1, list.size());
     assertEquals("st2", list.get(0).getSt());
     assertNull(page.getTotalNumber());
+
+    page = new Page<>(1, 10);
+    page.setSearchCount(true);
+    Entity.parse(Option.class).page(new Option(), page, new Where().setSql("it = ?").setParam(2));
+    list = page.getItems();
+    assertNotNull(list);
+    assertEquals(1, list.size());
+    assertEquals("st2", list.get(0).getSt());
+    assertNotNull(page.getTotalNumber());
+
+    Entity.parse(Option.class).orderBy().desc("id").asc("st", "lo").desc("lo").start();
+    list = Jdbc.queryForList("select * from option", Option.class, page);
+    assertEquals(2L, list.get(0).getId());
 
   }
 

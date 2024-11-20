@@ -16,6 +16,7 @@ package vip.justlive.oxygen.core.util.net.http;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -54,6 +55,7 @@ public class HttpRequest {
   private HostnameVerifier hostnameVerifier;
   private HttpRequestExecution httpRequestExecution;
   private List<HttpRequestInterceptor> interceptors;
+  private HttpResponseErrorHandler httpResponseErrorHandler;
 
   private HttpRequest(String url) {
     this.url = url;
@@ -200,6 +202,17 @@ public class HttpRequest {
   }
 
   /**
+   * 设置异常处理类
+   *
+   * @param httpResponseErrorHandler 异常处理类
+   * @return request
+   */
+  public HttpRequest httpResponseErrorHandler(HttpResponseErrorHandler httpResponseErrorHandler) {
+    this.httpResponseErrorHandler = httpResponseErrorHandler;
+    return this;
+  }
+
+  /**
    * 添加header
    *
    * @param name  name of header
@@ -333,7 +346,24 @@ public class HttpRequest {
     if (httpRequestExecution == null) {
       httpRequestExecution = HucHttpRequestExecution.HUC;
     }
-    return new IteratorHttpRequestInterceptor(httpRequestExecution, iterable).execute(this);
+
+    HttpRequestHolder.remove();
+    boolean enabled = HttpRequestHolder.isEnabled();
+    if (enabled) {
+      HttpRequestHolder.set(
+          new HttpRequestHolder().setRequest(this).setRequestTime(System.currentTimeMillis()));
+    }
+    HttpResponse response = new IteratorHttpRequestInterceptor(httpRequestExecution,
+        iterable).execute(this);
+    if (enabled) {
+      HttpRequestHolder.get().setResponseTime(System.currentTimeMillis()).setResponse(response);
+    }
+
+    if (httpResponseErrorHandler != null && response != null
+        && response.getCode() != HttpURLConnection.HTTP_OK) {
+      httpResponseErrorHandler.handle(response);
+    }
+    return response;
   }
 
   @Override

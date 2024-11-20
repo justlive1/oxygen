@@ -20,6 +20,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
     if (request.getReadTimeout() >= 0) {
       connection.setReadTimeout(request.getReadTimeout());
     }
+    connection.setDoInput(true);
     connection.setInstanceFollowRedirects(request.isFollowRedirects());
     connection.setRequestMethod(request.getMethod().name());
     connection.setUseCaches(false);
@@ -93,7 +95,7 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
     int code = connection.getResponseCode();
     String msg = connection.getResponseMessage();
     InputStream is = connection.getErrorStream();
-    if (is == null) {
+    if (is == null && code < HttpURLConnection.HTTP_BAD_REQUEST) {
       is = connection.getInputStream();
     }
     return new HucHttpResponse(connection, code, msg, is, request.getCharset());
@@ -170,7 +172,13 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
 
   private byte[] multipartConvert(Object body, List<Part> multipart, Charset charset) {
     if (body != null) {
-      MoreObjects.beanToMap(body).forEach((k, v) -> multipart.add(new Part(k, v.toString())));
+      List<Part> mps = new ArrayList<>();
+      MoreObjects.beanToMap(body).forEach((k, v) -> mps.add(new Part(k, v.toString())));
+      if (multipart == null) {
+        multipart = mps;
+      } else {
+        multipart.addAll(mps);
+      }
     }
     if (multipart == null || multipart.isEmpty()) {
       return new byte[0];

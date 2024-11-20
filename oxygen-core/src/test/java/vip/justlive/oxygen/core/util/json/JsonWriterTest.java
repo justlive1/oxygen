@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicIntegerArray;
@@ -73,6 +74,18 @@ class JsonWriterTest {
     assertEquals("1", Json.toJson(new AtomicReference<>(1)));
     assertEquals("[1,2]", Json.toJson(new AtomicIntegerArray(new int[]{1, 2})));
 
+  }
+  @Test
+  void testMap(){
+    Map<String, Object> map = new HashMap<>(4);
+    map.put("a",1);
+
+
+    assertEquals("{\"a\":1}",  Json.toJson(map));
+
+    map.clear();
+
+    assertEquals("{}",  Json.toJson(map));
   }
 
   @Data

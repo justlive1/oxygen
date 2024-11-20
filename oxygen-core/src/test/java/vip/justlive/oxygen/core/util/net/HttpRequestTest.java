@@ -25,9 +25,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.junit.jupiter.api.Test;
+import vip.justlive.oxygen.core.exception.CodedException;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.core.util.net.http.HttpRequest;
+import vip.justlive.oxygen.core.util.net.http.HttpRequestHolder;
 import vip.justlive.oxygen.core.util.net.http.HttpResponse;
+import vip.justlive.oxygen.core.util.net.http.HttpResponseErrorHandlerImpl;
 
 /**
  * @author wubo
@@ -38,7 +41,7 @@ class HttpRequestTest {
   void test0() throws IOException {
     AtomicInteger count = new AtomicInteger();
     try (HttpResponse response = HttpRequest.get(
-        "https://cn.bing.com/AS/Suggestions?pt=page.serp&bq=Charset&mkt=zh-cn&ds=mobileweb&qry=charset&cp=7&cvid=5E954FAA1B634A69A7CCF9438379A606")
+            "https://cn.bing.com/AS/Suggestions?pt=page.serp&bq=Charset&mkt=zh-cn&ds=mobileweb&qry=charset&cp=7&cvid=5E954FAA1B634A69A7CCF9438379A606")
         .charset(StandardCharsets.UTF_8).connectTimeout(1000).readTimeout(1000)
         .interceptors(Collections.singletonList(new TestHttpRequestInterceptor(count)))
         .followRedirects(false).execute()) {
@@ -102,9 +105,36 @@ class HttpRequestTest {
   @Test
   void test5() {
     try (HttpResponse response = HttpRequest.get(
-        "https://gitee.com/ld/1")
+            "https://gitee.com/ld/1")
         .execute()) {
       assertEquals(404, response.getCode());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    try (HttpResponse response = HttpRequest.get(
+            "https://gitee.com/ld/1").httpResponseErrorHandler(HttpResponseErrorHandlerImpl.HANDLER)
+        .execute()) {
+    } catch (CodedException e) {
+      assertEquals("404", e.getErrorCode().getCode());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  void test6() {
+    try (HttpResponse response = HttpRequest.get(
+            "https://gitee.com/ld/1")
+        .execute()) {
+      assertEquals(404, response.getCode());
+
+      HttpRequestHolder holder = HttpRequestHolder.get();
+
+      assertNotNull(holder);
+
+      assertEquals(response, holder.getResponse());
+
     } catch (IOException e) {
       e.printStackTrace();
     }

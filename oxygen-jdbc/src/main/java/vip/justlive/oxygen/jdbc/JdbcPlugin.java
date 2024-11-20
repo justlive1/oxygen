@@ -40,6 +40,7 @@ public class JdbcPlugin implements Plugin {
   public void start() {
     DataSourceConf primary = ConfigFactory.load(DataSourceConf.class);
     if (primary.isDisabled()) {
+      log.info("Jdbc plugin is disabled");
       return;
     }
     if (primary.isLogSql()) {

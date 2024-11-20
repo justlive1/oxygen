@@ -27,8 +27,10 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
 import vip.justlive.oxygen.jdbc.interceptor.JdbcInterceptor;
+import vip.justlive.oxygen.jdbc.interceptor.OrderJdbcInterceptor;
 import vip.justlive.oxygen.jdbc.interceptor.PageJdbcInterceptor;
 import vip.justlive.oxygen.jdbc.interceptor.SqlCtx;
 import vip.justlive.oxygen.jdbc.page.Page;
@@ -39,6 +41,7 @@ import vip.justlive.oxygen.jdbc.page.PageDialectHelper;
  *
  * @author wubo
  */
+@Slf4j
 @UtilityClass
 public class Jdbc {
 
@@ -47,8 +50,8 @@ public class Jdbc {
   final String TEMPLATE = "oxygen.datasource.%s";
   private final List<JdbcInterceptor> JDBC_INTERCEPTORS = new ArrayList<>(4);
   private final Map<String, DataSource> DATA_SOURCE_MAP = new ConcurrentHashMap<>(2, 1f);
-  private final ThreadLocal<Map<String, Connection>> CONNECTION_CONTAINER = ThreadLocal
-      .withInitial(ConcurrentHashMap::new);
+  private final ThreadLocal<Map<String, Connection>> CONNECTION_CONTAINER = ThreadLocal.withInitial(
+      ConcurrentHashMap::new);
   private final ThreadLocal<String> CURRENT_DATASOURCE = ThreadLocal.withInitial(() -> PRIMARY_KEY);
 
 
@@ -72,8 +75,13 @@ public class Jdbc {
     if (local != null) {
       throw new IllegalArgumentException(String.format("数据源名称[%s]已存在", name));
     }
+    log.info("add datasource [{}]", name);
     if (!JDBC_INTERCEPTORS.contains(PageJdbcInterceptor.PAGE_JDBC_INTERCEPTOR)) {
       JDBC_INTERCEPTORS.add(PageJdbcInterceptor.PAGE_JDBC_INTERCEPTOR);
+      Collections.sort(JDBC_INTERCEPTORS);
+    }
+    if (!JDBC_INTERCEPTORS.contains(OrderJdbcInterceptor.ORDER_JDBC_INTERCEPTOR)) {
+      JDBC_INTERCEPTORS.add(OrderJdbcInterceptor.ORDER_JDBC_INTERCEPTOR);
       Collections.sort(JDBC_INTERCEPTORS);
     }
     PageDialectHelper.guess(name, dataSource);
@@ -248,13 +256,91 @@ public class Jdbc {
    * @param dataSourceName 数据源名称
    */
   public void rollbackTx(String dataSourceName) {
-    Connection connection = getConnection(dataSourceName);
+    rollbackTx(getConnection(dataSourceName));
+  }
+
+  /**
+   * 回滚指定数据源的事务
+   *
+   * @param connection 数据源连接
+   */
+  public void rollbackTx(Connection connection) {
     if (connection != null) {
       try {
         connection.setAutoCommit(false);
         connection.rollback();
       } catch (SQLException e) {
         throw JdbcException.wrap(e);
+      } finally {
+        close(connection);
+      }
+    }
+  }
+
+  /**
+   * 在事务中执行
+   *
+   * @param runnable 执行逻辑
+   */
+  public void invokeWithinTx(Runnable runnable) {
+    startTx();
+    boolean hasError = false;
+    try {
+      runnable.run();
+    } catch (Exception e) {
+      hasError = true;
+      throw e;
+    } finally {
+      if (hasError) {
+        rollbackTx();
+      } else {
+        closeTx();
+      }
+    }
+  }
+
+  /**
+   * 在事务中执行
+   *
+   * @param runnable   执行逻辑
+   * @param datasource 数据源
+   */
+  public void invokeWithinTx(Runnable runnable, String datasource) {
+    startTx(datasource);
+    boolean hasError = false;
+    try {
+      runnable.run();
+    } catch (Exception e) {
+      hasError = true;
+      throw e;
+    } finally {
+      if (hasError) {
+        rollbackTx(datasource);
+      } else {
+        closeTx(datasource);
+      }
+    }
+  }
+
+  /**
+   * 在事务中执行
+   *
+   * @param runnable   执行逻辑
+   * @param connection 数据库连接
+   */
+  public void invokeWithinTx(Runnable runnable, Connection connection) {
+    startTx(connection);
+    boolean hasError = false;
+    try {
+      runnable.run();
+    } catch (Exception e) {
+      hasError = true;
+      throw e;
+    } finally {
+      if (hasError) {
+        rollbackTx(connection);
+      } else {
+        closeTx(connection);
       }
     }
   }
@@ -317,8 +403,7 @@ public class Jdbc {
    * @param <T>            泛型
    * @return result
    */
-  public <T> T query(String dataSourceName, String sql, Class<T> clazz,
-      List<Object> params) {
+  public <T> T query(String dataSourceName, String sql, Class<T> clazz, List<Object> params) {
     return query(dataSourceName, sql, ResultSetHandler.beanHandler(clazz), params);
   }
 
@@ -349,7 +434,8 @@ public class Jdbc {
    * @return result
    */
   public <T> T query(String sql, ResultSetHandler<T> handler, List<Object> params) {
-    return query(getConnection(currentUse()), sql, handler, params, true);
+    Connection conn = getConnection(currentUse());
+    return query(conn, sql, handler, params, isAutoCommit(conn));
   }
 
   /**
@@ -384,17 +470,11 @@ public class Jdbc {
   public <T> T query(String dataSourceName, String sql, ResultSetHandler<T> handler,
       List<Object> params) {
     Connection connection = getConnection(dataSourceName);
-    try {
-      return query(connection, sql, handler, params, connection.getAutoCommit());
-    } catch (SQLException e) {
-      throw JdbcException.wrap(e);
-    }
+    return query(connection, sql, handler, params, isAutoCommit(connection));
   }
 
   /**
    * 执行 select 操作
-   * <br>
-   * 不关闭连接
    *
    * @param connection 数据库连接
    * @param sql        sql
@@ -410,8 +490,6 @@ public class Jdbc {
 
   /**
    * 执行 select 操作
-   * <br>
-   * 不关闭连接
    *
    * @param connection 数据库连接
    * @param sql        sql
@@ -422,7 +500,7 @@ public class Jdbc {
    */
   public <T> T query(Connection connection, String sql, ResultSetHandler<T> handler,
       List<Object> params) {
-    return query(connection, sql, handler, params, false);
+    return query(connection, sql, handler, params, isAutoCommit(connection));
   }
 
   /**
@@ -564,8 +642,7 @@ public class Jdbc {
    * @param params         参数
    * @return result
    */
-  public Map<String, Object> queryForMap(String dataSourceName, String sql,
-      Object... params) {
+  public Map<String, Object> queryForMap(String dataSourceName, String sql, Object... params) {
     return query(dataSourceName, sql, ResultSetHandler.mapHandler(), params);
   }
 
@@ -592,8 +669,7 @@ public class Jdbc {
    * @param params         参数
    * @return result
    */
-  public Map<String, Object> queryForMap(String dataSourceName, String sql,
-      List<Object> params) {
+  public Map<String, Object> queryForMap(String dataSourceName, String sql, List<Object> params) {
     return query(dataSourceName, sql, ResultSetHandler.mapHandler(), params);
   }
 
@@ -719,8 +795,6 @@ public class Jdbc {
 
   /**
    * 执行 INSERT、 UPDATE、 DELETE 操作
-   * <br>
-   * 不关闭连接
    *
    * @param connection 数据库连接
    * @param sql        sql
@@ -728,13 +802,11 @@ public class Jdbc {
    * @return 受影响行数
    */
   public int update(Connection connection, String sql, Object... params) {
-    return update(connection, sql, Arrays.asList(params), false);
+    return update(connection, sql, Arrays.asList(params), isAutoCommit(connection));
   }
 
   /**
    * 执行 INSERT、 UPDATE、 DELETE 操作
-   * <br>
-   * 不关闭连接
    *
    * @param connection 数据库连接
    * @param sql        sql
@@ -742,7 +814,7 @@ public class Jdbc {
    * @return 受影响行数
    */
   public int update(Connection connection, String sql, List<Object> params) {
-    return update(connection, sql, params, false);
+    return update(connection, sql, params, isAutoCommit(connection));
   }
 
   /**
@@ -754,8 +826,7 @@ public class Jdbc {
    * @param closeCon   是否关闭连接
    * @return 受影响行数
    */
-  public int update(Connection connection, String sql, List<Object> params,
-      boolean closeCon) {
+  public int update(Connection connection, String sql, List<Object> params, boolean closeCon) {
     return update(connection, sql, params, closeCon, false);
   }
 
@@ -769,8 +840,8 @@ public class Jdbc {
    * @param returnAutoGeneratedKey 是否返回主键
    * @return 受影响行数或主键
    */
-  public int update(Connection connection, String sql, List<Object> params,
-      boolean closeCon, boolean returnAutoGeneratedKey) {
+  public int update(Connection connection, String sql, List<Object> params, boolean closeCon,
+      boolean returnAutoGeneratedKey) {
     PreparedStatement stmt = null;
     int rows = 0;
     SqlCtx ctx = new SqlCtx().setSql(sql).setParams(params);
@@ -795,6 +866,21 @@ public class Jdbc {
       onFinally(ctx, rows);
     }
     return rows;
+  }
+
+  /**
+   * 是否自动提交事物
+   *
+   * @param conn 连接
+   * @return auto commit
+   */
+  public boolean isAutoCommit(Connection conn) {
+    try {
+      return conn.getAutoCommit();
+    } catch (SQLException e) {
+      log.error("conn error", e);
+      return true;
+    }
   }
 
   int getAutoGeneratedKey(PreparedStatement stmt) throws SQLException {

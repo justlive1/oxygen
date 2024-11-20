@@ -23,11 +23,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DecimalSystemConvert {
 
-  private final char[] DIGITS =
-      {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-          'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-
-
   /**
    * 进制转换，默认使用数字+字母数组做为数据源
    *
@@ -36,14 +31,14 @@ public class DecimalSystemConvert {
    * @return 结果
    */
   public String convert(long value, int shift) {
-    return convert(value, shift, DIGITS);
+    return convert(value, shift, Strings.ALPHA_NUMERIC);
   }
 
   /**
    * 进制转换
    *
-   * @param value 原始数据
-   * @param shift 进制数
+   * @param value  原始数据
+   * @param shift  进制数
    * @param source 进制数组源
    * @return 结果
    */
@@ -69,20 +64,20 @@ public class DecimalSystemConvert {
    * @return 十进制
    */
   public long recover(String value, int shift) {
-    return recover(value, shift, DIGITS);
+    return recover(value, shift, Strings.ALPHA_NUMERIC);
   }
 
   /**
    * 恢复成十进制
    *
-   * @param value 进制转换后的值
-   * @param shift 进制
+   * @param value  进制转换后的值
+   * @param shift  进制
    * @param source 进制数组源
    * @return 十进制
    */
   public long recover(String value, int shift, char[] source) {
     char[] buf = value.toCharArray();
-    int result = 0;
+    long result = 0;
     for (int i = buf.length - 1; i >= 0; i--) {
       int index = indexOf(buf[i], shift, source);
       if (index == -1) {

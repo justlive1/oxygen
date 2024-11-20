@@ -54,7 +54,7 @@ class EventBusTest {
 
     MySubscriber subscriber = new MySubscriber();
     EventBus eb = new EventBus("sync", MoreObjects.directExecutor(),
-        LogEventExceptionHandlerImpl.INS);
+        LogEventExceptionHandlerImpl.INS, new InMemQueueDispatcher());
     eb.register(subscriber);
     DeadEs ds = new DeadEs();
     eb.register(ds);
@@ -62,18 +62,27 @@ class EventBusTest {
 
     eb.post("acc", event);
 
+    ThreadUtils.sleep(1000);
+
     assertEquals(2, event.getRes().size());
 
     event.getRes().clear();
 
     eb.post("", event);
     eb.post("m3", new MsgEvent());
+
+    ThreadUtils.sleep(1000);
+
+
     assertEquals(0, ds.deadCount);
 
     eb.unregister(subscriber);
 
     eb.post("acc", event);
     eb.post("m3", new MsgEvent());
+
+    ThreadUtils.sleep(1000);
+
     assertEquals(2, ds.deadCount);
 
   }

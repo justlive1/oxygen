@@ -15,13 +15,15 @@ package vip.justlive.oxygen.jdbc.record;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Data;
+import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.jdbc.Batch;
 import vip.justlive.oxygen.jdbc.Jdbc;
 import vip.justlive.oxygen.jdbc.JdbcException;
@@ -56,6 +58,8 @@ public class Entity<T> {
   private List<Property> properties;
   private String baseQuery;
 
+  private Set<String> columnKeys;
+
   @SuppressWarnings("unchecked")
   public static <T> Entity<T> parse(Class<T> clazz) {
     return (Entity<T>) CACHED.computeIfAbsent(clazz, k -> parseClass(clazz));
@@ -70,6 +74,7 @@ public class Entity<T> {
     entity.type = clazz;
     entity.table = table.value();
     entity.properties = new LinkedList<>();
+    entity.columnKeys = new HashSet<>(8);
     if (entity.table.length() == 0) {
       entity.table = clazz.getSimpleName().toLowerCase();
     }
@@ -81,6 +86,14 @@ public class Entity<T> {
     return entity;
   }
 
+  /**
+   * 获取该表的排序，使用此方法会校验排序字段
+   *
+   * @return orderBy
+   */
+  public OrderBy orderBy() {
+    return new OrderBy(this);
+  }
 
   /**
    * 根据主键获取record
@@ -105,21 +118,23 @@ public class Entity<T> {
   /**
    * 根据record属性值获取集合
    *
-   * @param obj record
+   * @param obj    record
+   * @param wheres where for sql
    * @return list
    */
-  public List<T> find(T obj) {
-    return find(Jdbc.currentUse(), obj);
+  public List<T> find(T obj, Where... wheres) {
+    return find(Jdbc.currentUse(), obj, wheres);
   }
 
   /**
    * 根据record属性值获取一个值
    *
-   * @param obj record
+   * @param obj    record
+   * @param wheres where for sql
    * @return list
    */
-  public T findOne(T obj) {
-    return findOne(Jdbc.currentUse(), obj);
+  public T findOne(T obj, Where... wheres) {
+    return findOne(Jdbc.currentUse(), obj, wheres);
   }
 
   /**
@@ -127,10 +142,11 @@ public class Entity<T> {
    *
    * @param obj     record
    * @param throwEx 是否抛出异常
+   * @param wheres  where for sql
    * @return list
    */
-  public T findOne(T obj, boolean throwEx) {
-    return findOne(Jdbc.currentUse(), obj, throwEx);
+  public T findOne(T obj, boolean throwEx, Where... wheres) {
+    return findOne(Jdbc.currentUse(), obj, throwEx, wheres);
   }
 
   /**
@@ -145,22 +161,24 @@ public class Entity<T> {
   /**
    * 获取分页
    *
-   * @param obj  record
-   * @param page 分页参数
+   * @param obj    record
+   * @param page   分页参数
+   * @param wheres where for sql
    * @return list
    */
-  public List<T> page(T obj, Page<T> page) {
-    return page(Jdbc.currentUse(), obj, page);
+  public List<T> page(T obj, Page<T> page, Where... wheres) {
+    return page(Jdbc.currentUse(), obj, page, wheres);
   }
 
   /**
    * count
    *
-   * @param obj record
+   * @param obj    record
+   * @param wheres where for sql
    * @return count
    */
-  public int count(T obj) {
-    return count(Jdbc.currentUse(), obj);
+  public int count(T obj, Where... wheres) {
+    return count(Jdbc.currentUse(), obj, wheres);
   }
 
   /**
@@ -215,11 +233,12 @@ public class Entity<T> {
   /**
    * 根据record属性删除
    *
-   * @param obj record
+   * @param obj    record
+   * @param wheres where for sql
    * @return updated
    */
-  public int delete(T obj) {
-    return delete(Jdbc.currentUse(), obj);
+  public int delete(T obj, Where... wheres) {
+    return delete(Jdbc.currentUse(), obj, wheres);
   }
 
   /**
@@ -249,10 +268,11 @@ public class Entity<T> {
    *
    * @param dataSourceName 数据源名称
    * @param obj            record
+   * @param wheres         where for sql
    * @return list
    */
-  public List<T> find(String dataSourceName, T obj) {
-    return find(Jdbc.getConnection(dataSourceName), obj);
+  public List<T> find(String dataSourceName, T obj, Where... wheres) {
+    return find(Jdbc.getConnection(dataSourceName), obj, wheres);
   }
 
   /**
@@ -260,10 +280,11 @@ public class Entity<T> {
    *
    * @param dataSourceName 数据源名称
    * @param obj            record
+   * @param wheres         where for sql
    * @return list
    */
-  public T findOne(String dataSourceName, T obj) {
-    return findOne(Jdbc.getConnection(dataSourceName), obj);
+  public T findOne(String dataSourceName, T obj, Where... wheres) {
+    return findOne(Jdbc.getConnection(dataSourceName), obj, wheres);
   }
 
   /**
@@ -272,10 +293,11 @@ public class Entity<T> {
    * @param dataSourceName 数据源名称
    * @param obj            record
    * @param throwEx        是否抛出异常
+   * @param wheres         where for sql
    * @return list
    */
-  public T findOne(String dataSourceName, T obj, boolean throwEx) {
-    return findOne(Jdbc.getConnection(dataSourceName), obj, throwEx);
+  public T findOne(String dataSourceName, T obj, boolean throwEx, Where... wheres) {
+    return findOne(Jdbc.getConnection(dataSourceName), obj, throwEx, wheres);
   }
 
   /**
@@ -294,10 +316,11 @@ public class Entity<T> {
    * @param dataSourceName 数据源名称
    * @param obj            record
    * @param page           分页参数
+   * @param wheres         where for sql
    * @return list
    */
-  public List<T> page(String dataSourceName, T obj, Page<T> page) {
-    return page(Jdbc.getConnection(dataSourceName), obj, page);
+  public List<T> page(String dataSourceName, T obj, Page<T> page, Where... wheres) {
+    return page(Jdbc.getConnection(dataSourceName), obj, page, wheres);
   }
 
   /**
@@ -305,10 +328,11 @@ public class Entity<T> {
    *
    * @param dataSourceName 数据源名称
    * @param obj            record
+   * @param wheres         where for sql
    * @return count
    */
-  public int count(String dataSourceName, T obj) {
-    return count(Jdbc.getConnection(dataSourceName), obj);
+  public int count(String dataSourceName, T obj, Where... wheres) {
+    return count(Jdbc.getConnection(dataSourceName), obj, wheres);
   }
 
   /**
@@ -370,10 +394,11 @@ public class Entity<T> {
    *
    * @param dataSourceName 数据源名称
    * @param obj            record
+   * @param wheres         where for sql
    * @return updated
    */
-  public int delete(String dataSourceName, T obj) {
-    return delete(Jdbc.getConnection(dataSourceName), obj);
+  public int delete(String dataSourceName, T obj, Where... wheres) {
+    return delete(Jdbc.getConnection(dataSourceName), obj, wheres);
   }
 
   /**
@@ -407,23 +432,25 @@ public class Entity<T> {
   /**
    * 根据record属性值获取集合
    *
-   * @param conn 数据库连接
-   * @param obj  record
+   * @param conn   数据库连接
+   * @param obj    record
+   * @param wheres where for sql
    * @return list
    */
-  public List<T> find(Connection conn, T obj) {
-    return page(conn, obj, null);
+  public List<T> find(Connection conn, T obj, Where... wheres) {
+    return page(conn, obj, null, wheres);
   }
 
   /**
    * 根据record属性值获取一个值
    *
-   * @param conn 数据库连接
-   * @param obj  record
+   * @param conn   数据库连接
+   * @param obj    record
+   * @param wheres where for sql
    * @return list
    */
-  public T findOne(Connection conn, T obj) {
-    return findOne(conn, obj, true);
+  public T findOne(Connection conn, T obj, Where... wheres) {
+    return findOne(conn, obj, true, wheres);
   }
 
   /**
@@ -432,10 +459,11 @@ public class Entity<T> {
    * @param conn    数据库连接
    * @param obj     record
    * @param throwEx 是否抛出异常
+   * @param wheres  where for sql
    * @return list
    */
-  public T findOne(Connection conn, T obj, boolean throwEx) {
-    List<T> list = find(conn, obj);
+  public T findOne(Connection conn, T obj, boolean throwEx, Where... wheres) {
+    List<T> list = find(conn, obj, wheres);
     int size = list.size();
     if (size == 0) {
       return null;
@@ -460,15 +488,16 @@ public class Entity<T> {
   /**
    * 获取分页
    *
-   * @param conn 数据库连接
-   * @param obj  record
-   * @param page 分页参数
+   * @param conn   数据库连接
+   * @param obj    record
+   * @param page   分页参数
+   * @param wheres where for sql
    * @return list
    */
-  public List<T> page(Connection conn, T obj, Page<T> page) {
+  public List<T> page(Connection conn, T obj, Page<T> page, Where... wheres) {
     List<Object> params = new LinkedList<>();
     StringBuilder sb = new StringBuilder(baseQuery);
-    margeWhere(this, obj, sb, params);
+    margeWhere(this, obj, sb, params, wheres);
     if (page != null) {
       params.add(page);
     }
@@ -478,14 +507,15 @@ public class Entity<T> {
   /**
    * count
    *
-   * @param conn 数据库连接
-   * @param obj  record
+   * @param conn   数据库连接
+   * @param obj    record
+   * @param wheres where for sql
    * @return count
    */
-  public int count(Connection conn, T obj) {
+  public int count(Connection conn, T obj, Where... wheres) {
     StringBuilder sb = new StringBuilder(COUNT).append(table).append(WHERE);
     List<Object> params = new LinkedList<>();
-    margeWhere(this, obj, sb, params);
+    margeWhere(this, obj, sb, params, wheres);
     return Jdbc.query(conn, sb.toString(), ResultSetHandler.intHandler(), params);
   }
 
@@ -528,12 +558,12 @@ public class Entity<T> {
     try {
       String sql = formatInsertSql(this, obj, params);
       if (primary != null && canConvert(primary.type)) {
-        int id = Jdbc.update(conn, sql, params, conn.getAutoCommit(), true);
+        int id = Jdbc.update(conn, sql, params, Jdbc.isAutoCommit(conn), true);
         convert(obj, primary, id);
         return id;
       }
       return Jdbc.update(conn, sql, params);
-    } catch (IllegalAccessException | SQLException e) {
+    } catch (IllegalAccessException e) {
       throw JdbcException.wrap(e);
     }
   }
@@ -584,22 +614,23 @@ public class Entity<T> {
   public int deleteByIds(Connection conn, List<?> ids) {
     List<String> list = new ArrayList<>(ids.size());
     ids.forEach(id -> list.add(SEAT));
-    String sql = DELETE + table + WHERE + AND + String
-        .format(IN_PARAM_STR, primary.name, String.join(COMMA, list));
+    String sql = DELETE + table + WHERE + AND + String.format(IN_PARAM_STR, primary.name,
+        String.join(COMMA, list));
     return Jdbc.update(conn, sql, (List<Object>) ids);
   }
 
   /**
    * 根据record属性删除
    *
-   * @param conn 数据库连接
-   * @param obj  record
+   * @param conn   数据库连接
+   * @param obj    record
+   * @param wheres where for sql
    * @return updated
    */
-  public int delete(Connection conn, T obj) {
+  public int delete(Connection conn, T obj, Where... wheres) {
     StringBuilder sb = new StringBuilder(DELETE).append(table).append(WHERE);
     List<Object> params = new LinkedList<>();
-    margeWhere(this, obj, sb, params);
+    margeWhere(this, obj, sb, params, wheres);
     return Jdbc.update(conn, sb.toString(), params);
   }
 
@@ -621,13 +652,24 @@ public class Entity<T> {
   }
 
   private static void margeWhere(Entity<?> entity, Object obj, StringBuilder sb,
-      List<Object> params) {
+      List<Object> params, Where... wheres) {
     try {
       for (Property property : entity.properties) {
         Object value = property.field.get(obj);
         if (value != null) {
           sb.append(AND).append(String.format(PARAM_STR, property.name));
           params.add(value);
+        }
+      }
+      if (wheres != null && wheres.length > 0) {
+        for (Where where : wheres) {
+          if (!Strings.hasText(where.getSql())) {
+            continue;
+          }
+          sb.append(AND).append(where.getSql());
+          if (where.getParam() != null) {
+            params.add(where.getParam());
+          }
         }
       }
     } catch (IllegalAccessException e) {
@@ -671,6 +713,7 @@ public class Entity<T> {
       if (property.pk) {
         entity.primary = property;
       }
+      entity.columnKeys.add(property.name);
     }
   }
 
