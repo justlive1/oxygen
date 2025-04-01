@@ -22,7 +22,7 @@ package vip.justlive.oxygen.core.util.base;
  * @since 3.0.8
  */
 public interface Sequence<T> {
-  
+
   /**
    * 生成id
    *

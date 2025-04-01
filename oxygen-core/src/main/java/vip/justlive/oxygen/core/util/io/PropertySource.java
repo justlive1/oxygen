@@ -60,7 +60,7 @@ public interface PropertySource extends Order, Naming {
   /**
    * 获取属性，可设置默认值
    *
-   * @param key 属性键值
+   * @param key          属性键值
    * @param defaultValue 默认值
    * @return 属性值
    */

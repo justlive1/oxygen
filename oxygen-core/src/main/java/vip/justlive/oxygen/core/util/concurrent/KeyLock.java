@@ -34,7 +34,7 @@ public interface KeyLock {
   /**
    * 尝试加锁
    *
-   * @param key 资源key
+   * @param key    资源key
    * @param expire 失效时间，单位毫秒
    * @return true为加锁成功
    */
@@ -43,9 +43,9 @@ public interface KeyLock {
   /**
    * 尝试加锁
    *
-   * @param key 资源key
+   * @param key     资源key
    * @param timeout 超时时间
-   * @param unit 时间单位
+   * @param unit    时间单位
    * @return true为加锁成功
    */
   boolean tryLock(String key, long timeout, TimeUnit unit);
@@ -53,10 +53,10 @@ public interface KeyLock {
   /**
    * 尝试加锁
    *
-   * @param key 资源key
-   * @param expire 失效时间
+   * @param key     资源key
+   * @param expire  失效时间
    * @param timeout 超时时间
-   * @param unit 时间单位
+   * @param unit    时间单位
    * @return true为加锁成功
    */
   boolean tryLock(String key, long expire, long timeout, TimeUnit unit);
@@ -71,7 +71,7 @@ public interface KeyLock {
   /**
    * 阻塞加锁直到成功
    *
-   * @param key 资源key
+   * @param key    资源key
    * @param expire 失效时间
    */
   void lock(String key, long expire);

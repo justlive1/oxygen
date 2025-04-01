@@ -50,10 +50,9 @@ public class Bytes {
   public static final byte SLASH = '/';
   public static final byte SPACE = ' ';
   public static final byte UNDERSCORE = '_';
-
+  private final int padding;
   protected byte[] buffer;
   protected int count;
-  private int padding;
 
   /**
    * 默认大小和增长值都为32
@@ -74,7 +73,7 @@ public class Bytes {
   /**
    * 按指定大小和增长值构造
    *
-   * @param size 默认大小
+   * @param size    默认大小
    * @param padding 增长值
    */
   public Bytes(int size, int padding) {
@@ -111,7 +110,7 @@ public class Bytes {
   /**
    * 写入字符串
    *
-   * @param str 字符串
+   * @param str     字符串
    * @param charset 编码
    * @return Bytes
    */
@@ -135,7 +134,7 @@ public class Bytes {
   /**
    * 写入字节数组指定边界
    *
-   * @param b 字节数组
+   * @param b   字节数组
    * @param off 起始
    * @param len 长度
    * @return Bytes
@@ -178,7 +177,19 @@ public class Bytes {
    * @return string
    */
   public synchronized String toString(Charset charset) {
-    return new String(buffer, 0, count, charset);
+    return toString(count, charset);
+  }
+
+  /**
+   * 转string
+   *
+   * @param length  转换长度
+   * @param charset 编码
+   * @return string
+   * @since 3.0.10
+   */
+  public String toString(int length, Charset charset) {
+    return new String(buffer, 0, length, charset);
   }
 
   /**

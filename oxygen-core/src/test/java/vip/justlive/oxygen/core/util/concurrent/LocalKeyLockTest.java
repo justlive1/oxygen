@@ -51,7 +51,7 @@ class LocalKeyLockTest {
   static class Bank {
 
     int money;
-    KeyLock lock = new LocalKeyLock();
+    final KeyLock lock = new LocalKeyLock();
 
     void login() {
       lock.lock(Thread.currentThread().getName());

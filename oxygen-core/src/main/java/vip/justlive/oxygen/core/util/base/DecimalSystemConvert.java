@@ -23,6 +23,10 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DecimalSystemConvert {
 
+  private final char[] DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c',
+      'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+      'w', 'x', 'y', 'z'};
+
   /**
    * 进制转换，默认使用数字+字母数组做为数据源
    *
@@ -31,7 +35,7 @@ public class DecimalSystemConvert {
    * @return 结果
    */
   public String convert(long value, int shift) {
-    return convert(value, shift, Strings.ALPHA_NUMERIC);
+    return convert(value, shift, DIGITS);
   }
 
   /**
@@ -64,7 +68,7 @@ public class DecimalSystemConvert {
    * @return 十进制
    */
   public long recover(String value, int shift) {
-    return recover(value, shift, Strings.ALPHA_NUMERIC);
+    return recover(value, shift, DIGITS);
   }
 
   /**

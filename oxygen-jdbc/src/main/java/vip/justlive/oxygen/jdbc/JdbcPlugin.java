@@ -74,10 +74,10 @@ public class JdbcPlugin implements Plugin {
    */
   private void loadFromConfig() {
     DataSourceConf primary = ConfigFactory.load(DataSourceConf.class);
-    if (primary.getUrl() != null && primary.getUrl().length() > 0) {
+    if (primary.getUrl() != null && !primary.getUrl().isEmpty()) {
       addDataSource(primary);
     }
-    if (primary.getMulti() != null && primary.getMulti().length > 0) {
+    if (primary.getMulti() != null) {
       for (String name : primary.getMulti()) {
         DataSourceConf conf = ConfigFactory
             .load(DataSourceConf.class, String.format(Jdbc.TEMPLATE, name));
@@ -89,7 +89,7 @@ public class JdbcPlugin implements Plugin {
   private void addDataSource(DataSourceConf conf) {
     DataSource ds = DataSourceBuilder.build(conf.validate());
     Jdbc.addPrimaryDataSource(ds);
-    if (conf.getAlias() != null && conf.getAlias().length() > 0) {
+    if (conf.getAlias() != null && !conf.getAlias().isEmpty()) {
       Jdbc.addDataSource(conf.getAlias(), ds);
     }
     if (conf.getInitScripts() != null) {
@@ -103,7 +103,7 @@ public class JdbcPlugin implements Plugin {
     if (conf.isPrimary()) {
       Jdbc.addPrimaryDataSource(ds);
     }
-    if (conf.getAlias() != null && conf.getAlias().length() > 0) {
+    if (conf.getAlias() != null && !conf.getAlias().isEmpty()) {
       Jdbc.addDataSource(conf.getAlias(), ds);
     }
     if (conf.getInitScripts() != null) {

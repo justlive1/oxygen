@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class NoLogService {
 
-  static AtomicInteger ato = new AtomicInteger(1);
+  static final AtomicInteger ato = new AtomicInteger(1);
 
   @NoLog
   public void log() {

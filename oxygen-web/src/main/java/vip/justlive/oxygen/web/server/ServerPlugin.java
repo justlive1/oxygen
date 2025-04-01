@@ -13,9 +13,9 @@
  */
 package vip.justlive.oxygen.web.server;
 
+import java.util.ServiceLoader;
 import lombok.Getter;
 import vip.justlive.oxygen.core.Plugin;
-import vip.justlive.oxygen.core.util.base.ServiceLoaderUtils;
 import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.server.aio.AioWebServer;
 
@@ -41,7 +41,7 @@ public class ServerPlugin implements Plugin {
 
   @Override
   public void start() {
-    webServer = ServiceLoaderUtils.loadServiceOrNull(WebServer.class);
+    ServiceLoader.load(WebServer.class).findFirst().ifPresent(server -> webServer = server);
     if (webServer == null) {
       webServer = new AioWebServer();
     }

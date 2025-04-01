@@ -23,7 +23,7 @@ public interface EventExceptionHandler {
   /**
    * 处理逻辑
    *
-   * @param e 异常
+   * @param e   异常
    * @param ctx 上下文
    */
   void handle(Throwable e, EventContext ctx);

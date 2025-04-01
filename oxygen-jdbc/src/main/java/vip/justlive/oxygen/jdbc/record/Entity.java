@@ -75,7 +75,7 @@ public class Entity<T> {
     entity.table = table.value();
     entity.properties = new LinkedList<>();
     entity.columnKeys = new HashSet<>(8);
-    if (entity.table.length() == 0) {
+    if (entity.table.isEmpty()) {
       entity.table = clazz.getSimpleName().toLowerCase();
     }
     parseColumn(clazz, entity);
@@ -648,7 +648,7 @@ public class Entity<T> {
     }
     fields.deleteCharAt(fields.length() - 1);
     values.deleteCharAt(values.length() - 1);
-    return String.format(INSERT, entity.table, fields.toString(), values.toString());
+    return String.format(INSERT, entity.table, fields, values);
   }
 
   private static void margeWhere(Entity<?> entity, Object obj, StringBuilder sb,
@@ -661,7 +661,7 @@ public class Entity<T> {
           params.add(value);
         }
       }
-      if (wheres != null && wheres.length > 0) {
+      if (wheres != null) {
         for (Where where : wheres) {
           if (!Strings.hasText(where.getSql())) {
             continue;
@@ -702,7 +702,7 @@ public class Entity<T> {
       }
       Property property = new Property();
       property.name = column.value();
-      if (property.name.length() == 0) {
+      if (property.name.isEmpty()) {
         property.name = field.getName().toLowerCase();
       }
       field.setAccessible(true);

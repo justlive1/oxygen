@@ -15,14 +15,23 @@ package vip.justlive.oxygen.core.util.scan;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.lang.module.ModuleFinder;
+import java.lang.module.ModuleReader;
+import java.lang.module.ResolvedModule;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.jar.JarEntry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.base.JarFileInfo;
@@ -74,6 +83,9 @@ public class DefaultClassScanner implements ClassScanner {
     Set<Class<?>> result = CACHE.get(location);
     if (result == null) {
       result = new HashSet<>(2);
+      // Search the module path first.
+      findAllModulePath(location, classes);
+      // Search the class path next.
       String rootPath = PathMatcher.getRootDir(location);
       String subPattern = location.substring(rootPath.length());
       Enumeration<URL> urls = this.loader.getResources(Urls.cutRootPath(rootPath));
@@ -90,6 +102,92 @@ public class DefaultClassScanner implements ClassScanner {
     classes.addAll(result);
   }
 
+  private static final Set<String> SYSTEM_MODULE_NAMES = ModuleFinder.ofSystem().findAll().stream()
+      .map(moduleReference -> moduleReference.descriptor().name()).collect(Collectors.toSet());
+  private static final Predicate<ResolvedModule> IS_NOT_SYSTEM_MODULE = resolvedModule -> !SYSTEM_MODULE_NAMES.contains(
+      resolvedModule.name());
+
+  private void findAllModulePath(String location, Set<Class<?>> classes) {
+    final String resourcePattern;
+    if (location.startsWith(Strings.SLASH)) {
+      resourcePattern = location.substring(Strings.SLASH.length());
+    } else {
+      resourcePattern = location;
+    }
+    Predicate<String> resourcePatternMatches = (PathMatcher.isPattern(resourcePattern)
+        ? path -> PathMatcher.match(resourcePattern, path) : resourcePattern::equals);
+    ModuleLayer.boot().configuration().modules().stream().filter(IS_NOT_SYSTEM_MODULE)
+        .forEach(resolvedModule -> {
+          log.info("resolved module {}", resolvedModule);
+          // NOTE: a ModuleReader and a Stream returned from ModuleReader.list() must be closed.
+          try (ModuleReader moduleReader = resolvedModule.reference()
+              .open(); Stream<String> names = moduleReader.list()) {
+            names.filter(resourcePatternMatches)
+                .map(name -> findModuleResource(moduleReader, name, resolvedModule))
+                .filter(Objects::nonNull).forEach(classes::add);
+          } catch (IOException ex) {
+            if (log.isDebugEnabled()) {
+              log.debug("Failed to read contents of module [{}]", resolvedModule, ex);
+            }
+            throw new UncheckedIOException(ex);
+          }
+        });
+  }
+
+  private Class<?> findModuleResource(ModuleReader moduleReader, String name,
+      ResolvedModule resolvedModule) {
+    try {
+      return moduleReader.find(name).map(uri -> this.convertModule(uri, resolvedModule))
+          .orElse(null);
+    } catch (Exception e) {
+      if (log.isDebugEnabled()) {
+        log.debug("Failed to find resource [{}}] in module path", name, e);
+      }
+      return null;
+    }
+  }
+
+  private Class<?> convertModule(URI uri, ResolvedModule resolvedModule) {
+    URI base = resolvedModule.reference().location().orElse(null);
+    String location = "";
+    if (base != null) {
+      location = base.toString();
+    }
+    String testLocation = location;
+    if (location.endsWith("/target/classes/")) {
+      // 测试模式下相同包名归属同一个模块
+      testLocation = base.getPath().replace("/target/classes/", "/target/test-classes/");
+    }
+    String path = uri.toString();
+    if (Urls.URL_PROTOCOL_FILE.equals(uri.getScheme())) {
+      if (path.startsWith(location)) {
+        path = path.substring(location.length());
+      } else if (uri.getPath().startsWith(testLocation)) {
+        path = uri.getPath().substring(testLocation.length());
+      }
+      return loadClass(
+          path.replace(Strings.SLASH, Strings.DOT).replace(CLASS_SUFFIX, Strings.EMPTY));
+    } else {
+      String prefix = uri.getScheme() + Strings.COLON + location + Urls.JAR_URL_SEPARATOR;
+      if (path.startsWith(prefix)) {
+        path = path.substring(prefix.length());
+        return loadClass(
+            path.replace(Strings.SLASH, Strings.DOT).replace(CLASS_SUFFIX, Strings.EMPTY));
+      }
+      log.info("load unknown resource from jar module location {} -> {}", location, uri);
+    }
+    return null;
+  }
+
+  private Class<?> loadClass(String className) {
+    try {
+      return loader.loadClass(className);
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+      log.warn("class [{}] can not load ", className);
+    }
+    return null;
+  }
+
   private void findFileMatchPath(String rootPath, URL rootUrl, String subPattern,
       Set<Class<?>> classes) {
     File rootDir;
@@ -100,12 +198,11 @@ public class DefaultClassScanner implements ClassScanner {
     }
     Set<File> matchedFiles = PathMatcher.findMatchedFiles(rootDir, subPattern);
     for (File file : matchedFiles) {
-      String className = pathToClassName(rootPath, rootDir, file)
-          .replace(CLASS_SUFFIX, Strings.EMPTY);
-      try {
-        classes.add(loader.loadClass(className));
-      } catch (ClassNotFoundException | NoClassDefFoundError e) {
-        log.warn("class [{}] can not load ", className);
+      String className = pathToClassName(rootPath, rootDir, file).replace(CLASS_SUFFIX,
+          Strings.EMPTY);
+      Class<?> clazz = loadClass(className);
+      if (clazz != null) {
+        classes.add(clazz);
       }
     }
   }
@@ -114,24 +211,23 @@ public class DefaultClassScanner implements ClassScanner {
       throws IOException {
     try (JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl)) {
       if (log.isDebugEnabled()) {
-        log.debug("Looking for matching resources in jar file [" + jarFileInfo.jarFileUrl + "]");
+        log.debug("Looking for matching resources in jar file [{}]", jarFileInfo.jarFileUrl);
       }
       String rootEntryPath = jarFileInfo.rootEntryPath;
-      if (rootEntryPath.length() > 0 && !rootEntryPath.endsWith(Strings.SLASH)) {
+      if (!rootEntryPath.isEmpty() && !rootEntryPath.endsWith(Strings.SLASH)) {
         rootEntryPath += Strings.SLASH;
       }
       for (Enumeration<JarEntry> entries = jarFileInfo.jarFile.entries();
           entries.hasMoreElements(); ) {
         JarEntry entry = entries.nextElement();
         String entryPath = entry.getName();
-        if (entryPath.startsWith(rootEntryPath) && PathMatcher
-            .match(subPattern, entryPath.substring(rootEntryPath.length()))) {
+        if (entryPath.startsWith(rootEntryPath) && PathMatcher.match(subPattern,
+            entryPath.substring(rootEntryPath.length()))) {
           String className = entryPath.replace(Strings.SLASH, Strings.DOT)
               .replace(CLASS_SUFFIX, Strings.EMPTY);
-          try {
-            classes.add(loader.loadClass(className));
-          } catch (ClassNotFoundException | NoClassDefFoundError e) {
-            log.warn("class [{}] cannot load", className);
+          Class<?> clazz = loadClass(className);
+          if (clazz != null) {
+            classes.add(clazz);
           }
         }
       }

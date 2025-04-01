@@ -66,7 +66,7 @@ public abstract class BaseEncoder implements Encoder {
     for (int i = 0; i < iterations; i++) {
       value = doEncode(value);
     }
-    if (salt.length() > 0) {
+    if (!salt.isEmpty()) {
       value = wrapperSalt(salt).concat(value);
     }
     return value;

@@ -14,13 +14,12 @@
 
 package vip.justlive.oxygen.core.util.eventbus;
 
-import lombok.RequiredArgsConstructor;
-import vip.justlive.oxygen.core.util.concurrent.RepeatRunnable;
-import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
-
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import lombok.RequiredArgsConstructor;
+import vip.justlive.oxygen.core.util.concurrent.RepeatRunnable;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
  * 内存队列事件分发器
@@ -29,33 +28,34 @@ import java.util.concurrent.TimeUnit;
  */
 public class InMemQueueDispatcher extends ImmediateDispatcher {
 
-    private final BlockingQueue<EventWrapper> queue = new LinkedBlockingQueue<>();
+  private final BlockingQueue<EventWrapper> queue = new LinkedBlockingQueue<>();
 
-    public InMemQueueDispatcher() {
-        ThreadUtils.globalPool().execute(new RepeatRunnable("IMQDispatcher", this::run));
+  public InMemQueueDispatcher() {
+    ThreadUtils.globalPool().execute(new RepeatRunnable("IMQDispatcher", this::run));
+  }
+
+  @Override
+  public void dispatch(String channel, Object event) {
+    queue.add(new EventWrapper(channel, event));
+  }
+
+  private void run() {
+    EventWrapper eventWrapper = null;
+    try {
+      eventWrapper = queue.poll(1, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     }
 
-    @Override
-    public void dispatch(String channel, Object event) {
-        queue.add(new EventWrapper(channel, event));
+    if (eventWrapper != null) {
+      super.dispatch(eventWrapper.channel, eventWrapper.event);
     }
+  }
 
-    private void run() {
-        EventWrapper eventWrapper = null;
-        try {
-            eventWrapper = queue.poll(1, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+  @RequiredArgsConstructor
+  private static class EventWrapper {
 
-        if (eventWrapper != null) {
-            super.dispatch(eventWrapper.channel, eventWrapper.event);
-        }
-    }
-
-    @RequiredArgsConstructor
-    private static class EventWrapper {
-        final String channel;
-        final Object event;
-    }
+    final String channel;
+    final Object event;
+  }
 }

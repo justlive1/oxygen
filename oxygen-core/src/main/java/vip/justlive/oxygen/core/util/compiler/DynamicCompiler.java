@@ -37,6 +37,7 @@ import vip.justlive.oxygen.core.CoreConfigKeys;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.exception.WrappedException;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
+import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
@@ -47,10 +48,10 @@ import vip.justlive.oxygen.core.util.base.Strings;
 @Slf4j
 public class DynamicCompiler implements Closeable {
 
-  private static final Pattern PACKAGE_PATTERN = Pattern
-      .compile("package\\s+([$_a-zA-Z][$_a-zA-Z0-9.]*);");
-  private static final Pattern CLASS_PATTERN = Pattern
-      .compile("class\\s+([$_a-zA-Z][$_a-zA-Z0-9]*)[\\s<]");
+  private static final Pattern PACKAGE_PATTERN = Pattern.compile(
+      "package\\s+([$_a-zA-Z][$_a-zA-Z0-9.]*);");
+  private static final Pattern CLASS_PATTERN = Pattern.compile(
+      "class\\s+([$_a-zA-Z][$_a-zA-Z0-9]*)[\\s<]");
   private static final ClasspathTransfer TRANSFER = new ClasspathTransfer();
 
   private final ClassLoader loader;
@@ -82,10 +83,7 @@ public class DynamicCompiler implements Closeable {
         throw new IllegalStateException(e.getMessage(), e);
       }
     }
-    if (log.isDebugEnabled()) {
-      log.debug("ClassLoader: {}, StandardJavaFileManager class-path: {}", parent,
-          fileManager.getLocation(StandardLocation.CLASS_PATH));
-    }
+
     this.manager = new DynamicJavaFileManager(fileManager, loader, sources, byteCodes);
     this.options = new ArrayList<>();
     String value = CoreConfigKeys.COMPILER_OPTIONS.getValue();
@@ -94,6 +92,28 @@ public class DynamicCompiler implements Closeable {
         options.add(option.trim());
       }
     }
+
+    Iterable<? extends File> classPath = fileManager.getLocation(StandardLocation.CLASS_PATH);
+    StringBuilder modulePath = new StringBuilder();
+    String jdkModulePath = System.getProperty("jdk.module.path");
+    if (jdkModulePath != null) {
+      modulePath.append(jdkModulePath);
+      for (File file : classPath) {
+        String path = file.getAbsolutePath();
+        if (path.endsWith("test-classes")) {
+          modulePath.append(";").append(path);
+        }
+      }
+    }
+
+    this.options.add("-proc:full");
+    this.options.add("--module-path");
+    this.options.add(modulePath.toString());
+    this.options.add("--add-modules");
+    this.options.add("ALL-MODULE-PATH");
+
+    log.info("ClassLoader: {}, Compiler options: {}, StandardJavaFileManager class-path: {}",
+        parent, options, MoreObjects.toString(classPath));
   }
 
   @Override
@@ -130,8 +150,8 @@ public class DynamicCompiler implements Closeable {
    * 源码编译
    *
    * @param packageName 包名
-   * @param className 类名
-   * @param code 源码
+   * @param className   类名
+   * @param code        源码
    * @return class
    */
   public Class<?> compile(String packageName, String className, String code) {
@@ -152,7 +172,7 @@ public class DynamicCompiler implements Closeable {
         Collections.singletonList(sourceCode)).call();
     if (result == null || !result) {
       List<Diagnostic<? extends JavaFileObject>> diagnostics = collector.flush();
-      log.error("Compilation failed. {}", diagnostics);
+      log.error("Compilation failed. source code : {} {}", code, diagnostics);
       throw new IllegalStateException(
           "Compilation failed. class:" + name + ",diagnostics: " + diagnostics);
     }

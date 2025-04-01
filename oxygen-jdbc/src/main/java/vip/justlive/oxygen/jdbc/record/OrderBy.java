@@ -22,6 +22,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import vip.justlive.oxygen.jdbc.JdbcException;
 
+/**
+ * order by
+ *
+ * @author wu-bo
+ */
 @Getter
 @RequiredArgsConstructor
 public class OrderBy {
@@ -30,7 +35,7 @@ public class OrderBy {
 
   private final Entity<?> entity;
 
-  private List<Order> orders = new ArrayList<>();
+  private final List<Order> orders = new ArrayList<>();
 
   public OrderBy() {
     this(null);

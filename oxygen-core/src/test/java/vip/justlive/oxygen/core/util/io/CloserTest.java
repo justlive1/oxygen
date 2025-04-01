@@ -30,7 +30,6 @@ class CloserTest {
   @Test
   void test() {
     AtomicInteger count = new AtomicInteger();
-    @SuppressWarnings("resource")
     Closer closer = new Closer();
     try {
       closer.register(new CloseAction(count, 2)).check();

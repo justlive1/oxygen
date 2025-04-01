@@ -22,17 +22,17 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author wubo
  */
 public class SimpleSequence implements Sequence<Long> {
-  
+
   private final AtomicLong sequence;
-  
+
   public SimpleSequence() {
     this(0);
   }
-  
+
   public SimpleSequence(long initialValue) {
     this.sequence = new AtomicLong(initialValue);
   }
-  
+
   @Override
   public Long nextId() {
     return sequence.getAndIncrement();

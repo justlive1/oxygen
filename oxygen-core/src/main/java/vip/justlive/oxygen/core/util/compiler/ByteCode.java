@@ -29,14 +29,14 @@ import lombok.Setter;
  */
 public class ByteCode extends SimpleJavaFileObject {
 
+  private final String name;
+  private final ByteArrayOutputStream code = new ByteArrayOutputStream();
   @Getter
   @Setter
   private boolean defined;
-  private final String name;
-  private final ByteArrayOutputStream code = new ByteArrayOutputStream();
 
   public ByteCode(String name, Kind kind) {
-    super(URI.create("mem:///target/" + name + kind), kind);
+    super(URI.create("mem:///target/" + name.replace('.', '/') + kind.extension), kind);
     this.name = name;
   }
 

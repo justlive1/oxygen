@@ -32,7 +32,7 @@ public class ServiceLoaderUtils {
    * 加载服务
    *
    * @param clazz 类
-   * @param <T> 泛型
+   * @param <T>   泛型
    * @return service
    */
   public <T> T loadService(Class<T> clazz) {
@@ -48,7 +48,7 @@ public class ServiceLoaderUtils {
    * 加载服务
    *
    * @param clazz 类
-   * @param <T> 泛型
+   * @param <T>   泛型
    * @return service or null
    */
   public <T> T loadServiceOrNull(Class<T> clazz) {
@@ -63,7 +63,7 @@ public class ServiceLoaderUtils {
    * 加载服务列表
    *
    * @param clazz 类
-   * @param <T> 泛型
+   * @param <T>   泛型
    * @return services
    */
   public <T> List<T> loadServices(Class<T> clazz) {
@@ -73,9 +73,9 @@ public class ServiceLoaderUtils {
   /**
    * 加载服务列表
    *
-   * @param clazz 类
+   * @param clazz  类
    * @param loader 类加载器
-   * @param <T> 泛型
+   * @param <T>    泛型
    * @return services
    */
   public <T> List<T> loadServices(Class<T> clazz, ClassLoader loader) {

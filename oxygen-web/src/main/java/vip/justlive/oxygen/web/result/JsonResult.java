@@ -13,19 +13,11 @@
  */
 package vip.justlive.oxygen.web.result;
 
-import lombok.Getter;
-
 /**
  * json result
  *
  * @author wubo
  */
-@Getter
-public class JsonResult implements Result {
+public record JsonResult(Object data) implements Result {
 
-  private final Object data;
-
-  public JsonResult(Object data) {
-    this.data = data;
-  }
 }

@@ -28,17 +28,17 @@ import lombok.RequiredArgsConstructor;
 public class Slot implements Delayed {
 
   private final AtomicLong deadline = new AtomicLong(-1);
-
+  private final Wheel wheel;
   Task<?> head;
   Task<?> tail;
 
-  static Slot[] createSlots(int ticks) {
+  static Slot[] createSlots(int ticks, Wheel wheel) {
     if (ticks <= 0) {
       throw new IllegalArgumentException("ticks must be greater than 0: " + ticks);
     }
     Slot[] sts = new Slot[ticks];
     for (int i = 0; i < sts.length; i++) {
-      sts[i] = new Slot();
+      sts[i] = new Slot(wheel);
     }
     return sts;
   }
@@ -95,5 +95,23 @@ public class Slot implements Delayed {
   public int compareTo(Delayed o) {
     Slot slot = (Slot) o;
     return Long.compare(deadline.get(), slot.deadline.get());
+  }
+
+  @Override
+  public String toString() {
+    int size = 0;
+    if (head != null) {
+      size++;
+      Task<?> next = head.next;
+      while (next != null && next != tail) {
+        size++;
+        next = next.next;
+      }
+    }
+    if (tail != null) {
+      size++;
+    }
+    return "Slot@" + Integer.toHexString(hashCode()) + "{deadline=" + deadline + ", taskCount="
+        + size + ", wheel@" + Integer.toHexString(wheel.hashCode()) + "}";
   }
 }

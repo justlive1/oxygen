@@ -18,16 +18,23 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.JarEntry;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jetty.annotations.AnnotationConfiguration;
-import org.eclipse.jetty.jsp.JettyJspServlet;
+import org.eclipse.jetty.ee10.jsp.JettyJspServlet;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.ServletMapping;
+import org.eclipse.jetty.ee10.webapp.Configuration;
+import org.eclipse.jetty.ee10.webapp.JspConfiguration;
+import org.eclipse.jetty.ee10.webapp.WebAppConfiguration;
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
+import org.eclipse.jetty.server.ConnectionFactory;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.webapp.Configuration;
-import org.eclipse.jetty.webapp.WebAppContext;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
@@ -72,7 +79,6 @@ public class JettyWebServer implements WebServer {
     connector.setPort(this.port);
     connector.setIdleTimeout(jettyConf.getIdleTimeout());
     connector.setAcceptQueueSize(jettyConf.getAcceptQueueSize());
-    connector.setStopTimeout(jettyConf.getStopTimeout());
     connector.setReuseAddress(jettyConf.isReuseAddress());
   }
 
@@ -84,11 +90,22 @@ public class JettyWebServer implements WebServer {
 
     server = new Server();
 
-    ServerConnector connector = new ServerConnector(server);
-    server.addConnector(connector);
+    HttpConfiguration httpConfiguration = new HttpConfiguration();
+    httpConfiguration.setSendServerVersion(false);
+    List<ConnectionFactory> connectionFactories = new ArrayList<>();
+    connectionFactories.add(new HttpConnectionFactory(httpConfiguration));
+//    if (jettyConf.isHttp2Enabled()) {
+//
+//    }
+    ServerConnector connector = new ServerConnector(server, jettyConf.getThreadsAcceptors(),
+        jettyConf.getThreadsSelectors(), connectionFactories.toArray(new ConnectionFactory[0]));
     configConnector(connector, jettyConf);
 
+    server.addConnector(connector);
+    server.setStopTimeout(jettyConf.getStopTimeout());
+
     WebAppContext webapp = new WebAppContext();
+    webapp.getContext().setExtendedListenerTypes(true);
     server.setHandler(webapp);
     try {
       configWebapp(webapp, jettyConf);
@@ -100,26 +117,45 @@ public class JettyWebServer implements WebServer {
 
   private void configWebapp(WebAppContext webapp, JettyConf jettyConf)
       throws URISyntaxException, IOException {
-    webapp.setContextPath(contextPath);
+    webapp.setContextPath(Strings.hasText(contextPath) ? contextPath : "/");
+
     webapp.setVirtualHosts(jettyConf.getVirtualHosts());
     webapp.setMaxFormContentSize(jettyConf.getMaxFormContentSize());
     webapp.setMaxFormKeys(jettyConf.getMaxFormKeys());
     webapp.setParentLoaderPriority(true);
     webapp.setConfigurationDiscovered(jettyConf.isConfigurationDiscovered());
     webapp.setTempDirectory(new File(FileUtils.tempBaseDir(), "jetty-temp"));
+
     URL url = getClass().getResource(Strings.SLASH);
     if (url != null) {
-      webapp.setResourceBase(url.toURI().toASCIIString());
+      webapp.setBaseResourceAsString(url.toURI().toASCIIString());
     } else {
       // run in jar
       File dir = new File(FileUtils.tempBaseDir(), "jetty-jsp");
-      webapp.setResourceBase(dir.getAbsolutePath());
+      webapp.setBaseResourceAsPath(dir.toPath());
       if (dir.exists() || dir.mkdirs()) {
         copyJspFiles(dir);
       }
     }
-    webapp.addServlet(new ServletHolder("jsp", JettyJspServlet.class), "*.jsp");
-    webapp.setConfigurations(new Configuration[]{new AnnotationConfiguration()});
+
+    addJspServlet(webapp);
+    webapp.setConfigurations(new Configuration[]{new JspConfiguration(), new WebAppConfiguration(),
+        new JettyServletInitializerConfiguration()
+
+    });
+    webapp.setThrowUnavailableOnStartupException(true);
+  }
+
+  private void addJspServlet(WebAppContext webapp) {
+    ServletHolder holder = new ServletHolder("jsp", JettyJspServlet.class);
+    holder.setInitParameter("fork", "false");
+    holder.setInitParameter("development", "false");
+    holder.setInitOrder(3);
+    webapp.getServletHandler().addServlet(holder);
+    ServletMapping mapping = new ServletMapping();
+    mapping.setServletName("jsp");
+    mapping.setPathSpecs(new String[]{"*.jsp", "*.jspx"});
+    webapp.getServletHandler().addServletMapping(mapping);
   }
 
   private void copyJspFiles(File dir) throws IOException {
@@ -137,18 +173,18 @@ public class JettyWebServer implements WebServer {
   private void findJarMatchPath(URL rootUrl, String subPattern, File dir) throws IOException {
     try (JarFileInfo jarFileInfo = Urls.getJarFileInfo(rootUrl)) {
       if (log.isDebugEnabled()) {
-        log.debug("Looking for jsp resources in jar file [" + jarFileInfo.jarFileUrl + "]");
+        log.debug("Looking for jsp resources in jar file [{}]", jarFileInfo.jarFileUrl);
       }
       String rootEntryPath = jarFileInfo.rootEntryPath;
-      if (rootEntryPath.length() > 0 && !rootEntryPath.endsWith(Strings.SLASH)) {
+      if (!rootEntryPath.isEmpty() && !rootEntryPath.endsWith(Strings.SLASH)) {
         rootEntryPath += Strings.SLASH;
       }
       for (Enumeration<JarEntry> entries = jarFileInfo.jarFile.entries();
           entries.hasMoreElements(); ) {
         JarEntry entry = entries.nextElement();
         String entryPath = entry.getName();
-        if (entryPath.startsWith(rootEntryPath) && PathMatcher
-            .match(subPattern, entryPath.substring(rootEntryPath.length()))) {
+        if (entryPath.startsWith(rootEntryPath) && PathMatcher.match(subPattern,
+            entryPath.substring(rootEntryPath.length()))) {
           log.info("find jsp file [{}]", entryPath);
           File file = mkdirs(dir, entryPath);
           Files.copy(jarFileInfo.jarFile.getInputStream(entry), file.toPath());

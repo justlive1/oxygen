@@ -37,7 +37,7 @@ public class I18nWebHook implements WebHook {
     Request request = ctx.request();
     String localeStr = request.getParam(paramKey);
     String sessionKey = CoreConfigKeys.I18N_SESSION_KEY.getValue();
-    if (localeStr == null || localeStr.length() == 0) {
+    if (localeStr == null || localeStr.isEmpty()) {
       Locale locale = (Locale) request.getSession().get(sessionKey);
       if (locale != null) {
         ResourceBundle.setThreadLocale(locale);
@@ -47,7 +47,7 @@ public class I18nWebHook implements WebHook {
       if (arr.length != 2) {
         log.warn("locale [{}] is incorrect", localeStr);
       } else {
-        Locale locale = new Locale(arr[0], arr[1]);
+        Locale locale = Locale.of(arr[0], arr[1]);
         if (log.isDebugEnabled()) {
           log.debug("change locale from [{}] to [{}]", ResourceBundle.currentThreadLocale(),
               locale);

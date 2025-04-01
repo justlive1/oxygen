@@ -83,7 +83,7 @@ public class Router {
    * lookup route
    *
    * @param method request method
-   * @param path request path
+   * @param path   request path
    * @return route
    */
   public Route lookup(HttpMethod method, String path) {
@@ -165,7 +165,7 @@ public class Router {
       throw Exceptions.fail(String.format("path [%s] already exists", route.prefix()));
     }
     if (log.isDebugEnabled()) {
-      log.debug("build route: {}", route);
+      log.debug("build static route: {}", route);
     }
   }
 }

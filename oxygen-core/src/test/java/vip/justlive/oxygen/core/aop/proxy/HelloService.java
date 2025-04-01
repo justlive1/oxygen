@@ -30,7 +30,7 @@ public class HelloService<T extends Map<String, Integer>> {
     return b;
   }
 
-  public void fun1() throws IllegalStateException, RuntimeException {
+  public void fun1() throws RuntimeException {
     System.out.println("real fun1");
   }
 

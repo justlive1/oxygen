@@ -32,6 +32,7 @@ import vip.justlive.oxygen.core.util.concurrent.RepeatRunnable;
 import vip.justlive.oxygen.core.util.concurrent.SecurityThreadPoolExecutor;
 import vip.justlive.oxygen.core.util.concurrent.SecurityThreadPoolExecutor.PoolQueue;
 import vip.justlive.oxygen.core.util.concurrent.ThreadFactoryBuilder;
+import vip.justlive.oxygen.core.util.concurrent.ThreadPoolMonitor;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 
 /**
@@ -64,8 +65,7 @@ public class WheelTimer {
   private final DelayQueue<Slot> delayQueue = new DelayQueue<>();
   private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
   private Wheel wheel;
-  private final RepeatRunnable worker = new RepeatRunnable("wheel-timer-" + COUNT.getAndIncrement(),
-      this::doWork);
+  private final RepeatRunnable worker;
 
   public WheelTimer(long duration, int wheelSize) {
     this(duration, wheelSize, 1);
@@ -82,10 +82,12 @@ public class WheelTimer {
     this.duration = duration;
     this.wheelSize = wheelSize;
     PoolQueue queue = new PoolQueue();
-    SecurityThreadPoolExecutor pool = new SecurityThreadPoolExecutor(1, taskPoolSize, 120,
-        TimeUnit.SECONDS, queue, factory);
+    int count = COUNT.getAndIncrement();
+    SecurityThreadPoolExecutor pool = new SecurityThreadPoolExecutor("wheel-timer-pool-" + count, 1,
+        taskPoolSize, 120, TimeUnit.SECONDS, queue, factory);
     queue.setPool(pool);
     this.executor = pool;
+    this.worker = new RepeatRunnable("wheel-timer-" + count, this::doWork);
   }
 
   /**
@@ -102,6 +104,7 @@ public class WheelTimer {
     ThreadUtils.residentPool().add(worker);
     worker.awaitRunning();
     wheel = new Wheel(duration, wheelSize, System.currentTimeMillis(), delayQueue);
+    ThreadPoolMonitor.add(this);
     log.info("WheelTimer started");
   }
 
@@ -110,8 +113,8 @@ public class WheelTimer {
    */
   public void shutdown() {
     securityChecker.checkPermission();
-    if (!state.compareAndSet(STATE_STARTED, STATE_SHUTDOWN) && !state
-        .compareAndSet(STATE_INIT, STATE_SHUTDOWN) && state.get() != STATE_SHUTDOWN) {
+    if (!state.compareAndSet(STATE_STARTED, STATE_SHUTDOWN) && !state.compareAndSet(STATE_INIT,
+        STATE_SHUTDOWN) && state.get() != STATE_SHUTDOWN) {
       throw new IllegalStateException("WheelTimer.state is illegal");
     }
     executor.shutdown();
@@ -123,6 +126,7 @@ public class WheelTimer {
       }
     });
     delayQueue.clear();
+    ThreadPoolMonitor.remove(this);
     log.info("WheelTimer shutdown");
   }
 
@@ -139,9 +143,9 @@ public class WheelTimer {
    * 延迟任务
    *
    * @param callable 任务
-   * @param delay 延迟
-   * @param unit 时间单位
-   * @param <T> 泛型
+   * @param delay    延迟
+   * @param unit     时间单位
+   * @param <T>      泛型
    * @return ScheduledFuture
    */
   public <T> ScheduledFuture<T> schedule(Callable<T> callable, long delay, TimeUnit unit) {
@@ -155,8 +159,8 @@ public class WheelTimer {
    * 延迟任务
    *
    * @param command 任务
-   * @param delay 延迟
-   * @param unit 时间单位
+   * @param delay   延迟
+   * @param unit    时间单位
    * @return ScheduledFuture
    */
   public ScheduledFuture<Void> schedule(Runnable command, long delay, TimeUnit unit) {
@@ -169,10 +173,10 @@ public class WheelTimer {
   /**
    * 固定周期任务
    *
-   * @param command 任务
+   * @param command      任务
    * @param initialDelay 初始延迟
-   * @param period 周期
-   * @param unit 时间单位
+   * @param period       周期
+   * @param unit         时间单位
    * @return ScheduledFuture
    */
   public ScheduledFuture<Void> scheduleAtFixedRate(Runnable command, long initialDelay, long period,
@@ -183,10 +187,10 @@ public class WheelTimer {
   /**
    * 固定延迟任务
    *
-   * @param command 任务
+   * @param command      任务
    * @param initialDelay 初始延迟
-   * @param delay 延迟
-   * @param unit 时间单位
+   * @param delay        延迟
+   * @param unit         时间单位
    * @return ScheduledFuture
    */
   public ScheduledFuture<Void> scheduleWithFixedDelay(Runnable command, long initialDelay,
@@ -198,10 +202,10 @@ public class WheelTimer {
   /**
    * 自定义周期任务
    *
-   * @param command 任务
+   * @param command      任务
    * @param initialDelay 初始延迟
-   * @param unit 时间周期
-   * @param operator 获取周期函数, 返回Long.MIN_VALUE可终止任务
+   * @param unit         时间周期
+   * @param operator     获取周期函数, 返回Long.MIN_VALUE可终止任务
    * @return ScheduledFuture
    */
   public ScheduledFuture<Void> scheduleWithDelay(Runnable command, long initialDelay, TimeUnit unit,
@@ -216,7 +220,7 @@ public class WheelTimer {
    * cron任务
    *
    * @param command 任务
-   * @param cron 表达式
+   * @param cron    表达式
    * @return ScheduledFuture
    */
   public ScheduledFuture<Void> scheduleOnCron(Runnable command, String cron) {
@@ -284,4 +288,9 @@ public class WheelTimer {
     return deadline;
   }
 
+  @Override
+  public String toString() {
+    return "WheelTimer@" + Integer.toHexString(hashCode()) + "{state=" + state + ", wheel=" + wheel
+        + ", delayQueue=" + delayQueue + ", executor=" + executor + '}';
+  }
 }

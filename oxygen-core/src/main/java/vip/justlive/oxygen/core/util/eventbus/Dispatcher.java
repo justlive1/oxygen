@@ -14,14 +14,17 @@
 
 package vip.justlive.oxygen.core.util.eventbus;
 
-import lombok.RequiredArgsConstructor;
-import vip.justlive.oxygen.core.util.base.PathMatcher;
-import vip.justlive.oxygen.core.util.base.Strings;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import lombok.RequiredArgsConstructor;
+import vip.justlive.oxygen.core.util.base.PathMatcher;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * 事件调度器
@@ -31,61 +34,60 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @RequiredArgsConstructor
 public abstract class Dispatcher {
 
-    protected final ConcurrentMap<Class<?>, CopyOnWriteArraySet<Subscriber>> subscribers = new ConcurrentHashMap<>();
+  protected final ConcurrentMap<Class<?>, CopyOnWriteArraySet<Subscriber>> subscribers = new ConcurrentHashMap<>();
 
-    protected EventBus eventBus;
+  protected EventBus eventBus;
 
-
-    /**
-     * 分发事件
-     *
-     * @param channel 渠道
-     * @param event   事件
-     */
-    public abstract void dispatch(String channel, Object event);
-
-    void setEventBus(EventBus eventBus) {
-        this.eventBus = eventBus;
+  static Set<Class<?>> getRawTypes(Class<?> clazz) {
+    Set<Class<?>> types = new HashSet<>();
+    Class<?> type = clazz;
+    while (type != null && type != Object.class) {
+      types.add(type);
+      Class<?>[] interfaces = type.getInterfaces();
+      if (interfaces.length > 0) {
+        types.addAll(Arrays.asList(interfaces));
+      }
+      type = type.getSuperclass();
     }
+    return types;
+  }
 
-    void register(Class<?> clazz, List<Subscriber> sbs) {
-        subscribers.computeIfAbsent(clazz, k -> new CopyOnWriteArraySet<>()).addAll(sbs);
+  /**
+   * 分发事件
+   *
+   * @param channel 渠道
+   * @param event   事件
+   */
+  public abstract void dispatch(String channel, Object event);
+
+  void setEventBus(EventBus eventBus) {
+    this.eventBus = eventBus;
+  }
+
+  void register(Class<?> clazz, List<Subscriber> sbs) {
+    subscribers.computeIfAbsent(clazz, k -> new CopyOnWriteArraySet<>()).addAll(sbs);
+  }
+
+  void unregister(Class<?> clazz, List<Subscriber> sbs) {
+    CopyOnWriteArraySet<Subscriber> list = subscribers.get(clazz);
+    if (list != null) {
+      list.removeAll(sbs);
     }
+  }
 
-    void unregister(Class<?> clazz, List<Subscriber> sbs) {
-        CopyOnWriteArraySet<Subscriber> list = subscribers.get(clazz);
-        if (list != null) {
-            list.removeAll(sbs);
+  protected List<Subscriber> getSubscribers(String channel, Object event) {
+    List<Subscriber> list = new ArrayList<>();
+    for (Class<?> type : getRawTypes(event.getClass())) {
+      CopyOnWriteArraySet<Subscriber> subscriberList = subscribers.get(type);
+      if (subscriberList == null) {
+        continue;
+      }
+      for (Subscriber subscriber : subscriberList) {
+        if (Strings.ANY.equals(channel) || PathMatcher.match(subscriber.getPattern(), channel)) {
+          list.add(subscriber);
         }
+      }
     }
-
-    protected List<Subscriber> getSubscribers(String channel, Object event) {
-        List<Subscriber> list = new ArrayList<>();
-        for (Class<?> type : getRawTypes(event.getClass())) {
-            CopyOnWriteArraySet<Subscriber> subscriberList = subscribers.get(type);
-            if (subscriberList == null) {
-                continue;
-            }
-            for (Subscriber subscriber : subscriberList) {
-                if (Strings.ANY.equals(channel) || PathMatcher.match(subscriber.getPattern(), channel)) {
-                    list.add(subscriber);
-                }
-            }
-        }
-        return list;
-    }
-
-    static Set<Class<?>> getRawTypes(Class<?> clazz) {
-        Set<Class<?>> types = new HashSet<>();
-        Class<?> type = clazz;
-        while (type != null && type != Object.class) {
-            types.add(type);
-            Class<?>[] interfaces = type.getInterfaces();
-            if (interfaces.length > 0) {
-                types.addAll(Arrays.asList(interfaces));
-            }
-            type = type.getSuperclass();
-        }
-        return types;
-    }
+    return list;
+  }
 }

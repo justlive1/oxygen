@@ -26,8 +26,8 @@ public interface RateLimiter {
   /**
    * 设置限流速率
    *
-   * @param key 资源key
-   * @param rate 单位时间内最大资源数
+   * @param key      资源key
+   * @param rate     单位时间内最大资源数
    * @param interval 单位时间
    */
   void setRate(String key, long rate, long interval);
@@ -45,7 +45,7 @@ public interface RateLimiter {
   /**
    * 尝试获取多个资源
    *
-   * @param key 资源key
+   * @param key     资源key
    * @param permits 资源
    * @return true为能获取到
    */
@@ -54,9 +54,9 @@ public interface RateLimiter {
   /**
    * 尝试获取资源并设置超时时间
    *
-   * @param key 资源key
+   * @param key     资源key
    * @param timeout 超时时间
-   * @param unit 时间单位
+   * @param unit    时间单位
    * @return true为能获取到
    */
   default boolean tryAcquire(String key, long timeout, TimeUnit unit) {
@@ -66,10 +66,10 @@ public interface RateLimiter {
   /**
    * 尝试获取多个资源并设置超时时间
    *
-   * @param key 资源key
+   * @param key     资源key
    * @param permits 资源
    * @param timeout 超时时间
-   * @param unit 时间单位
+   * @param unit    时间单位
    * @return true为能获取到
    */
   boolean tryAcquire(String key, long permits, long timeout, TimeUnit unit);
@@ -86,7 +86,7 @@ public interface RateLimiter {
   /**
    * 阻塞直到获取指定资源
    *
-   * @param key 资源key
+   * @param key     资源key
    * @param permits 资源
    */
   void acquire(String key, long permits);

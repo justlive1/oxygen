@@ -5,7 +5,7 @@
   <parent>
     <artifactId>oxygen</artifactId>
     <groupId>vip.justlive</groupId>
-    <version>3.0.9</version>
+    <version>4.0.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>oxygen-web-undertow</artifactId>
@@ -17,8 +17,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <undertow.version>2.2.18.Final</undertow.version>
+    <servlet-api.version>6.1.0</servlet-api.version>
+    <undertow.version>2.3.18.Final</undertow.version>
   </properties>
 
   <dependencies>
@@ -27,6 +27,12 @@
       <groupId>io.undertow</groupId>
       <artifactId>undertow-servlet</artifactId>
       <version>${undertow.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>${servlet-api.version}</version>
     </dependency>
 
     <dependency>

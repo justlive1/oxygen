@@ -110,7 +110,7 @@ public class PlaceHolderHelper {
   /**
    * 替换所有占位格式 {@code ${name}}
    *
-   * @param value 需要转换的属性
+   * @param value      需要转换的属性
    * @param properties 配置集合
    * @return 替换后的字符串
    */

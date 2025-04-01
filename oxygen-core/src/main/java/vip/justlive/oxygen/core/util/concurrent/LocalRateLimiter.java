@@ -29,8 +29,8 @@ import vip.justlive.oxygen.core.exception.Exceptions;
  */
 public class LocalRateLimiter implements RateLimiter {
 
-  private static final ScheduledExecutorService POOL = ThreadUtils
-      .newScheduledExecutor(10, "rate-limiter-%d");
+  private static final ScheduledExecutorService POOL = ThreadUtils.newScheduledExecutor(
+      "rate-limiter-pool", 10, "rate-limiter-%d");
 
   private final Map<String, Resource> resources = new ConcurrentHashMap<>(4);
 

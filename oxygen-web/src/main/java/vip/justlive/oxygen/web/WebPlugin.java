@@ -16,11 +16,13 @@ package vip.justlive.oxygen.web;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.Plugin;
 import vip.justlive.oxygen.core.bean.Singleton;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.base.Urls;
+import vip.justlive.oxygen.core.util.json.Json;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 import vip.justlive.oxygen.core.util.scan.ClassScannerPlugin;
 import vip.justlive.oxygen.web.annotation.Mapping;
@@ -32,12 +34,14 @@ import vip.justlive.oxygen.web.http.SessionStore;
 import vip.justlive.oxygen.web.result.ResultHandler;
 import vip.justlive.oxygen.web.router.AnnotationRouteHandler;
 import vip.justlive.oxygen.web.router.Route;
+import vip.justlive.oxygen.web.util.Fastjson;
 
 /**
  * web插件
  *
  * @author wubo
  */
+@Slf4j
 public class WebPlugin implements Plugin {
 
   @Override
@@ -68,8 +72,7 @@ public class WebPlugin implements Plugin {
       return;
     }
     vip.justlive.oxygen.web.router.Router.staticRoute()
-        .prefix(WebConfigKeys.STATIC_PREFIX.getValue())
-        .locations(Arrays.asList(paths))
+        .prefix(WebConfigKeys.STATIC_PREFIX.getValue()).locations(Arrays.asList(paths))
         .cachingEnabled(WebConfigKeys.VIEW_CACHE.castValue(boolean.class))
         .maxAge(WebConfigKeys.STATIC_CACHE.castValue(int.class));
   }
@@ -107,6 +110,14 @@ public class WebPlugin implements Plugin {
   }
 
   private void loadWebEnv() {
+
+    if (ClassUtils.isPresent("com.alibaba.fastjson.JSON")) {
+      Fastjson fastjson = new Fastjson();
+      Json.setReader(fastjson);
+      Json.setWriter(fastjson);
+      log.info("load json impl {}", fastjson);
+    }
+
     SessionStore sessionStore = Singleton.get(SessionStore.class);
     if (sessionStore != null) {
       Context.SESSION_MANAGER.setStore(sessionStore);
@@ -115,15 +126,20 @@ public class WebPlugin implements Plugin {
 
     Context.PARSERS.addAll(Singleton.getCastMap(Parser.class).values());
     Collections.sort(Context.PARSERS);
+    log.info("load parsers => {}", Context.PARSERS);
 
     Context.BINDERS.addAll(Singleton.getCastMap(ParamBinder.class).values());
     Collections.sort(Context.BINDERS);
+    log.info("load binders => {}", Context.BINDERS);
 
     Context.HANDLERS.addAll(Singleton.getCastMap(ResultHandler.class).values());
     Collections.sort(Context.HANDLERS);
+    log.info("load handlers => {}", Context.HANDLERS);
 
     Context.HOOKS.addAll(Singleton.getCastMap(WebHook.class).values());
     Collections.sort(Context.HOOKS);
+    log.info("load hooks => {}", Context.HOOKS);
+
   }
 
 }

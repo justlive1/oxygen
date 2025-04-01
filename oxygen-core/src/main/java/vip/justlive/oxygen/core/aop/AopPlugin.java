@@ -69,7 +69,7 @@ public class AopPlugin implements Plugin {
       if (aspect.annotation() != Annotation.class) {
         ProxyStore.addInterceptor(type, new AnnotationInterceptor(aspect.annotation(), wrapper));
       }
-      if (aspect.method().length() > 0) {
+      if (!aspect.method().isEmpty()) {
         ProxyStore.addInterceptor(type, new MethodInterceptor(aspect.method(), wrapper));
       }
     }

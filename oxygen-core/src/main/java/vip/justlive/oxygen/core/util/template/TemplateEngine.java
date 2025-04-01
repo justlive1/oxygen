@@ -29,7 +29,7 @@ public interface TemplateEngine {
    * 渲染模板
    *
    * @param template 模板
-   * @param attrs 属性
+   * @param attrs    属性
    * @return result
    */
   String render(String template, Map<String, Object> attrs);
@@ -38,8 +38,8 @@ public interface TemplateEngine {
    * 渲染模板
    *
    * @param template 模板
-   * @param attrs 属性
-   * @param writer 输出
+   * @param attrs    属性
+   * @param writer   输出
    */
   default void render(String template, Map<String, Object> attrs, Writer writer) {
     try {

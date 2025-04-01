@@ -46,7 +46,7 @@ public class ClassPathResource implements SourceResource {
   /**
    * 使用{@code ClassLoader}创建{@code ClassPathResource}
    *
-   * @param path 路径
+   * @param path        路径
    * @param classLoader 类加载器
    */
   public ClassPathResource(String path, ClassLoader classLoader) {
@@ -57,7 +57,7 @@ public class ClassPathResource implements SourceResource {
   /**
    * 使用{@code Class}创建{@code ClassPathResource}
    *
-   * @param path 路径
+   * @param path  路径
    * @param clazz 类
    */
   public ClassPathResource(String path, Class<?> clazz) {

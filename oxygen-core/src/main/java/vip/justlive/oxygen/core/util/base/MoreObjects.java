@@ -15,13 +15,13 @@ package vip.justlive.oxygen.core.util.base;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -39,7 +39,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 @UtilityClass
 public class MoreObjects {
 
-  static final Random RANDOM = new Random();
+  private final SecureRandom RANDOM = new SecureRandom();
 
   /**
    * 非空检查
@@ -176,8 +176,8 @@ public class MoreObjects {
   }
 
   /**
-   * @param queryString
-   * @return
+   * @param queryString query string
+   * @return queryStringMap
    */
   public Map<String, List<String>> parseMultiQueryString(String queryString) {
     Map<String, List<String>> queryMap = new HashMap<>(8);
@@ -216,7 +216,7 @@ public class MoreObjects {
     StringBuilder sb = new StringBuilder();
     map.forEach((k, v) -> sb.append(Strings.AND).append(k).append(Strings.EQUAL)
         .append(urlEncoded ? Urls.urlEncode(v.toString()) : v));
-    if (sb.length() > 0) {
+    if (!sb.isEmpty()) {
       sb.deleteCharAt(0);
     }
     return sb.toString();
@@ -410,6 +410,39 @@ public class MoreObjects {
    */
   public Executor directExecutor() {
     return Runnable::run;
+  }
+
+  /**
+   * 获取随机数
+   *
+   * @return secureRandom
+   */
+  public SecureRandom secureRandom() {
+    return RANDOM;
+  }
+
+  /**
+   * 集合转字符串
+   *
+   * @param iterable 集合
+   * @return 字符串
+   */
+  public String toString(Iterable<?> iterable) {
+    if (iterable == null) {
+      return null;
+    }
+    StringBuilder sb = new StringBuilder();
+    sb.append(Strings.OPEN_BRACKET);
+    boolean hasElement = false;
+    for (Object obj : iterable) {
+      hasElement = true;
+      sb.append(Strings.COMMA).append(obj);
+    }
+    if (hasElement) {
+      sb.deleteCharAt(Strings.OPEN_BRACKET.length());
+    }
+    sb.append(Strings.CLOSE_BRACKET);
+    return sb.toString();
   }
 
   private void convert(Map<?, ?> map, Properties result, String prefix) {

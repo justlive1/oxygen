@@ -1,0 +1,18 @@
+module oxygen.web.tomcat {
+
+  requires org.slf4j;
+  requires org.apache.tomcat.embed.core;
+  requires org.apache.tomcat.embed.jasper;
+  requires org.apache.tomcat.embed.websocket;
+
+  requires oxygen.core;
+  requires oxygen.web;
+
+  requires static lombok;
+
+  opens vip.justlive.oxygen.web.tomcat;
+
+  exports vip.justlive.oxygen.web.tomcat;
+
+  provides vip.justlive.oxygen.web.server.WebServer with vip.justlive.oxygen.web.tomcat.TomcatWebServer;
+}

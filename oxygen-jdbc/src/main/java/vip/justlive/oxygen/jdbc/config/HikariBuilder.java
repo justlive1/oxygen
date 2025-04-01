@@ -39,7 +39,7 @@ public class HikariBuilder {
    * @return true为可用
    */
   public static boolean isEnabled(DataSourceConf conf) {
-    return ENABLED && (conf.getType() == null || conf.getType().length() == 0 || TYPE.HIKARI.name()
+    return ENABLED && (conf.getType() == null || conf.getType().isEmpty() || TYPE.HIKARI.name()
         .equalsIgnoreCase(conf.getType()));
   }
 

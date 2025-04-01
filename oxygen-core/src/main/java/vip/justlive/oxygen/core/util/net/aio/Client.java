@@ -29,9 +29,9 @@ import vip.justlive.oxygen.core.util.io.IoUtils;
  *
  * @author wubo
  */
+@Getter
 public class Client {
 
-  @Getter
   private final GroupContext groupContext;
 
   public Client(GroupContext groupContext) {
@@ -65,7 +65,7 @@ public class Client {
    * 连接服务端，指定绑定地址
    *
    * @param remote 远程地址
-   * @param bind 本机绑定地址
+   * @param bind   本机绑定地址
    * @return channelContext
    * @throws IOException io异常时抛出
    */

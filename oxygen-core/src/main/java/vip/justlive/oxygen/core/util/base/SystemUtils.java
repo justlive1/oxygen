@@ -133,7 +133,7 @@ public class SystemUtils {
    * @return address
    */
   public InetSocketAddress parseAddress(String address) {
-    if (address == null || address.trim().length() == 0) {
+    if (address == null || address.trim().isEmpty()) {
       return null;
     }
     String[] hostPort = address.trim().split(Strings.COLON);

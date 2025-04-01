@@ -48,11 +48,7 @@ import vip.justlive.oxygen.web.http.Response;
 @Slf4j
 public class StaticRouteHandler implements RouteHandler {
 
-  private static final File TEMP_DIR;
-
-  static {
-    TEMP_DIR = FileUtils.createTempDir("static");
-  }
+  private static File TEMP_DIR;
 
   private final StaticRoute route;
   private ExpiringMap<String, StaticSource> expiringMap;
@@ -138,7 +134,7 @@ public class StaticRouteHandler implements RouteHandler {
       }
       // cache files in jar
       try (InputStream is = sourceResource.getInputStream()) {
-        File savedFile = new File(TEMP_DIR,
+        File savedFile = new File(getTempDir(),
             SnowflakeId.defaultNextId() + Strings.DOT + FileUtils.extension(path));
         Files.copy(is, savedFile.toPath());
         return new StaticSource(savedFile, path, true);
@@ -158,6 +154,19 @@ public class StaticRouteHandler implements RouteHandler {
     }
   }
 
+  private static File getTempDir() {
+    if (TEMP_DIR != null) {
+      return TEMP_DIR;
+    }
+    synchronized (StaticRouteHandler.class) {
+      if (TEMP_DIR != null) {
+        return TEMP_DIR;
+      }
+      TEMP_DIR = FileUtils.createTempDir("static");
+    }
+    return TEMP_DIR;
+  }
+
   /**
    * 静态资源
    */
@@ -172,8 +181,8 @@ public class StaticRouteHandler implements RouteHandler {
     StaticSource(File file, String requestPath, boolean temp) {
       this.path = file.toPath();
       this.requestPath = requestPath;
-      this.contentType = MoreObjects
-          .firstNonNull(FileUtils.parseMimeType(requestPath), HttpHeaders.APPLICATION_OCTET_STREAM);
+      this.contentType = MoreObjects.firstNonNull(FileUtils.parseMimeType(requestPath),
+          HttpHeaders.APPLICATION_OCTET_STREAM);
       this.temp = temp;
     }
 
@@ -203,4 +212,6 @@ public class StaticRouteHandler implements RouteHandler {
       }
     }
   }
+
+
 }

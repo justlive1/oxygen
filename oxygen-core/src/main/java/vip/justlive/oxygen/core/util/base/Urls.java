@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import lombok.experimental.UtilityClass;
+import vip.justlive.oxygen.core.util.net.http.HttpRequest;
 
 /**
  * 资源工具类
@@ -142,7 +143,7 @@ public class Urls {
    * 路径拼接
    *
    * @param parent 父路径
-   * @param child 子路径
+   * @param child  子路径
    * @return path
    */
   public String concat(String parent, String child) {
@@ -237,7 +238,7 @@ public class Urls {
   /**
    * url encode
    *
-   * @param s string
+   * @param s       string
    * @param charset 字符集
    * @return encoded
    */
@@ -263,7 +264,7 @@ public class Urls {
   /**
    * url decode
    *
-   * @param s string
+   * @param s       string
    * @param charset 字符集
    * @return decoded
    */
@@ -274,5 +275,25 @@ public class Urls {
       // nothing
     }
     return s;
+  }
+
+  /**
+   * url with query string
+   *
+   * @param request http request
+   * @return url
+   */
+  public String urlWithQueryString(HttpRequest request) {
+    String httpUrl = request.getUrl();
+    if (request.getQueryParam() != null) {
+      String queryString = MoreObjects.beanToQueryString(request.getQueryParam(), true);
+      if (!request.getUrl().contains(Strings.QUESTION_MARK)) {
+        httpUrl += Strings.QUESTION_MARK;
+      } else if (!request.getUrl().endsWith(Strings.AND)) {
+        httpUrl += Strings.AND;
+      }
+      httpUrl += queryString;
+    }
+    return httpUrl;
   }
 }

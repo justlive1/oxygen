@@ -13,14 +13,14 @@
  */
 package vip.justlive.oxygen.web.http;
 
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
 import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.Bytes;
@@ -88,7 +88,7 @@ public class GeneralParser implements Parser {
     } else {
       path = request.path;
     }
-    if (path.length() == 0) {
+    if (path.isEmpty()) {
       path = Strings.SLASH;
     }
     request.path = path;

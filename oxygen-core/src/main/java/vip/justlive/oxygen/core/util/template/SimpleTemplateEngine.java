@@ -85,7 +85,7 @@ public class SimpleTemplateEngine implements TemplateEngine {
 
     String parsed;
     CompiledScript compiledScript;
-    List<String> data = new ArrayList<>();
+    final List<String> data = new ArrayList<>();
 
     TemplateSpec(String template) throws ScriptException {
       parsed = String.format("var func = function(){%s};func();",

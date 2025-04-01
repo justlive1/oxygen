@@ -34,7 +34,7 @@ public class Wheel {
   public Wheel(long duration, int wheelSize, long startTime, DelayQueue<Slot> delayQueue) {
     this.duration = duration;
     this.interval = duration * wheelSize;
-    this.slots = Slot.createSlots(wheelSize);
+    this.slots = Slot.createSlots(wheelSize, this);
     // 取整
     this.currentTime = startTime - (startTime % duration);
     this.delayQueue = delayQueue;
@@ -54,8 +54,8 @@ public class Wheel {
       Slot slot = slots[(int) (virtualId % slots.length)];
       slot.addTask(task);
       // 只会添加到队列中一次
-      if (slot.setDeadline(virtualId * duration) && !delayQueue.offer(slot)) {
-        // nothing to do, add Queue is always true
+      if (slot.setDeadline(virtualId * duration)) {
+        delayQueue.offer(slot);
       }
       return true;
     }
@@ -78,5 +78,16 @@ public class Wheel {
     if (overflowWheel == null) {
       overflowWheel = new Wheel(interval, slots.length, currentTime, delayQueue);
     }
+  }
+
+  @Override
+  public String toString() {
+    return "Wheel@" + Integer.toHexString(hashCode()) +
+        "{duration=" + duration +
+        ", interval=" + interval +
+        ", slotSize=" + slots.length +
+        ", currentTime=" + currentTime +
+        ", overflowWheel=" + overflowWheel +
+        '}';
   }
 }

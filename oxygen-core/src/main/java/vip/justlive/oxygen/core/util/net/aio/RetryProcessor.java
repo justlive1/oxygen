@@ -15,11 +15,9 @@
 package vip.justlive.oxygen.core.util.net.aio;
 
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.concurrent.TimeUnit;
 import java.util.function.LongUnaryOperator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 import vip.justlive.oxygen.core.util.io.IoUtils;
 
 /**
@@ -63,10 +61,6 @@ public class RetryProcessor implements Runnable, LongUnaryOperator {
       channel.connect(channelContext.getServerAddress(), channelContext, ConnectHandler.INSTANCE);
       channelContext.join();
 
-      BeatProcessor beat = new BeatProcessor(channelContext);
-      ThreadUtils.globalTimer()
-          .scheduleWithDelay(beat, channelContext.getGroupContext().getBeatInterval(),
-              TimeUnit.MILLISECONDS, beat);
     } catch (Exception e) {
       log.error("{} client try to connect to {} failed for {} attempt(s)", channelContext,
           channelContext.getRetryAttempts(), channelContext.getServerAddress(), e);

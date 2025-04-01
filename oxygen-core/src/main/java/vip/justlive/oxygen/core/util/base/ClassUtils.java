@@ -561,7 +561,7 @@ public class ClassUtils {
       return null;
     }
     try {
-      if (!field.isAccessible()) {
+      if (!field.canAccess(object)) {
         field.setAccessible(true);
       }
       return field.get(object);
@@ -579,7 +579,7 @@ public class ClassUtils {
    */
   public void setValue(Object object, Field field, Object value) {
     try {
-      if (!field.isAccessible()) {
+      if (!field.canAccess(object)) {
         field.setAccessible(true);
       }
       field.set(object, value);
@@ -677,7 +677,7 @@ public class ClassUtils {
       List<BeanProxy> list = ServiceLoaderUtils.loadServices(BeanProxy.class);
       if (!list.isEmpty()) {
         Collections.sort(list);
-        return list.get(0);
+        return list.getFirst();
       }
       if (HAS_CGLIB_PROXY) {
         return new CglibBeanProxy();
@@ -689,7 +689,7 @@ public class ClassUtils {
         }
       }
     }
-    return new SimpleBeanProxy();
+    return SimpleBeanProxy.INSTANCE;
   }
 
   private void recursivelyCollectAnnotations(Set<Annotation> visited, Annotation annotation) {

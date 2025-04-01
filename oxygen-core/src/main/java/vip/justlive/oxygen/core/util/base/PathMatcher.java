@@ -34,7 +34,7 @@ public class PathMatcher {
    * 匹配路径
    *
    * @param pattern 匹配串
-   * @param path 路径
+   * @param path    路径
    * @return true 匹配上了
    */
   public boolean match(String pattern, String path) {
@@ -62,7 +62,7 @@ public class PathMatcher {
   /**
    * 获取目录下匹配的文件
    *
-   * @param rootDir 根目录
+   * @param rootDir    根目录
    * @param subPattern 匹配串
    * @return 文件列表
    */
@@ -84,11 +84,38 @@ public class PathMatcher {
   }
 
   /**
+   * 是否为通配符
+   *
+   * @param path 路径
+   * @return true则表示为通配符
+   */
+  public boolean isPattern(String path) {
+    if (path == null) {
+      return false;
+    }
+    boolean uriVar = false;
+    for (int i = 0; i < path.length(); i++) {
+      char c = path.charAt(i);
+      if (c == '*' || c == '?') {
+        return true;
+      }
+      if (c == '{') {
+        uriVar = true;
+        continue;
+      }
+      if (c == '}' && uriVar) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * 递归查询匹配的文件
    *
    * @param fullPattern 全匹配串
-   * @param dir 目录
-   * @param files 文件集合
+   * @param dir         目录
+   * @param files       文件集合
    */
   private void searchMatchedFiles(String fullPattern, File dir, Set<File> files) {
     if (log.isDebugEnabled()) {
@@ -111,5 +138,6 @@ public class PathMatcher {
       }
     }
   }
+
 
 }

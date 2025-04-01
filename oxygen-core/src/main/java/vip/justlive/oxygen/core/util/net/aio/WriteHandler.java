@@ -51,7 +51,7 @@ public class WriteHandler implements CompletionHandler<Integer, WriteHandler.Wri
   }
 
   @RequiredArgsConstructor
-  static class WriteContext {
+  public static class WriteContext {
 
     final CompletableFuture<Void> future;
     final ByteBuffer buffer;

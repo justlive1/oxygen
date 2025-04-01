@@ -13,42 +13,44 @@
  */
 package vip.justlive.oxygen.core.util.base;
 
+import java.util.Locale;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-
-import java.util.Locale;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.Bootstrap;
+import vip.justlive.oxygen.core.CoreConfigKeys;
+import vip.justlive.oxygen.core.config.ConfigFactory;
 
 /**
  * @author wubo
  */
- class ResourceBundleTest {
+class ResourceBundleTest {
 
   @BeforeAll
   public static void before() {
+    ConfigFactory.setProperty(CoreConfigKeys.AOP_ENABLED.getName(), "false");
     Bootstrap.start();
   }
 
   @Test
-   void getMessage() {
+  void getMessage() {
     assertEquals("key_zh_CN", ResourceBundle.getMessage("i18n.k1"));
-    ResourceBundle.setThreadLocale(new Locale("en", "US"));
+    ResourceBundle.setThreadLocale(Locale.of("en", "US"));
     assertEquals("key_en_US", ResourceBundle.getMessage("i18n.k1"));
-    ResourceBundle.setThreadLocale(new Locale("en"));
+    ResourceBundle.setThreadLocale(Locale.of("en"));
     assertEquals("key", ResourceBundle.getMessage("i18n.k1"));
 
   }
 
   @Test
-   void getMessage1() {
-    assertEquals("key2_en_US", ResourceBundle.getMessage("i18n.k2", new Locale("en", "US")));
+  void getMessage1() {
+    assertEquals("key2_en_US", ResourceBundle.getMessage("i18n.k2", Locale.of("en", "US")));
     assertNull(ResourceBundle.getMessage("i18n.k2"));
   }
 
   @Test
-   void getMessage2() {
+  void getMessage2() {
     assertEquals("key2_en_US", ResourceBundle.getMessage("i18n.k2", "en", "US"));
     assertNull(ResourceBundle.getMessage("i18n.k2"));
   }

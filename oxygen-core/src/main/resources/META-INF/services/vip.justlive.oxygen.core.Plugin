@@ -7,3 +7,4 @@ vip.justlive.oxygen.core.job.JobPlugin
 vip.justlive.oxygen.core.cache.CachePlugin
 vip.justlive.oxygen.core.aop.AopPlugin
 vip.justlive.oxygen.core.bean.LifeCyclePlugin
+vip.justlive.oxygen.core.util.concurrent.ThreadPoolMonitor

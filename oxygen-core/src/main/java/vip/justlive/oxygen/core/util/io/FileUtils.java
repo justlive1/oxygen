@@ -104,7 +104,7 @@ public class FileUtils {
   public void mkdirs(String parent, String... children) {
     MoreObjects.notNull(parent);
     File parentDir = new File(parent);
-    if (children != null && children.length > 0) {
+    if (children != null) {
       for (String child : children) {
         parentDir = new File(parentDir, child);
       }
@@ -352,7 +352,7 @@ public class FileUtils {
     if (file != null && file.isDirectory()) {
       File[] files = file.listFiles();
       int count = 0;
-      if (files != null && files.length > 0) {
+      if (files != null) {
         for (File subFile : files) {
           if (subFile.isFile()) {
             count += deleteFile(subFile);
@@ -411,10 +411,8 @@ public class FileUtils {
    */
   public File createTempDir(String first, String... children) {
     File dir = new File(tempBaseDir(), first);
-    if (children.length > 0) {
-      for (String child : children) {
-        dir = new File(dir, child);
-      }
+    for (String child : children) {
+      dir = new File(dir, child);
     }
     if (dir.isDirectory()) {
       return dir;

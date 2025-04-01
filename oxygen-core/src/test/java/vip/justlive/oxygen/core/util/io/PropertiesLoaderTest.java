@@ -14,6 +14,7 @@
 
 package vip.justlive.oxygen.core.util.io;
 
+import lombok.extern.slf4j.Slf4j;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,13 +28,14 @@ import vip.justlive.oxygen.core.exception.CodedException;
 /**
  * @author wubo
  */
+@Slf4j
 class PropertiesLoaderTest {
 
-  String classpath = "classpath:/config/*.properties";
-  String defaultPath = "/config/config.properties";
-  String dir = "/tmp";
-  String path = dir + "/config.properties";
-  String filePath = "file:" + path;
+  final String classpath = "classpath:/config/*.properties";
+  final String defaultPath = "/config/config.properties";
+  final String dir = "/tmp";
+  final String path = dir + "/config.properties";
+  final String filePath = "file:" + path;
 
 
   @Test
@@ -104,7 +106,7 @@ class PropertiesLoaderTest {
     try {
       Files.copy(resource.getInputStream(), target.toPath());
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error("", e);
     }
     target.deleteOnExit();
   }

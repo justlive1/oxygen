@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.web.http;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import lombok.Getter;
@@ -31,6 +32,7 @@ public class Session implements Serializable {
    */
   public static final String SESSION_COOKIE_KEY = "OX_SESSION";
 
+  @Serial
   private static final long serialVersionUID = 1L;
 
   private final HashMap<String, Object> data = new HashMap<>(4);

@@ -43,7 +43,7 @@ public class ToStringSerializer implements Serializer {
     ClassUtils.allPrimitiveTypes().forEach(ToStringSerializer::addNonWrappedType);
     ClassUtils.allWrapperTypes().forEach(ToStringSerializer::addNonWrappedType);
     Arrays.asList(Temporal.class, Charset.class, Pattern.class, Locale.class, URI.class, URL.class,
-        UUID.class, Enum.class, Currency.class, ZoneId.class)
+            UUID.class, Enum.class, Currency.class, ZoneId.class)
         .forEach(ToStringSerializer::addWrappedType);
   }
 
@@ -85,7 +85,7 @@ public class ToStringSerializer implements Serializer {
     if (wrapper) {
       buf.append('"');
     }
-    buf.append(value.toString());
+    buf.append(value);
     if (wrapper) {
       buf.append('"');
     }

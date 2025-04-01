@@ -15,6 +15,7 @@
 package vip.justlive.oxygen.core.util.concurrent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,9 +27,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import vip.justlive.oxygen.core.util.base.SecurityChecker;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * 增加安全校验的线程池
@@ -37,42 +42,86 @@ import vip.justlive.oxygen.core.util.base.SecurityChecker;
  *
  * @author wubo
  */
+@Slf4j
 @Accessors(chain = true)
 public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
 
+  static final String UNNAMED_PREFIX = "Unnamed-";
+  private static final AtomicInteger COUNT = new AtomicInteger();
   private final AtomicInteger submittedCount = new AtomicInteger(0);
+  @Getter
+  private final String name;
   @Setter
   @Getter
   private SecurityChecker securityChecker;
 
   public SecurityThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
       TimeUnit unit, BlockingQueue<Runnable> workQueue) {
+    this(UNNAMED_PREFIX + COUNT.getAndIncrement(), corePoolSize, maximumPoolSize, keepAliveTime,
+        unit, workQueue);
+  }
+
+  public SecurityThreadPoolExecutor(String name, int corePoolSize, int maximumPoolSize,
+      long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+    this.name = name;
+    ThreadPoolMonitor.add(this);
   }
 
   public SecurityThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
       TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
+    this(UNNAMED_PREFIX + COUNT.getAndIncrement(), corePoolSize, maximumPoolSize, keepAliveTime,
+        unit, workQueue, threadFactory);
+  }
+
+  public SecurityThreadPoolExecutor(String name, int corePoolSize, int maximumPoolSize,
+      long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue,
+      ThreadFactory threadFactory) {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
+    this.name = name;
+    ThreadPoolMonitor.add(this);
   }
 
   public SecurityThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
       TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) {
+    this(UNNAMED_PREFIX + COUNT.getAndIncrement(), corePoolSize, maximumPoolSize, keepAliveTime,
+        unit, workQueue, handler);
+  }
+
+  public SecurityThreadPoolExecutor(String name, int corePoolSize, int maximumPoolSize,
+      long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue,
+      RejectedExecutionHandler handler) {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler);
+    this.name = name;
+    ThreadPoolMonitor.add(this);
   }
 
   public SecurityThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
       TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory,
       RejectedExecutionHandler handler) {
+    this(UNNAMED_PREFIX + COUNT.getAndIncrement(), corePoolSize, maximumPoolSize, keepAliveTime,
+        unit, workQueue, threadFactory, handler);
+  }
+
+  public SecurityThreadPoolExecutor(String name, int corePoolSize, int maximumPoolSize,
+      long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue,
+      ThreadFactory threadFactory, RejectedExecutionHandler handler) {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
+    this.name = name;
+    ThreadPoolMonitor.add(this);
   }
 
   @Override
   public void execute(Runnable command) {
     submittedCount.incrementAndGet();
     try {
-      super.execute(command);
+      Runnable runnable = command;
+      if (!(runnable instanceof DecoratedTask)) {
+        runnable = new DecoratedTask(MDC.getCopyOfContextMap(), runnable);
+      }
+      super.execute(runnable);
     } catch (RejectedExecutionException e) {
-      if (getQueue() instanceof PoolQueue && getQueue().offer(command)) {
+      if (getQueue() instanceof PoolQueue && ((PoolQueue) getQueue()).force(command)) {
         return;
       }
       submittedCount.decrementAndGet();
@@ -85,6 +134,7 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
     if (securityChecker != null) {
       securityChecker.checkPermission();
     }
+    ThreadPoolMonitor.remove(this);
     super.shutdown();
   }
 
@@ -93,6 +143,7 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
     if (securityChecker != null) {
       securityChecker.checkPermission();
     }
+    ThreadPoolMonitor.remove(this);
     return super.shutdownNow();
   }
 
@@ -127,19 +178,32 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
 
   @Override
   protected void afterExecute(Runnable r, Throwable t) {
-    submittedCount.decrementAndGet();
+    int value = submittedCount.getAndDecrement();
+    if (t != null) {
+      log.error("pool execute task error submitted: {}, executor: {}", value, this, t);
+    }
   }
 
+  @Override
+  public String toString() {
+    return super.toString() + "-[pool name = " + name + ", maximum pool size = "
+        + getMaximumPoolSize() + "]";
+  }
+
+  @Setter
   @NoArgsConstructor
   public static class PoolQueue extends LinkedBlockingQueue<Runnable> {
 
     private static final long serialVersionUID = 5267382526416848275L;
 
-    @Setter
     private transient SecurityThreadPoolExecutor pool;
 
     PoolQueue(int capacity) {
       super(capacity);
+    }
+
+    public boolean force(Runnable runnable) {
+      return super.offer(runnable);
     }
 
     @Override
@@ -153,6 +217,30 @@ public class SecurityThreadPoolExecutor extends ThreadPoolExecutor {
         return false;
       }
       return super.offer(runnable);
+    }
+  }
+
+
+  @RequiredArgsConstructor
+  public static class DecoratedTask implements Runnable {
+
+    private final Map<String, String> contextMap;
+    private final Runnable command;
+
+    @Override
+    public void run() {
+      try {
+        if (contextMap != null) {
+          contextMap.forEach(MDC::put);
+        }
+        MDC.put(Strings.SPAN_ID, ThreadUtils.nextSpanId());
+        command.run();
+      } finally {
+        if (contextMap != null) {
+          contextMap.keySet().forEach(MDC::remove);
+        }
+        MDC.remove(Strings.SPAN_ID);
+      }
     }
   }
 

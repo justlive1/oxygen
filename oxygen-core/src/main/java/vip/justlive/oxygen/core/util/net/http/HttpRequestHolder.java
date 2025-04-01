@@ -14,8 +14,10 @@
 
 package vip.justlive.oxygen.core.util.net.http;
 
+import java.io.IOException;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.CoreConfigKeys;
 
 /**
@@ -24,6 +26,7 @@ import vip.justlive.oxygen.core.CoreConfigKeys;
  * @author wubo
  */
 @Data
+@Slf4j
 @Accessors(chain = true)
 public class HttpRequestHolder {
 
@@ -34,6 +37,23 @@ public class HttpRequestHolder {
 
   private long responseTime;
   private HttpResponse response;
+
+  /**
+   * 获取响应体 body 内容
+   *
+   * @return body 内容
+   */
+  public String responseBodyAsString() {
+    if (response == null) {
+      return null;
+    }
+    try {
+      return response.bodyAsString();
+    } catch (IOException e) {
+      log.error("response bodyAsString error", e);
+      return null;
+    }
+  }
 
   public static boolean isEnabled() {
     return CoreConfigKeys.HTTP_REQUEST_HOLDER_ENABLED.castValue(boolean.class);

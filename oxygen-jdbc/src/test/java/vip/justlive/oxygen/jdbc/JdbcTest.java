@@ -19,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Arrays;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.jdbc.handler.ResultSetHandler;
@@ -32,9 +33,14 @@ import vip.justlive.oxygen.jdbc.record.Where;
  */
 class JdbcTest {
 
-  @BeforeEach
-  void before() {
+  @BeforeAll
+  static void before() {
     Bootstrap.start();
+  }
+
+  @AfterAll
+  static void after() {
+    Bootstrap.close();
   }
 
   @Test

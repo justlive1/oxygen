@@ -13,11 +13,11 @@
  */
 package vip.justlive.oxygen.web.bind;
 
-import com.alibaba.fastjson.JSONObject;
 import java.lang.reflect.Parameter;
 import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.core.convert.DefaultConverterService;
 import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.json.Json;
 import vip.justlive.oxygen.web.annotation.Param;
 import vip.justlive.oxygen.web.router.RoutingContext;
 
@@ -40,7 +40,7 @@ public class BasicParamBinder implements ParamBinder {
     dataBinder.setType(parameter.getType());
     Param param = parameter.getAnnotation(Param.class);
     dataBinder.setName(Strings.firstNonNull(param.value(), parameter.getName()));
-    if (param.defaultValue().length() > 0) {
+    if (!param.defaultValue().isEmpty()) {
       dataBinder.setDefaultValue(param.defaultValue());
     }
     dataBinder.setFunc(ctx -> this.func(ctx, dataBinder));
@@ -59,8 +59,8 @@ public class BasicParamBinder implements ParamBinder {
     if (value != null && converterService.canConverter(value.getClass(), dataBinder.getType())) {
       return converterService.convert(value, dataBinder.getType());
     }
-    if (value instanceof JSONObject) {
-      return ((JSONObject) value).toJavaObject(dataBinder.getType());
+    if (Json.getReader() != null) {
+      return Json.bindTo(value, dataBinder.getType());
     }
     return ctx.bindParam(dataBinder.getType());
   }

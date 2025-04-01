@@ -65,7 +65,7 @@ public class IoUtils {
   /**
    * copy
    *
-   * @param input 输入流
+   * @param input  输入流
    * @param output 输出流
    * @return 总字节数
    * @throws IOException io异常
@@ -89,7 +89,7 @@ public class IoUtils {
   /**
    * copy
    *
-   * @param input 输入流
+   * @param input   输入流
    * @param operate 操作单元
    * @return 总字节数
    * @throws IOException io异常
@@ -134,7 +134,7 @@ public class IoUtils {
   /**
    * 输入流转字符串
    *
-   * @param input 输入流
+   * @param input   输入流
    * @param charset 字符集
    * @return 字符串
    * @throws IOException io异常
@@ -222,7 +222,7 @@ public class IoUtils {
    * 创建一个channel，指定绑定地址
    *
    * @param channelGroup 群组
-   * @param address 绑定地址
+   * @param address      绑定地址
    * @return channel
    * @throws IOException io异常时抛出
    */
@@ -235,12 +235,12 @@ public class IoUtils {
   }
 
   @FunctionalInterface
-  interface CopyOperate {
+  public interface CopyOperate {
 
     /**
      * copy
      *
-     * @param buffer 数据
+     * @param buffer    数据
      * @param readBytes 数据字节数
      * @throws IOException io异常
      */

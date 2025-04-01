@@ -67,9 +67,9 @@ public interface Cache extends Naming {
   /**
    * 获取缓存对象
    *
-   * @param key cache key
+   * @param key   cache key
    * @param clazz the type of cache
-   * @param <T> type
+   * @param <T>   type
    * @return the cached object or null
    */
   <T> T get(String key, Class<T> clazz);
@@ -95,7 +95,7 @@ public interface Cache extends Naming {
   /**
    * 向缓存中存放对象，当前缓存中不存在key值时执行
    *
-   * @param key cache key
+   * @param key   cache key
    * @param value cache value
    * @return exist cache value
    */
@@ -104,10 +104,10 @@ public interface Cache extends Naming {
   /**
    * 向缓存中存放对象，当前缓存中不存在key值时执行
    *
-   * @param key cache key
-   * @param value cache value
+   * @param key      cache key
+   * @param value    cache value
    * @param duration duration
-   * @param unit time unit
+   * @param unit     time unit
    * @return exist cache value
    */
   Object putIfAbsent(String key, Object value, long duration, TimeUnit unit);
@@ -115,7 +115,7 @@ public interface Cache extends Naming {
   /**
    * 向缓存中存放对象
    *
-   * @param key cache key
+   * @param key   cache key
    * @param value cache value
    * @return exist cache value
    */
@@ -124,10 +124,10 @@ public interface Cache extends Naming {
   /**
    * 向缓存中存放对象
    *
-   * @param key cache key
-   * @param value cache value
+   * @param key      cache key
+   * @param value    cache value
    * @param duration duration
-   * @param unit time unit
+   * @param unit     time unit
    * @return exist cache value
    */
   Object set(String key, Object value, long duration, TimeUnit unit);
@@ -135,7 +135,7 @@ public interface Cache extends Naming {
   /**
    * 替换缓存中key对应的value
    *
-   * @param key cache key
+   * @param key   cache key
    * @param value cache value
    * @return exist cache value
    */
@@ -144,10 +144,10 @@ public interface Cache extends Naming {
   /**
    * 替换缓存中key对应的value
    *
-   * @param key cache key
-   * @param value cache value
+   * @param key      cache key
+   * @param value    cache value
    * @param duration duration
-   * @param unit time unit
+   * @param unit     time unit
    * @return exist cache value
    */
   Object replace(String key, Object value, long duration, TimeUnit unit);
@@ -180,7 +180,7 @@ public interface Cache extends Naming {
    * Increment the element value (must be a Number).
    *
    * @param key Element key
-   * @param by The incr value
+   * @param by  The incr value
    * @return The new value
    */
   long incr(String key, int by);
@@ -199,7 +199,7 @@ public interface Cache extends Naming {
    * Decrement the element value (must be a Number).
    *
    * @param key Element key
-   * @param by The decr value
+   * @param by  The decr value
    * @return The new value
    */
   default long decr(String key, int by) {
@@ -211,5 +211,14 @@ public interface Cache extends Naming {
    */
   void clear();
 
-
+  /**
+   * 设置有效期
+   *
+   * @param key      cache key
+   * @param duration duration
+   * @param unit     time unit
+   * @return true if set success
+   * @since 3.0.10.2
+   */
+  boolean expire(String key, long duration, TimeUnit unit);
 }

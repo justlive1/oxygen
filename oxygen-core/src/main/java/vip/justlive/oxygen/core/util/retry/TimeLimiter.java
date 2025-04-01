@@ -38,10 +38,10 @@ public interface TimeLimiter<V> {
   /**
    * 固定时间限制
    *
-   * @param timeout 超时时间
-   * @param timeUnit 单位
+   * @param timeout         超时时间
+   * @param timeUnit        单位
    * @param executorService 线程池
-   * @param <V> 泛型
+   * @param <V>             泛型
    * @return FixedTimeLimiter
    */
   static <V> TimeLimiter<V> fixedTimeLimit(long timeout, TimeUnit timeUnit,

@@ -103,7 +103,7 @@ class BinderTest {
     Obj obj = binder.bind(Obj.class);
     assertNotNull(obj.f3);
     assertEquals(2, obj.f3.length);
-    assertEquals(new Integer(3), obj.f3[0]);
+    assertEquals(Integer.valueOf(3), obj.f3[0]);
   }
 
   @Data

@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 
-轻量级Java框架
+轻量级Java框架，支持JDK21，支持模块化
 
 
 

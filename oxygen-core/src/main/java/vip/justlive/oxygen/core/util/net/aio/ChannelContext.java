@@ -21,6 +21,9 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -141,7 +144,7 @@ public class ChannelContext {
   /**
    * 添加属性
    *
-   * @param key 键
+   * @param key   键
    * @param value 值
    */
   public void addAttr(String key, Object value) {
@@ -197,6 +200,13 @@ public class ChannelContext {
   public void join() {
     if (future != null) {
       future.join();
+    }
+  }
+
+  public void join(long timeout, TimeUnit unit)
+      throws ExecutionException, InterruptedException, TimeoutException {
+    if (future != null) {
+      future.get(timeout, unit);
     }
   }
 

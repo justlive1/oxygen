@@ -15,22 +15,26 @@
 package vip.justlive.oxygen.web.tomcat;
 
 import java.io.File;
+import java.util.Collections;
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
+import org.apache.catalina.core.AprLifecycleListener;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.valves.AccessLogValve;
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
+import org.apache.coyote.http2.Http2Protocol;
 import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 import vip.justlive.oxygen.core.util.io.FileUtils;
 import vip.justlive.oxygen.web.WebConfigKeys;
 import vip.justlive.oxygen.web.server.WebServer;
+import vip.justlive.oxygen.web.servlet.ServletWebInitializer;
 
 /**
  * tomcat server
@@ -52,32 +56,50 @@ public class TomcatWebServer implements WebServer {
     File docBase = new File(baseDir, Context.class.getSimpleName());
     FileUtils.mkdirs(docBase);
     tomcat.setBaseDir(baseDir.getAbsolutePath());
+
+    if (AprLifecycleListener.isAprAvailable()) {
+      tomcat.getServer().addLifecycleListener(new AprLifecycleListener());
+    }
+
+    TomcatConf tomcatConf = ConfigFactory.load(TomcatConf.class);
+
+    Connector connector = new Connector();
+    connector.setThrowOnFailure(true);
+    tomcat.getService().addConnector(connector);
+
+    connector.setPort(port);
+    configConnector(tomcat.getConnector(), tomcatConf);
+    tomcat.setConnector(connector);
+
     Host host = tomcat.getHost();
     host.setAutoDeploy(false);
+
+    configEngine(tomcat.getEngine(), tomcatConf);
+
     Context ctx = tomcat.addWebapp(host, contextPath, docBase.getAbsolutePath(),
         new FatJarContextConfig());
     ctx.setJarScanner(new FatJarScanner());
     ctx.setParentClassLoader(getClass().getClassLoader());
     ctx.addLifecycleListener(new FatJarWebXmlListener());
+    ctx.addServletContainerInitializer(new ServletWebInitializer(), Collections.emptySet());
     tomcat.setPort(port);
 
-    TomcatConf tomcatConf = ConfigFactory.load(TomcatConf.class);
-    configConnector(tomcat.getConnector(), tomcatConf);
-    configEngine(tomcat.getEngine(), tomcatConf);
+
   }
 
   private void configConnector(Connector connector, TomcatConf tomcatConf) {
     connector.setURIEncoding(tomcatConf.getUriEncoding());
+    if (tomcatConf.isHttp2Enabled()) {
+      connector.addUpgradeProtocol(new Http2Protocol());
+    }
     ProtocolHandler protocolHandler = connector.getProtocolHandler();
-    if (protocolHandler instanceof AbstractProtocol) {
-      AbstractProtocol<?> handler = (AbstractProtocol<?>) protocolHandler;
+    if (protocolHandler instanceof AbstractProtocol<?> handler) {
       handler.setAcceptCount(tomcatConf.getAcceptCount());
       handler.setMaxConnections(tomcatConf.getMaxConnections());
       handler.setMinSpareThreads(tomcatConf.getMinSpareThreads());
       handler.setMaxThreads(tomcatConf.getMaxThreads());
       handler.setConnectionTimeout(tomcatConf.getConnectionTimeout());
-      if (handler instanceof AbstractHttp11Protocol) {
-        AbstractHttp11Protocol<?> protocol = (AbstractHttp11Protocol<?>) handler;
+      if (handler instanceof AbstractHttp11Protocol<?> protocol) {
         protocol.setMaxHttpHeaderSize(tomcatConf.getMaxHttpHeaderSize());
       }
     }

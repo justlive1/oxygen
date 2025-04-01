@@ -32,7 +32,7 @@ import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 @Slf4j
 class BoundedObjectPoolTest {
 
-  AtomicLong c = new AtomicLong();
+ final AtomicLong c = new AtomicLong();
 
   @Test
   void test() throws InterruptedException {
@@ -41,9 +41,7 @@ class BoundedObjectPoolTest {
     List<Callable<Integer>> list = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
       list.add(() -> {
-        pool.run(a -> {
-          log.info("run {}", a);
-        });
+        pool.run(a -> log.info("run {}", a));
         return null;
       });
     }

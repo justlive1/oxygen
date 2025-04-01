@@ -27,7 +27,7 @@ public class SourceCode extends SimpleJavaFileObject {
   private final CharSequence source;
 
   protected SourceCode(String name, CharSequence source) {
-    super(URI.create("mem:///src/" + name + Kind.SOURCE.extension), Kind.SOURCE);
+    super(URI.create("mem:///src/" + name.replace('.', '/') + Kind.SOURCE.extension), Kind.SOURCE);
     this.name = name;
     this.source = source;
   }

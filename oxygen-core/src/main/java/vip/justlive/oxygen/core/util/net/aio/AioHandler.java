@@ -26,7 +26,7 @@ public interface AioHandler {
   /**
    * 将数据译码成buffer
    *
-   * @param data 数据
+   * @param data           数据
    * @param channelContext channel上下文
    * @return buffer
    */
@@ -35,8 +35,8 @@ public interface AioHandler {
   /**
    * 将buffer解码成原始数据
    *
-   * @param buffer 译码数据
-   * @param readableSize 可读数据大小
+   * @param buffer         译码数据
+   * @param readableSize   可读数据大小
    * @param channelContext channel上下文
    * @return 解码数据
    */
@@ -45,7 +45,7 @@ public interface AioHandler {
   /**
    * 处理解码后的数据
    *
-   * @param data 数据
+   * @param data           数据
    * @param channelContext channel上下文
    */
   void handle(Object data, ChannelContext channelContext);

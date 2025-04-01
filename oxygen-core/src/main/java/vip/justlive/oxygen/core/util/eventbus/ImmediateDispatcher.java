@@ -23,15 +23,15 @@ import java.util.List;
  */
 public class ImmediateDispatcher extends Dispatcher {
 
-    @Override
-    public void dispatch(String channel, Object event) {
-        List<Subscriber> list = getSubscribers(channel, event);
-        if (!list.isEmpty()) {
-            list.forEach(subscriber -> subscriber.handle(channel, event));
-        } else if (!(event instanceof DeadEvent)) {
-            eventBus.post(new DeadEvent(channel, event, eventBus));
-        }
+  @Override
+  public void dispatch(String channel, Object event) {
+    List<Subscriber> list = getSubscribers(channel, event);
+    if (!list.isEmpty()) {
+      list.forEach(subscriber -> subscriber.handle(channel, event));
+    } else if (!(event instanceof DeadEvent)) {
+      eventBus.post(new DeadEvent(channel, event, eventBus));
     }
+  }
 
 
 }

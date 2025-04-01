@@ -28,11 +28,12 @@ public class ResidentPool {
 
   @Getter
   private final int maxSize;
-  private final ThreadPoolExecutor pool;
+  private final SecurityThreadPoolExecutor pool;
 
   public ResidentPool(int maxSize) {
     this.maxSize = maxSize;
-    this.pool = new ThreadPoolExecutor(1, maxSize, 1, TimeUnit.MINUTES, new SynchronousQueue<>(),
+    this.pool = new SecurityThreadPoolExecutor("resident-pool", 1, maxSize, 1, TimeUnit.MINUTES,
+        new SynchronousQueue<>(),
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("resident-pool-%d").build(),
         this::rejectedExecution);
   }

@@ -303,8 +303,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     writeLock.lock();
     try {
       for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
-        ExpiringValue<V> preValue = data
-            .put(entry.getKey(), new ExpiringValue<>(entry.getValue(), duration, timeUnit));
+        ExpiringValue<V> preValue = data.put(entry.getKey(),
+            new ExpiringValue<>(entry.getValue(), duration, timeUnit));
         if (preValue != null && !Objects.equals(preValue.value, entry.getValue())) {
           notifyListener(entry.getKey(), preValue.value, RemovalCause.REPLACED);
         }
@@ -401,8 +401,8 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
     writeLock.lock();
     try {
       ExpiringValue<V> wrapValue = data.get(key);
-      if (wrapValue != null && !wrapValue.isExpired() && Objects
-          .equals(wrapValue.value, oldValue)) {
+      if (wrapValue != null && !wrapValue.isExpired() && Objects.equals(wrapValue.value,
+          oldValue)) {
         ExpiringValue<V> newWrapValue = new ExpiringValue<>(newValue);
         newWrapValue.duration = wrapValue.duration;
         newWrapValue.expireAt = wrapValue.expireAt;
@@ -456,6 +456,34 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
         }
       }
       return null;
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  /**
+   * 设置有效期
+   *
+   * @param key      键
+   * @param duration 期限
+   * @param timeUnit 时间单位
+   * @return 是否设置成功
+   * @since 3.0.10.2
+   */
+  public boolean expire(K key, long duration, TimeUnit timeUnit) {
+    writeLock.lock();
+    try {
+      ExpiringValue<V> wrapValue = data.get(key);
+      if (wrapValue != null && !wrapValue.isExpired()) {
+        if (duration > 0) {
+          wrapValue.duration = timeUnit.toMillis(duration);
+          wrapValue.expireAt = System.currentTimeMillis() + wrapValue.duration;
+        } else {
+          wrapValue.expireAt = ExpiringValue.NOT_EXPIRED;
+        }
+        return true;
+      }
+      return false;
     } finally {
       writeLock.unlock();
     }
@@ -593,9 +621,9 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
      */
     EXPLICIT,
     /**
-     * 用户替换值 {@link #replace(Object, Object)}, {@link #replace(Object, Object, Object)}, {@link
-     * #replace(Object, Object, long, TimeUnit)}, {@link #put(Object, Object)}, {@link #put(Object,
-     * Object, long)}, {@link #put(Object, Object, long, TimeUnit)}
+     * 用户替换值 {@link #replace(Object, Object)}, {@link #replace(Object, Object, Object)},
+     * {@link #replace(Object, Object, long, TimeUnit)}, {@link #put(Object, Object)},
+     * {@link #put(Object, Object, long)}, {@link #put(Object, Object, long, TimeUnit)}
      */
     REPLACED,
     /**
@@ -851,7 +879,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V>, Serializable {
 
   static final class MapEntry<K, V> implements Entry<K, V> {
 
-    K key;
+   final K key;
     V value;
 
     MapEntry(K key, V value) {

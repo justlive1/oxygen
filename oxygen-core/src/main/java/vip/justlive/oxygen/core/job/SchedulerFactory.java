@@ -70,7 +70,7 @@ public class SchedulerFactory {
     addSchedulerPlugin(new MisfireSchedulerPlugin(), resource, scheduler);
     addSchedulerPlugin(new LostSchedulerPlugin(), resource, scheduler);
 
-    if (plugins == null || plugins.length == 0) {
+    if (plugins == null) {
       return scheduler;
     }
 

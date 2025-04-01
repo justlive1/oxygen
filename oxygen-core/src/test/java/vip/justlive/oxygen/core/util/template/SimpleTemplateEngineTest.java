@@ -26,7 +26,7 @@ import vip.justlive.oxygen.core.util.base.MoreObjects;
  */
 class SimpleTemplateEngineTest {
 
-  SimpleTemplateEngine engine = new SimpleTemplateEngine();
+  final SimpleTemplateEngine engine = new SimpleTemplateEngine();
 
   @Test
   void t0() {

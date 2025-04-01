@@ -54,7 +54,7 @@ public abstract class AbstractResourceLoader {
   /**
    * 资源列表
    */
-  protected List<SourceResource> resources = new ArrayList<>();
+  protected final List<SourceResource> resources = new ArrayList<>();
 
   /**
    * 未找到是否忽略，启用则跳过，否则抛出异常
@@ -207,7 +207,7 @@ public abstract class AbstractResourceLoader {
    * 获取匹配的路径
    *
    * @param location 路径
-   * @param multi is classpath*
+   * @param multi    is classpath*
    * @return 资源列表
    * @throws IOException io异常
    */
@@ -240,8 +240,8 @@ public abstract class AbstractResourceLoader {
   /**
    * 获取资源下匹配的jar中的文件
    *
-   * @param resource 源
-   * @param rootUrl 根路径
+   * @param resource   源
+   * @param rootUrl    根路径
    * @param subPattern 匹配串
    * @return 资源列表
    * @throws IOException io异常
@@ -259,11 +259,11 @@ public abstract class AbstractResourceLoader {
   /**
    * 查找jar中匹配的资源
    *
-   * @param resource 源
-   * @param subPattern 匹配串
-   * @param all 所有资源
-   * @param jarFile jar文件
-   * @param jarFileUrl jar文件路径
+   * @param resource      源
+   * @param subPattern    匹配串
+   * @param all           所有资源
+   * @param jarFile       jar文件
+   * @param jarFileUrl    jar文件路径
    * @param rootEntryPath 根路径
    * @throws IOException io异常
    */
@@ -272,7 +272,7 @@ public abstract class AbstractResourceLoader {
     if (log.isDebugEnabled()) {
       log.debug("Looking for matching resources in jar file [{}]", jarFileUrl);
     }
-    if (rootEntryPath.length() > 0 && !rootEntryPath.endsWith(Strings.SLASH)) {
+    if (!rootEntryPath.isEmpty() && !rootEntryPath.endsWith(Strings.SLASH)) {
       rootEntryPath += Strings.SLASH;
     }
     for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements(); ) {
@@ -290,7 +290,7 @@ public abstract class AbstractResourceLoader {
   /**
    * 获取资源下匹配的文件
    *
-   * @param resource 源
+   * @param resource   源
    * @param subPattern 匹配串
    * @return 资源列表
    * @throws IOException io异常

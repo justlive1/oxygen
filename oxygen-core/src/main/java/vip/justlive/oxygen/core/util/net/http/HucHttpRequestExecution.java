@@ -13,30 +13,21 @@
  */
 package vip.justlive.oxygen.core.util.net.http;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import javax.net.ssl.HttpsURLConnection;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.exception.Exceptions;
-import vip.justlive.oxygen.core.util.base.Bytes;
-import vip.justlive.oxygen.core.util.base.HttpHeaders;
-import vip.justlive.oxygen.core.util.base.MoreObjects;
-import vip.justlive.oxygen.core.util.base.SnowflakeId;
-import vip.justlive.oxygen.core.util.base.Strings;
-import vip.justlive.oxygen.core.util.io.FileUtils;
-import vip.justlive.oxygen.core.util.io.IoUtils;
-import vip.justlive.oxygen.core.util.json.Json;
+import vip.justlive.oxygen.core.util.base.Urls;
 
 /**
  * HttpURLConnection 实现的执行器
@@ -44,26 +35,14 @@ import vip.justlive.oxygen.core.util.json.Json;
  * @author wubo
  * @since 3.0.4
  */
+@Slf4j
 public class HucHttpRequestExecution implements HttpRequestExecution {
-
-  private static final String DEFAULT_BOUNDARY = "----oxygen_" + SnowflakeId.defaultNextId();
-  private static final String FORM_DATA = "Content-Disposition: form-data; name=\"%s\"";
-  private static final String FORM_FILE_DATA = "Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"";
 
   public static final HucHttpRequestExecution HUC = new HucHttpRequestExecution();
 
   @Override
   public HttpResponse execute(HttpRequest request) throws IOException {
-    String httpUrl = request.getUrl();
-    if (request.getQueryParam() != null) {
-      String queryString = MoreObjects.beanToQueryString(request.getQueryParam(), true);
-      if (!request.getUrl().contains(Strings.QUESTION_MARK)) {
-        httpUrl += Strings.QUESTION_MARK;
-      } else if (!request.getUrl().endsWith(Strings.AND)) {
-        httpUrl += Strings.AND;
-      }
-      httpUrl += queryString;
-    }
+    String httpUrl = Urls.urlWithQueryString(request);
     HttpURLConnection connection = buildConnection(httpUrl, request);
     if (request.getConnectTimeout() >= 0) {
       connection.setConnectTimeout(request.getConnectTimeout());
@@ -75,16 +54,24 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
     connection.setInstanceFollowRedirects(request.isFollowRedirects());
     connection.setRequestMethod(request.getMethod().name());
     connection.setUseCaches(false);
-    setContentType(request);
     // add headers
     request.getHeaders().forEach(connection::addRequestProperty);
-    boolean nonOutput = request.getMethod() == HttpMethod.GET || (
-        request.getBody() == null && request.getHttpBody() != HttpBody.MULTIPART);
+    boolean nonOutput = request.getMethod() == HttpMethod.GET || (request.getBody() == null
+        && request.getHttpBody() != HttpBody.MULTIPART);
     connection.setDoOutput(!nonOutput);
     if (nonOutput) {
       connection.connect();
     } else {
-      byte[] bytes = getFunc(request).apply(request.getBody());
+      HttpBodyConverter converter = HttpBodyConverters.findCanWrite(request);
+      if (converter == null) {
+        log.error("No HttpBodyConverter for Request {}", request);
+        throw Exceptions.fail("No HttpBodyConverter for HttpRequest");
+      }
+      byte[] bytes;
+      try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+        converter.write(request, stream);
+        bytes = stream.toByteArray();
+      }
       connection.setFixedLengthStreamingMode(bytes.length);
       connection.connect();
       try (OutputStream out = connection.getOutputStream()) {
@@ -101,29 +88,16 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
     return new HucHttpResponse(connection, code, msg, is, request.getCharset());
   }
 
-  private Function<Object, byte[]> getFunc(HttpRequest request) {
-    if (request.getHttpBody() == HttpBody.FORM) {
-      return obj -> formBodyConvert(obj, request.getCharset());
-    } else if (request.getHttpBody() == HttpBody.JSON) {
-      return obj -> jsonBodyConvert(obj, request.getCharset());
-    } else if (request.getHttpBody() == HttpBody.MULTIPART) {
-      return obj -> multipartConvert(obj, request.getParts(), request.getCharset());
-    } else if (request.getHttpBody() == HttpBody.OTHERS && request.getFunc() != null) {
-      return request.getFunc();
-    }
-    return this::noneBodyConvert;
-  }
-
   private HttpURLConnection buildConnection(String httpUrl, HttpRequest request)
       throws IOException {
     HttpURLConnection connection;
     if (request.getProxy() != null) {
-      connection = (HttpURLConnection) new URL(httpUrl).openConnection(request.getProxy());
+      connection = (HttpURLConnection) URI.create(httpUrl).toURL()
+          .openConnection(request.getProxy());
     } else {
-      connection = (HttpURLConnection) new URL(httpUrl).openConnection();
+      connection = (HttpURLConnection) URI.create(httpUrl).toURL().openConnection();
     }
-    if (connection instanceof HttpsURLConnection) {
-      HttpsURLConnection https = (HttpsURLConnection) connection;
+    if (connection instanceof HttpsURLConnection https) {
       if (request.getSslSocketFactory() != null) {
         https.setSSLSocketFactory(request.getSslSocketFactory());
       }
@@ -134,105 +108,14 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
     return connection;
   }
 
-  private void setContentType(HttpRequest request) {
-    String contentType = request.getHeaders().get(HttpHeaders.CONTENT_TYPE);
-    if (contentType == null) {
-      contentType = request.getHttpBody().getMedia();
-      if (request.getHttpBody() == HttpBody.MULTIPART) {
-        contentType += "; boundary=" + DEFAULT_BOUNDARY;
-      }
-    }
-    if (contentType != null && !contentType.contains(HttpHeaders.CHARSET)) {
-      request.getHeaders()
-          .put(HttpHeaders.CONTENT_TYPE, contentType + ";charset=" + request.getCharset().name());
-    }
-  }
-
-  private byte[] noneBodyConvert(Object obj) {
-    return new byte[0];
-  }
-
-  private byte[] formBodyConvert(Object obj, Charset charset) {
-    if (obj == null) {
-      return new byte[0];
-    }
-    return MoreObjects.beanToQueryString(obj, true).getBytes(charset);
-  }
-
-  private byte[] jsonBodyConvert(Object json, Charset charset) {
-    if (json == null) {
-      return new byte[0];
-    }
-    if (json instanceof String) {
-      return ((String) json).getBytes(charset);
-    } else {
-      return Json.toJson(json).getBytes(charset);
-    }
-  }
-
-  private byte[] multipartConvert(Object body, List<Part> multipart, Charset charset) {
-    if (body != null) {
-      List<Part> mps = new ArrayList<>();
-      MoreObjects.beanToMap(body).forEach((k, v) -> mps.add(new Part(k, v.toString())));
-      if (multipart == null) {
-        multipart = mps;
-      } else {
-        multipart.addAll(mps);
-      }
-    }
-    if (multipart == null || multipart.isEmpty()) {
-      return new byte[0];
-    }
-    Bytes bytes = new Bytes();
-    for (Part part : multipart) {
-      if (part.isFile()) {
-        appendFile(part, bytes, charset);
-      } else {
-        appendValue(part, bytes, charset);
-      }
-    }
-    appendEnd(bytes, charset);
-    return bytes.toArray();
-  }
-
-  private void appendEnd(Bytes bytes, Charset charset) {
-    bytes.write(Strings.DASH).write(Strings.DASH).write(DEFAULT_BOUNDARY, charset)
-        .write(Strings.DASH)
-        .write(Strings.DASH).write(Bytes.CR).write(Bytes.LF);
-  }
-
-  private void appendValue(Part part, Bytes bytes, Charset charset) {
-    bytes.write(Strings.DASH).write(Strings.DASH).write(DEFAULT_BOUNDARY, charset).write(Bytes.CR)
-        .write(Bytes.LF);
-    bytes.write(String.format(FORM_DATA, part.getName()), charset).write(Bytes.CR).write(Bytes.LF);
-    bytes.write(Bytes.CR).write(Bytes.LF);
-    bytes.write(part.getValue(), charset).write(Bytes.CR).write(Bytes.LF);
-  }
-
-  private void appendFile(Part part, Bytes bytes, Charset charset) {
-    bytes.write(Strings.DASH).write(Strings.DASH).write(DEFAULT_BOUNDARY, charset).write(Bytes.CR)
-        .write(Bytes.LF);
-    bytes.write(String.format(FORM_FILE_DATA, part.getName(), part.getFilename()), charset)
-        .write(Bytes.CR).write(Bytes.LF);
-    bytes.write(HttpHeaders.CONTENT_TYPE).write(Bytes.COLON).write(Bytes.SPACE).write(MoreObjects
-        .firstNonNull(FileUtils.parseMimeType(part.getFilename()),
-            HttpHeaders.APPLICATION_OCTET_STREAM));
-    bytes.write(Bytes.CR).write(Bytes.LF).write(Bytes.CR).write(Bytes.LF);
-    try (InputStream input = Files.newInputStream(part.getFile().toPath())) {
-      IoUtils.copy(input, bytes);
-    } catch (IOException e) {
-      throw Exceptions.wrap(e);
-    }
-    bytes.write(Bytes.CR).write(Bytes.LF);
-  }
 
   /**
    * huc实现的response
    */
+  @Getter
   @EqualsAndHashCode(callSuper = true)
   public static class HucHttpResponse extends HttpResponse {
 
-    @Getter
     private final HttpURLConnection connection;
 
     public HucHttpResponse(HttpURLConnection connection, int code, String message, InputStream body,
@@ -248,7 +131,7 @@ public class HucHttpRequestExecution implements HttpRequestExecution {
         // Header field 0 is the 'HTTP/1.1 200' line for most HttpURLConnections, but not on GAE
         for (int i = 0; ; i++) {
           String name = this.connection.getHeaderFieldKey(i);
-          if (name != null && name.trim().length() > 0) {
+          if (name != null && !name.trim().isEmpty()) {
             map.put(name, this.connection.getHeaderField(i));
           } else if (i > 0) {
             break;

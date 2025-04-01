@@ -148,9 +148,9 @@ public class SensitiveUtils {
    * SensitiveUtils.customizeHide("13568794561",3,0,8) = "135********"
    * </pre>
    *
-   * @param data 原数据
-   * @param front 展示前几位
-   * @param tail 展示后几位
+   * @param data   原数据
+   * @param front  展示前几位
+   * @param tail   展示后几位
    * @param hidden 展示星号*的个数
    * @return 部分隐藏的敏感数据字符串
    */

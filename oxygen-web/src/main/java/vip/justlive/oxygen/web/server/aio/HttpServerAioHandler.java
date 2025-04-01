@@ -16,16 +16,17 @@ package vip.justlive.oxygen.web.server.aio;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.Bytes;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.HttpHeaders.RequestStatusLine;
 import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 import vip.justlive.oxygen.core.util.net.aio.AioHandler;
 import vip.justlive.oxygen.core.util.net.aio.ChannelContext;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
@@ -87,12 +88,13 @@ public class HttpServerAioHandler implements AioHandler {
 
     // 响应体
     if (body.length > 0) {
-      if (log.isDebugEnabled() && body.length > MAX) {
-        log.debug("http response [{}*mask*]", bytes.toString());
-      }
       bytes.write(body);
-      if (log.isDebugEnabled() && body.length <= MAX) {
-        log.debug("http response [{}]", bytes.toString());
+      if (log.isDebugEnabled()) {
+        if (body.length > MAX) {
+          log.debug("http response [{}*mask*]", bytes.toString(MAX, StandardCharsets.UTF_8));
+        } else {
+          log.debug("http response [{}]", bytes);
+        }
       }
     }
     return ByteBuffer.wrap(bytes.toArray());
@@ -101,23 +103,33 @@ public class HttpServerAioHandler implements AioHandler {
   @Override
   public Object decode(ByteBuffer buffer, int readableSize, ChannelContext channelContext) {
     int index = buffer.position();
-    RequestBuilder builder = parseStatusText(buffer);
-    if (builder == null) {
+    RequestStatusLine statusLine = HttpHeaders.parseRequestStatusLine(buffer);
+    if (statusLine == null) {
       return null;
     }
-    if (Strings.hasText(contextPath) && !builder.requestUri.startsWith(contextPath)) {
-      throw Exceptions.fail(String
-          .format("RequestUri [%s] not match contextPath [%s]", builder.requestUri, contextPath));
+    if (Strings.hasText(contextPath) && !statusLine.getRequestUri().startsWith(contextPath)) {
+      throw Exceptions.fail(
+          String.format("RequestUri [%s] not match contextPath [%s]", statusLine.getRequestUri(),
+              contextPath));
     }
-    if (parseHeaders(builder, buffer) && parseBody(builder, buffer)) {
-      Request request = builder.build(channelContext);
-      if (log.isDebugEnabled()) {
-        log.debug("Received Http [{}]",
-            new String(buffer.array(), index, buffer.position(), StandardCharsets.UTF_8));
-      }
-      return request;
+    Map<String, List<String>> headers = HttpHeaders.parseHttpHeaders(buffer);
+    if (headers == null) {
+      return null;
     }
-    return null;
+    byte[] body = HttpHeaders.parseHttpBody(headers, buffer);
+    if (body == null) {
+      return null;
+    }
+    if (log.isDebugEnabled()) {
+      log.debug("Received Http [{}]",
+          new String(buffer.array(), index, buffer.position(), StandardCharsets.UTF_8));
+    }
+    Request request = new Request(HttpMethod.find(statusLine.getMethod()),
+        statusLine.getRequestUri(), statusLine.getVersion(), contextPath, body);
+    String[] arr = new String[0];
+    headers.forEach((k, v) -> request.getHeaders().put(k, v.toArray(arr)));
+    request.addAttribute(Request.ORIGINAL_REQUEST, channelContext);
+    return request;
   }
 
   @Override
@@ -133,6 +145,14 @@ public class HttpServerAioHandler implements AioHandler {
 
     request.local();
     response.local();
+
+    // trace-id
+    String traceId = request.getHeader(Strings.TRACE_ID);
+    if (!Strings.hasText(traceId)) {
+      traceId = ThreadUtils.nextTraceId();
+    }
+    MDC.put(Strings.TRACE_ID, traceId);
+
     final RoutingContext ctx = new RoutingContextImpl(request, response);
     try {
       Context.dispatch(ctx);
@@ -142,135 +162,7 @@ public class HttpServerAioHandler implements AioHandler {
       Request.clear();
       Response.clear();
       channelContext.write(response);
-    }
-  }
-
-  private RequestBuilder parseStatusText(ByteBuffer buffer) {
-    int position = buffer.position();
-    String method = null;
-    String requestUrl = null;
-    byte[] data;
-    while (buffer.hasRemaining()) {
-      byte b = buffer.get();
-      if (b == ' ') {
-        int curr = buffer.position();
-        data = new byte[curr - position - 1];
-        getData(data, buffer, curr, position);
-        position = curr;
-        String line = new String(data, StandardCharsets.UTF_8);
-        if (method == null) {
-          method = line;
-        } else if (requestUrl == null) {
-          requestUrl = line;
-        } else {
-          break;
-        }
-      } else if (lineFinished(buffer, b)) {
-        int curr = buffer.position();
-        data = new byte[curr - position - 2];
-        getData(data, buffer, curr, position);
-        return new RequestBuilder(method, requestUrl, new String(data, StandardCharsets.UTF_8));
-      }
-    }
-    return null;
-  }
-
-  private boolean parseHeaders(RequestBuilder builder, ByteBuffer buffer) {
-    if (!buffer.hasRemaining()) {
-      return false;
-    }
-    int position = buffer.position();
-    if (headerFinished(buffer)) {
-      return true;
-    }
-    String name = null;
-    byte[] data;
-    while (buffer.hasRemaining()) {
-      byte b = buffer.get();
-      int curr = buffer.position();
-      if (name == null && b == Bytes.COLON) {
-        data = new byte[curr - position - 1];
-        getData(data, buffer, curr, position);
-        name = new String(data, StandardCharsets.UTF_8);
-        position = curr;
-      } else if (name != null && lineFinished(buffer, b)) {
-        data = new byte[curr - position - 2];
-        getData(data, buffer, curr, position);
-        builder.addHeader(name, new String(data, StandardCharsets.UTF_8).trim());
-        name = null;
-        position = curr;
-        if (headerFinished(buffer)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  private boolean parseBody(RequestBuilder builder, ByteBuffer buffer) {
-    String contentLength = builder.getContentLength();
-    if (contentLength != null) {
-      int length = Integer.parseInt(contentLength);
-      if (buffer.remaining() < length) {
-        return false;
-      }
-      if (length == 0) {
-        return true;
-      }
-      builder.body = new byte[length];
-      buffer.get(builder.body);
-      return true;
-    }
-    // 找不到contentLength当没有body处理
-    return true;
-  }
-
-  private boolean headerFinished(ByteBuffer buffer) {
-    return buffer.get() == Bytes.CR && buffer.hasRemaining() && buffer.get() == Bytes.LF;
-  }
-
-  private boolean lineFinished(ByteBuffer buffer, byte curr) {
-    return curr == Bytes.LF && buffer.get(buffer.position() - 2) == Bytes.CR;
-  }
-
-  private void getData(byte[] data, ByteBuffer buffer, int curr, int index) {
-    buffer.position(index);
-    buffer.get(data);
-    buffer.position(curr);
-  }
-
-  @RequiredArgsConstructor
-  private class RequestBuilder {
-
-    final String method;
-    final String requestUri;
-    final String version;
-    final Map<String, List<String>> headers = new LinkedHashMap<>();
-    byte[] body;
-
-    void addHeader(String key, String value) {
-      List<String> values = headers.computeIfAbsent(key, k -> new ArrayList<>(1));
-      if (!values.contains(value)) {
-        values.add(value);
-      }
-    }
-
-    String getContentLength() {
-      for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-        if (entry.getKey().equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH)) {
-          return entry.getValue().get(0);
-        }
-      }
-      return null;
-    }
-
-    Request build(ChannelContext channelContext) {
-      Request request = new Request(HttpMethod.find(method), requestUri, version, contextPath,
-          body);
-      String[] arr = new String[0];
-      headers.forEach((k, v) -> request.getHeaders().put(k, v.toArray(arr)));
-      request.addAttribute(Request.ORIGINAL_REQUEST, channelContext);
-      return request;
+      MDC.remove(Strings.TRACE_ID);
     }
   }
 }

@@ -37,7 +37,7 @@ public class MultipartParamBinder implements ParamBinder {
     dataBinder.setType(parameter.getType());
     dataBinder.setName(parameter.getName());
     MultipartParam param = parameter.getAnnotation(MultipartParam.class);
-    if (param != null && param.value().length() > 0) {
+    if (param != null && !param.value().isEmpty()) {
       dataBinder.setName(param.value());
     }
     dataBinder.setFunc(ctx -> ctx.request().getMultipartItem(dataBinder.getName()));

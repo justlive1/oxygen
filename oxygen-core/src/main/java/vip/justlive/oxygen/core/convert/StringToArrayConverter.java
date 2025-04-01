@@ -39,7 +39,7 @@ public class StringToArrayConverter implements ArrayConverter {
   public Object convert(Object source, Class<?> sourceType, Class<?> targetType) {
 
     if (support(sourceType, targetType)) {
-      if (source == null || source.toString().length() == 0) {
+      if (source == null || source.toString().isEmpty()) {
         return null;
       }
       String[] sourceArray = source.toString().split(Strings.COMMA);

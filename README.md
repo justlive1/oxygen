@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 
-轻量级Java框架
+轻量级Java框架，支持JDK21，支持模块化
 
 
 
@@ -51,7 +51,7 @@
 创建`Maven`项目
 
 ```xml
-<!-- tomcat,jetty,undertow -->
+<!-- tomcat,jetty,undertow 或者使用自研的aio服务器-->
 <properties>
   <oxygen.server>-tomcat</oxygen.server>
 </properties>

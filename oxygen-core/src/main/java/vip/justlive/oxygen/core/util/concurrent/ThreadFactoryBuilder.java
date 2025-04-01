@@ -85,10 +85,11 @@ public class ThreadFactoryBuilder {
    * with this ThreadFactory.
    *
    * @param nameFormat a {@link String#format(String, Object...)}-compatible format String, to which
-   * a unique integer (0, 1, etc.) will be supplied as the single parameter. This integer will be
-   * unique to the built instance of the ThreadFactory and will be assigned sequentially. For
-   * example, {@code "rpc-pool-%d"} will generate thread names like {@code "rpc-pool-0"}, {@code
-   * "rpc-pool-1"}, {@code "rpc-pool-2"}, etc.
+   *                   a unique integer (0, 1, etc.) will be supplied as the single parameter. This
+   *                   integer will be unique to the built instance of the ThreadFactory and will be
+   *                   assigned sequentially. For example, {@code "rpc-pool-%d"} will generate
+   *                   thread names like {@code "rpc-pool-0"}, {@code "rpc-pool-1"},
+   *                   {@code "rpc-pool-2"}, etc.
    * @return this for the builder pattern
    */
   public ThreadFactoryBuilder setNameFormat(String nameFormat) {
@@ -100,8 +101,8 @@ public class ThreadFactoryBuilder {
   /**
    * Sets daemon or not for new threads created with this ThreadFactory.
    *
-   * @param daemon whether or not new Threads created with this ThreadFactory will be daemon
-   * threads
+   * @param daemon whether new Threads created with this ThreadFactory will be daemon
+   *               threads
    * @return this for the builder pattern
    */
   public ThreadFactoryBuilder setDaemon(boolean daemon) {
@@ -131,7 +132,7 @@ public class ThreadFactoryBuilder {
    * Sets the {@link UncaughtExceptionHandler} for new threads created with this ThreadFactory.
    *
    * @param uncaughtExceptionHandler the uncaught exception handler for new Threads created with
-   * this ThreadFactory
+   *                                 this ThreadFactory
    * @return this for the builder pattern
    */
   public ThreadFactoryBuilder setUncaughtExceptionHandler(
@@ -145,7 +146,7 @@ public class ThreadFactoryBuilder {
    * will be created by invoking #newThread(Runnable) on this backing {@link ThreadFactory}.
    *
    * @param backingThreadFactory the backing {@link ThreadFactory} which will be delegated to during
-   * thread creation.
+   *                             thread creation.
    * @return this for the builder pattern
    */
   public ThreadFactoryBuilder setThreadFactory(ThreadFactory backingThreadFactory) {

@@ -22,9 +22,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import vip.justlive.oxygen.core.Bootstrap;
 import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.SecurityChecker;
+import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.concurrent.SecurityThreadPoolExecutor.PoolQueue;
 
 /**
@@ -35,6 +37,8 @@ class SecurityThreadPoolExecutorTest {
 
   @Test
   void test() {
+
+    MDC.put(Strings.TRACE_ID, ThreadUtils.nextTraceId());
 
     Bootstrap.registerUncaughtExceptionHandler();
 
@@ -79,9 +83,11 @@ class SecurityThreadPoolExecutorTest {
       try {
         Thread.sleep(3100);
       } catch (InterruptedException e) {
+        log.info("timing sleep Interrupted");
         throw Exceptions.wrap(e);
       }
       f.incrementAndGet();
+      log.info("timing sleep end");
     }, 2, TimeUnit.SECONDS));
 
     ThreadUtils.sleep(3500);

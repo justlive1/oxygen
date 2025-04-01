@@ -13,10 +13,10 @@
  */
 package vip.justlive.oxygen.web.router;
 
-import com.alibaba.fastjson.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
+import vip.justlive.oxygen.core.util.json.Json;
 import vip.justlive.oxygen.web.http.Request;
 import vip.justlive.oxygen.web.http.Response;
 
@@ -92,6 +92,10 @@ public class RoutingContextImpl implements RoutingContext {
     if (ClassUtils.isJavaInternalType(clazz)) {
       return null;
     }
-    return new JSONObject(map).toJavaObject(clazz);
+
+    if (Json.getReader() != null) {
+      return Json.bindTo(map, clazz);
+    }
+    return null;
   }
 }

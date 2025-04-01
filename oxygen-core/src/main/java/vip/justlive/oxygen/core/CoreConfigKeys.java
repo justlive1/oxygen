@@ -44,6 +44,11 @@ public class CoreConfigKeys {
 
   public final ConfigKey TEMP_DIR = new ConfigKey("oxygen.temp.dir");
 
+  public final ConfigKey THREAD_POOL_MONITOR_ENABLED = new ConfigKey(
+      "oxygen.threadPool.monitor.enabled", "true");
+  public final ConfigKey THREAD_POOL_MONITOR_INTERVAL = new ConfigKey(
+      "oxygen.threadPool.monitor.interval", "3600");
+
   public final ConfigKey THREAD_POOL_SIZE = new ConfigKey("oxygen.threadPool.size", "10");
   public final ConfigKey THREAD_POOL_QUEUE = new ConfigKey("oxygen.threadPool.queue", "100000");
 
@@ -59,5 +64,7 @@ public class CoreConfigKeys {
 
   public final ConfigKey HTTP_REQUEST_HOLDER_ENABLED = new ConfigKey(
       "oxygen.httpRequest.holder.enabled", "true");
+  public final ConfigKey HTTP_REQUEST_EXECUTION = new ConfigKey("oxygen.httpRequest.execution",
+      "HUC");
 
 }

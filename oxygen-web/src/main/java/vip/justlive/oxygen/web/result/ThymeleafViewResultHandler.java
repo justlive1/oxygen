@@ -13,10 +13,10 @@
  */
 package vip.justlive.oxygen.web.result;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Locale;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.thymeleaf.IEngineConfiguration;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -25,6 +25,7 @@ import org.thymeleaf.context.WebContext;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 import org.thymeleaf.templateresource.ITemplateResource;
 import org.thymeleaf.templateresource.StringTemplateResource;
+import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 import vip.justlive.oxygen.core.bean.Bean;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
@@ -103,7 +104,8 @@ public class ThymeleafViewResultHandler implements ResultHandler {
             .getAttribute(Request.ORIGINAL_REQUEST);
         HttpServletResponse resp = (HttpServletResponse) request
             .getAttribute(Response.ORIGINAL_RESPONSE);
-        return new WebContext(req, resp, req.getServletContext(), locale, data);
+        return new WebContext(JakartaServletWebApplication.buildApplication(req.getServletContext())
+            .buildExchange(req, resp), locale, data);
       }
     }
 

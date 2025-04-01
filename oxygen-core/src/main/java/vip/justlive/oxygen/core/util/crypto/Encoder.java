@@ -32,7 +32,7 @@ public interface Encoder {
    * 是否匹配
    *
    * @param source 源
-   * @param raw 加密后数据
+   * @param raw    加密后数据
    * @return true表示匹配
    */
   boolean match(String source, String raw);

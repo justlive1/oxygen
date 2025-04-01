@@ -29,6 +29,10 @@ import java.util.function.Function;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 import lombok.Getter;
+import org.slf4j.MDC;
+import vip.justlive.oxygen.core.CoreConfigKeys;
+import vip.justlive.oxygen.core.util.base.HttpHeaders;
+import vip.justlive.oxygen.core.util.base.Strings;
 
 /**
  * http request
@@ -37,6 +41,13 @@ import lombok.Getter;
  */
 @Getter
 public class HttpRequest {
+
+  private static final Map<String, HttpRequestExecution> EXECUTIONS = new HashMap<>(4);
+
+  static {
+    EXECUTIONS.put("HUC", HucHttpRequestExecution.HUC);
+    EXECUTIONS.put("AIO", AioHttpRequestExecution.AIO);
+  }
 
   private final String url;
   private final Map<String, String> headers = new HashMap<>(4);
@@ -339,12 +350,32 @@ public class HttpRequest {
    * @throws IOException io异常
    */
   public HttpResponse execute() throws IOException {
+    // trace-id
+    if (!this.headers.containsKey(Strings.TRACE_ID)) {
+      String traceId = MDC.get(Strings.TRACE_ID);
+      if (Strings.hasText(traceId)) {
+        this.headers.put(Strings.TRACE_ID, traceId);
+      }
+    }
+    // reset content-type
+    String contentType = this.headers.get(HttpHeaders.CONTENT_TYPE);
+    if (contentType == null) {
+      contentType = httpBody.getMedia();
+      if (httpBody == HttpBody.MULTIPART) {
+        contentType += "; boundary=" + Strings.DEFAULT_BOUNDARY;
+      }
+    }
+    if (contentType != null && !contentType.contains(HttpHeaders.CHARSET)) {
+      this.headers.put(HttpHeaders.CONTENT_TYPE, contentType + ";charset=" + charset.name());
+    }
+
     Iterator<HttpRequestInterceptor> iterable = null;
     if (interceptors != null) {
       iterable = interceptors.iterator();
     }
     if (httpRequestExecution == null) {
-      httpRequestExecution = HucHttpRequestExecution.HUC;
+      httpRequestExecution = EXECUTIONS.getOrDefault(
+          CoreConfigKeys.HTTP_REQUEST_EXECUTION.getValue(), HucHttpRequestExecution.HUC);
     }
 
     HttpRequestHolder.remove();
@@ -353,6 +384,7 @@ public class HttpRequest {
       HttpRequestHolder.set(
           new HttpRequestHolder().setRequest(this).setRequestTime(System.currentTimeMillis()));
     }
+
     HttpResponse response = new IteratorHttpRequestInterceptor(httpRequestExecution,
         iterable).execute(this);
     if (enabled) {

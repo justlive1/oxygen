@@ -90,7 +90,7 @@ public class CacheAspect {
     ctx = new Ctx();
     Cacheable cacheable = invocation.getMethod().getAnnotation(Cacheable.class);
     String cacheName = cacheable.value();
-    if (cacheName.length() == 0) {
+    if (cacheName.isEmpty()) {
       cacheName = Cache.class.getSimpleName();
     }
     ctx.cacheName = cacheName;

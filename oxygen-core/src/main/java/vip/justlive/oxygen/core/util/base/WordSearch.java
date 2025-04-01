@@ -221,8 +221,8 @@ public class WordSearch {
 
   private static class TrieNode {
 
-    boolean end;
     final Map<Character, TrieNode> nodes = new HashMap<>();
+    boolean end;
 
     TrieNode next(Character c) {
       return nodes.get(c);

@@ -86,7 +86,7 @@ public class ResourceBundle extends AbstractResourceLoader implements Plugin {
   /**
    * 根据key获取message
    *
-   * @param key key
+   * @param key    key
    * @param locale 区域
    * @return message
    */
@@ -97,9 +97,9 @@ public class ResourceBundle extends AbstractResourceLoader implements Plugin {
   /**
    * 根据key获取message
    *
-   * @param key key
+   * @param key      key
    * @param language 语言
-   * @param country 国家
+   * @param country  国家
    * @return message
    */
   public static String getMessage(String key, String language, String country) {

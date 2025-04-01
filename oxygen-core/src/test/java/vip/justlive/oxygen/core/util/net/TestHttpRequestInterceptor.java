@@ -16,6 +16,7 @@ package vip.justlive.oxygen.core.util.net;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.util.net.http.HttpRequest;
 import vip.justlive.oxygen.core.util.net.http.HttpRequestExecution;
 import vip.justlive.oxygen.core.util.net.http.HttpRequestInterceptor;
@@ -24,6 +25,7 @@ import vip.justlive.oxygen.core.util.net.http.HttpResponse;
 /**
  * @author wubo
  */
+@Slf4j
 @RequiredArgsConstructor
 public class TestHttpRequestInterceptor implements HttpRequestInterceptor {
 
@@ -33,6 +35,12 @@ public class TestHttpRequestInterceptor implements HttpRequestInterceptor {
   public HttpResponse intercept(HttpRequest request, HttpRequestExecution execution)
       throws IOException {
     count.incrementAndGet();
-    return execution.execute(request);
+    log.info("hrt1 0");
+    try {
+      return execution.execute(request);
+    } finally {
+      log.info("hrt1 1");
+    }
+
   }
 }

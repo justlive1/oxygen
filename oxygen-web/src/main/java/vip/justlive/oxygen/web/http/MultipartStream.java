@@ -154,7 +154,7 @@ class MultipartStream {
     String filename = String.valueOf(SnowflakeId.defaultNextId());
     if (item.getFilename() != null) {
       String ext = FileUtils.extension(item.getFilename());
-      if (ext.length() > 0) {
+      if (!ext.isEmpty()) {
         filename += Strings.DOT + ext;
       }
     }

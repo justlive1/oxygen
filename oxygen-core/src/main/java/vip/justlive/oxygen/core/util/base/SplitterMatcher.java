@@ -44,12 +44,12 @@ public class SplitterMatcher {
    * 匹配路径
    *
    * @param pattern 匹配串
-   * @param path 路径
+   * @param path    路径
    * @return true 匹配上了
    */
   public boolean match(String pattern, String path) {
     boolean fastFail =
-        path == null || (path.length() > 0 && (path.charAt(0) == splitter) != (pattern.charAt(0)
+        path == null || (!path.isEmpty() && (path.charAt(0) == splitter) != (pattern.charAt(0)
             == splitter));
     if (fastFail) {
       return false;

@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.jdbc;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.Bootstrap;
@@ -57,6 +58,11 @@ class JobJdbcTest implements Plugin {
     Bootstrap.start();
 
 
+  }
+
+  @AfterEach
+  void after() {
+    Bootstrap.close();
   }
 
   @Test

@@ -119,4 +119,8 @@ public class LocalCacheImpl implements Cache {
     store.clear();
   }
 
+  @Override
+  public boolean expire(String key, long duration, TimeUnit unit) {
+    return store.expire(key, duration, unit);
+  }
 }

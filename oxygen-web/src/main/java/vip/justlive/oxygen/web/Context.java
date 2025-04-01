@@ -149,13 +149,15 @@ public class Context {
    * @param request 请求
    */
   private void parseRequest(Request request) {
-    PARSERS.forEach(parser -> parser.parse(request));
+    for (Parser parser : PARSERS) {
+      parser.parse(request);
+    }
   }
 
   /**
    * 重新保存session
    *
-   * @param request 请求
+   * @param request  请求
    * @param response 响应
    */
   private void restoreSession(Request request, Response response) {

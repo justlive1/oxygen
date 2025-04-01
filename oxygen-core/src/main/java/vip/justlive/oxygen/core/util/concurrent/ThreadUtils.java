@@ -16,14 +16,17 @@ package vip.justlive.oxygen.core.util.concurrent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import lombok.experimental.UtilityClass;
 import vip.justlive.oxygen.core.CoreConfigKeys;
+import vip.justlive.oxygen.core.util.base.DecimalSystemConvert;
 import vip.justlive.oxygen.core.util.base.SecurityChecker;
+import vip.justlive.oxygen.core.util.base.SnowflakeId;
+import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.concurrent.SecurityThreadPoolExecutor.PoolQueue;
 import vip.justlive.oxygen.core.util.timer.WheelTimer;
 
@@ -36,16 +39,62 @@ import vip.justlive.oxygen.core.util.timer.WheelTimer;
 public class ThreadUtils {
 
   private final ThreadLocal<Map<String, Object>> LOCAL = ThreadLocal.withInitial(HashMap::new);
-
+  private final AtomicReference<Supplier<String>> TRACE_ID_SUPPLIER = new AtomicReference<>();
+  private final AtomicReference<Supplier<String>> SPAN_ID_SUPPLIER = new AtomicReference<>();
   private ThreadFactory threadFactory;
   private SecurityThreadPoolExecutor globalPool;
   private WheelTimer globalTimer;
   private ResidentPool residentPool;
 
   /**
+   * 设置自定义 trace-id生成逻辑
+   *
+   * @param supplier supplier
+   */
+  public void setTraceIdSupplier(Supplier<String> supplier) {
+    TRACE_ID_SUPPLIER.set(supplier);
+  }
+
+  /**
+   * 设置自定义 span-id生成逻辑
+   *
+   * @param supplier supplier
+   */
+  public void setSpanIdSupplier(Supplier<String> supplier) {
+    SPAN_ID_SUPPLIER.set(supplier);
+  }
+
+  /**
+   * 生成trace-id
+   *
+   * @return trace-id
+   */
+  public String nextTraceId() {
+    Supplier<String> supplier = TRACE_ID_SUPPLIER.get();
+    if (supplier != null) {
+      return supplier.get();
+    }
+    return Long.toString(SnowflakeId.defaultNextId());
+  }
+
+  /**
+   * 生成span-id
+   *
+   * @return span-id
+   */
+  public String nextSpanId() {
+    Supplier<String> supplier = SPAN_ID_SUPPLIER.get();
+    if (supplier != null) {
+      return supplier.get();
+    }
+    return DecimalSystemConvert.convert(SnowflakeId.defaultNextId(), Strings.ALPHA_NUMERIC.length,
+        Strings.ALPHA_NUMERIC);
+  }
+
+  /**
    * 线程存储键值
    *
-   * @param key 键
+   * @param key   键
    * @param value 值
    */
   public void putVal(String key, Object value) {
@@ -74,11 +123,11 @@ public class ThreadUtils {
   /**
    * 构造线程池
    *
-   * @param corePoolSize 线程数
-   * @param maxPoolSize 最大线程数
+   * @param corePoolSize     线程数
+   * @param maxPoolSize      最大线程数
    * @param keepAliveSeconds 空闲线程等待时间
-   * @param queueCapacity 队列大小
-   * @param nameFormat 线程名称format
+   * @param queueCapacity    队列大小
+   * @param nameFormat       线程名称format
    * @return 线程池
    */
   public SecurityThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
@@ -90,12 +139,29 @@ public class ThreadUtils {
   /**
    * 构造线程池
    *
-   * @param corePoolSize 线程数
-   * @param maxPoolSize 最大线程数
+   * @param name             线程池名称
+   * @param corePoolSize     线程数
+   * @param maxPoolSize      最大线程数
    * @param keepAliveSeconds 空闲线程等待时间
-   * @param queueCapacity 队列大小
-   * @param nameFormat 线程名称format
-   * @param daemon 是否为守护线程
+   * @param queueCapacity    队列大小
+   * @param nameFormat       线程名称format
+   * @return 线程池
+   */
+  public SecurityThreadPoolExecutor newThreadPool(String name, int corePoolSize, int maxPoolSize,
+      int keepAliveSeconds, int queueCapacity, String nameFormat) {
+    return newThreadPool(name, corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity,
+        nameFormat, true);
+  }
+
+  /**
+   * 构造线程池
+   *
+   * @param corePoolSize     线程数
+   * @param maxPoolSize      最大线程数
+   * @param keepAliveSeconds 空闲线程等待时间
+   * @param queueCapacity    队列大小
+   * @param nameFormat       线程名称format
+   * @param daemon           是否为守护线程
    * @return 线程池
    */
   public SecurityThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
@@ -107,12 +173,30 @@ public class ThreadUtils {
   /**
    * 构造线程池
    *
-   * @param corePoolSize 线程数
-   * @param maxPoolSize 最大线程数
+   * @param name             线程池名称
+   * @param corePoolSize     线程数
+   * @param maxPoolSize      最大线程数
    * @param keepAliveSeconds 空闲线程等待时间
-   * @param queueCapacity 队列大小
-   * @param nameFormat 线程名称format
-   * @param handler 拒绝策略
+   * @param queueCapacity    队列大小
+   * @param nameFormat       线程名称format
+   * @param daemon           是否为守护线程
+   * @return 线程池
+   */
+  public SecurityThreadPoolExecutor newThreadPool(String name, int corePoolSize, int maxPoolSize,
+      int keepAliveSeconds, int queueCapacity, String nameFormat, boolean daemon) {
+    return newThreadPool(name, corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity,
+        nameFormat, new ThreadPoolExecutor.AbortPolicy(), daemon);
+  }
+
+  /**
+   * 构造线程池
+   *
+   * @param corePoolSize     线程数
+   * @param maxPoolSize      最大线程数
+   * @param keepAliveSeconds 空闲线程等待时间
+   * @param queueCapacity    队列大小
+   * @param nameFormat       线程名称format
+   * @param handler          拒绝策略
    * @return 线程池
    */
   public SecurityThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
@@ -125,13 +209,32 @@ public class ThreadUtils {
   /**
    * 构造线程池
    *
-   * @param corePoolSize 线程数
-   * @param maxPoolSize 最大线程数
+   * @param name             线程池名称
+   * @param corePoolSize     线程数
+   * @param maxPoolSize      最大线程数
    * @param keepAliveSeconds 空闲线程等待时间
-   * @param queueCapacity 队列大小
-   * @param nameFormat 线程名称format
-   * @param handler 拒绝策略
-   * @param daemon 是否为守护线程
+   * @param queueCapacity    队列大小
+   * @param nameFormat       线程名称format
+   * @param handler          拒绝策略
+   * @return 线程池
+   */
+  public SecurityThreadPoolExecutor newThreadPool(String name, int corePoolSize, int maxPoolSize,
+      int keepAliveSeconds, int queueCapacity, String nameFormat,
+      RejectedExecutionHandler handler) {
+    return newThreadPool(name, corePoolSize, maxPoolSize, keepAliveSeconds, queueCapacity,
+        nameFormat, handler, true);
+  }
+
+  /**
+   * 构造线程池
+   *
+   * @param corePoolSize     线程数
+   * @param maxPoolSize      最大线程数
+   * @param keepAliveSeconds 空闲线程等待时间
+   * @param queueCapacity    队列大小
+   * @param nameFormat       线程名称format
+   * @param handler          拒绝策略
+   * @param daemon           是否为守护线程
    * @return 线程池
    */
   public SecurityThreadPoolExecutor newThreadPool(int corePoolSize, int maxPoolSize,
@@ -146,27 +249,81 @@ public class ThreadUtils {
   }
 
   /**
-   * 构造定时任务池
+   * 构造线程池
    *
-   * @param corePoolSize 线程数
-   * @param nameFormat 线程名称format
-   * @return 任务池
+   * @param name             线程池名称
+   * @param corePoolSize     线程数
+   * @param maxPoolSize      最大线程数
+   * @param keepAliveSeconds 空闲线程等待时间
+   * @param queueCapacity    队列大小
+   * @param nameFormat       线程名称format
+   * @param handler          拒绝策略
+   * @param daemon           是否为守护线程
+   * @return 线程池
    */
-  public ScheduledExecutorService newScheduledExecutor(int corePoolSize, String nameFormat) {
-    return newScheduledExecutor(corePoolSize, nameFormat, new ThreadPoolExecutor.AbortPolicy());
+  public SecurityThreadPoolExecutor newThreadPool(String name, int corePoolSize, int maxPoolSize,
+      int keepAliveSeconds, int queueCapacity, String nameFormat, RejectedExecutionHandler handler,
+      boolean daemon) {
+    PoolQueue queue = new PoolQueue(queueCapacity);
+    SecurityThreadPoolExecutor pool = new SecurityThreadPoolExecutor(name, corePoolSize,
+        maxPoolSize, keepAliveSeconds, TimeUnit.SECONDS, queue,
+        new ThreadFactoryBuilder().setNameFormat(nameFormat).setDaemon(daemon).build(), handler);
+    queue.setPool(pool);
+    return pool;
   }
 
   /**
    * 构造定时任务池
    *
    * @param corePoolSize 线程数
-   * @param nameFormat 线程名称format
-   * @param handler 拒绝策略
+   * @param nameFormat   线程名称format
    * @return 任务池
    */
-  public ScheduledExecutorService newScheduledExecutor(int corePoolSize, String nameFormat,
-      RejectedExecutionHandler handler) {
-    return new ScheduledThreadPoolExecutor(corePoolSize,
+  public SecurityScheduledThreadPoolExecutor newScheduledExecutor(int corePoolSize,
+      String nameFormat) {
+    return newScheduledExecutor(corePoolSize, nameFormat, new ThreadPoolExecutor.AbortPolicy());
+  }
+
+  /**
+   * 构造定时任务池
+   *
+   * @param name         线程池名称
+   * @param corePoolSize 线程数
+   * @param nameFormat   线程名称format
+   * @return 任务池
+   */
+  public SecurityScheduledThreadPoolExecutor newScheduledExecutor(String name, int corePoolSize,
+      String nameFormat) {
+    return newScheduledExecutor(name, corePoolSize, nameFormat,
+        new ThreadPoolExecutor.AbortPolicy());
+  }
+
+  /**
+   * 构造定时任务池
+   *
+   * @param corePoolSize 线程数
+   * @param nameFormat   线程名称format
+   * @param handler      拒绝策略
+   * @return 任务池
+   */
+  public SecurityScheduledThreadPoolExecutor newScheduledExecutor(int corePoolSize,
+      String nameFormat, RejectedExecutionHandler handler) {
+    return new SecurityScheduledThreadPoolExecutor(corePoolSize,
+        new ThreadFactoryBuilder().setNameFormat(nameFormat).setDaemon(true).build(), handler);
+  }
+
+  /**
+   * 构造定时任务池
+   *
+   * @param name         线程池名称
+   * @param corePoolSize 线程数
+   * @param nameFormat   线程名称format
+   * @param handler      拒绝策略
+   * @return 任务池
+   */
+  public SecurityScheduledThreadPoolExecutor newScheduledExecutor(String name, int corePoolSize,
+      String nameFormat, RejectedExecutionHandler handler) {
+    return new SecurityScheduledThreadPoolExecutor(name, corePoolSize,
         new ThreadFactoryBuilder().setNameFormat(nameFormat).setDaemon(true).build(), handler);
   }
 
@@ -213,10 +370,11 @@ public class ThreadUtils {
    */
   public synchronized SecurityThreadPoolExecutor globalPool() {
     if (globalPool == null) {
-      globalPool = newThreadPool(1, CoreConfigKeys.THREAD_POOL_SIZE.castValue(int.class), 120,
+      globalPool = newThreadPool("global-pool", 1,
+          CoreConfigKeys.THREAD_POOL_SIZE.castValue(int.class), 120,
           CoreConfigKeys.THREAD_POOL_QUEUE.castValue(int.class), "global-pool-%d");
-      globalPool.setSecurityChecker(new SecurityChecker()
-          .addChecker(new OwnerThreadChecker(ShutdownHooks.add(globalPool::shutdown))));
+      globalPool.setSecurityChecker(new SecurityChecker().addChecker(
+          new OwnerThreadChecker(ShutdownHooks.add(globalPool::shutdown))));
     }
     return globalPool;
   }
@@ -232,6 +390,7 @@ public class ThreadUtils {
           CoreConfigKeys.WHEEL_TIMER_POOL_SIZE.castValue(int.class));
       globalTimer.getSecurityChecker()
           .addChecker(new OwnerThreadChecker(ShutdownHooks.add(globalTimer::shutdown)));
+      globalTimer.start();
     }
     return globalTimer;
   }

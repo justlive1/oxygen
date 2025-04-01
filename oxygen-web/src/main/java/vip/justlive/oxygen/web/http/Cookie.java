@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.web.http;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -30,6 +31,7 @@ import vip.justlive.oxygen.core.util.base.Strings;
 @Data
 public class Cookie implements Serializable {
 
+  @Serial
   private static final long serialVersionUID = 1L;
   /**
    * Cookie name

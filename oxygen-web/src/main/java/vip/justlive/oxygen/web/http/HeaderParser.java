@@ -75,7 +75,7 @@ public class HeaderParser implements Parser {
   }
 
   private boolean checkIp(String ip) {
-    return ip != null && ip.length() > 0 && !Strings.UNKNOWN.equalsIgnoreCase(ip);
+    return ip != null && !ip.isEmpty() && !Strings.UNKNOWN.equalsIgnoreCase(ip);
   }
 
   private void parseHost(Request request) {
@@ -115,14 +115,14 @@ public class HeaderParser implements Parser {
 
   private void parseCookie(Request request) {
     String cookieValue = request.getHeader(HttpHeaders.COOKIE);
-    if (cookieValue == null || cookieValue.trim().length() == 0) {
+    if (cookieValue == null || cookieValue.trim().isEmpty()) {
       return;
     }
     Cookie cookie = null;
     for (String line : cookieValue.split(Strings.SEMICOLON)) {
       line = line.trim();
       int index = line.indexOf(Strings.EQUAL);
-      if (index == -1 || line.length() <= 1) {
+      if (index == -1 || line.length() == 1) {
         continue;
       }
       String name = line.substring(0, index);

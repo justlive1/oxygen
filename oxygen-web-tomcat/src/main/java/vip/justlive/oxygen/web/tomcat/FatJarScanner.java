@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.web.tomcat;
 
+import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -28,7 +29,6 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import javax.servlet.ServletContext;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.Jar;
@@ -37,6 +37,7 @@ import org.apache.tomcat.JarScanType;
 import org.apache.tomcat.JarScanner;
 import org.apache.tomcat.JarScannerCallback;
 import org.apache.tomcat.util.buf.UriUtil;
+import org.apache.tomcat.util.compat.Jre21Compat;
 import org.apache.tomcat.util.compat.JreCompat;
 import org.apache.tomcat.util.res.StringManager;
 import org.apache.tomcat.util.scan.JarFactory;
@@ -49,8 +50,8 @@ import vip.justlive.oxygen.core.util.base.Urls;
  * <br>
  * 使用ide时，WebappClassLoader.getParent() 是 AppClassLoader，只需要扫描 WebappClassLoader 和 AppClassLoader
  * <br>
- * 使用springboot插件打包的fat-jar时，WebappClassLoader.getParent() 是 LaunchedURLClassLoader，扫描WebappClassLoader
- * 和 LaunchedURLClassLoader
+ * 使用springboot插件打包的fat-jar时，WebappClassLoader.getParent() 是
+ * LaunchedURLClassLoader，扫描WebappClassLoader 和 LaunchedURLClassLoader
  *
  * @author wubo
  */
@@ -83,7 +84,7 @@ public class FatJarScanner implements JarScanner {
    * Since class loader hierarchies can get complicated, this method attempts to apply the following
    * rule: A class loader is a web application class loader unless it loaded this class
    * (StandardJarScanner) or is a parent of the class loader that loaded this class.
-   *
+   * <p>
    * This should mean: the webapp class loader is an application class loader the shared class
    * loader is an application class loader the server class loader is not an application class
    * loader the common class loader is not an application class loader the system class loader is
@@ -108,8 +109,8 @@ public class FatJarScanner implements JarScanner {
    * passed to the callback handle to be processed.
    *
    * @param scanType The type of JAR scan to perform. This is passed to the filter which uses it to
-   * determine how to filter the results
-   * @param context The ServletContext - used to locate and access WEB-INF/lib
+   *                 determine how to filter the results
+   * @param context  The ServletContext - used to locate and access WEB-INF/lib
    * @param callback The handle to process any JARs found
    */
   @Override
@@ -212,15 +213,8 @@ public class FatJarScanner implements JarScanner {
       classLoader = classLoader.getParent();
     }
 
-    if (JreCompat.isJre9Available()) {
-      // The application and platform class loaders are not
-      // instances of URLClassLoader. Use the class path in this
-      // case.
-      addClassPath(classPathUrlsToProcess);
-      // Also add any modules
-      JreCompat.getInstance().addBootModulePath(classPathUrlsToProcess);
-      processURLs(scanType, callback, processedURLs, false, classPathUrlsToProcess);
-    }
+    addClassPath(classPathUrlsToProcess);
+    processURLs(scanType, callback, processedURLs, false, classPathUrlsToProcess);
   }
 
   private void processURLs(JarScanType scanType, JarScannerCallback callback,
@@ -247,7 +241,7 @@ public class FatJarScanner implements JarScanner {
   private void addClassPath(Deque<URL> classPathUrlsToProcess) {
     String classPath = System.getProperty("java.class.path");
 
-    if (classPath == null || classPath.length() == 0) {
+    if (classPath == null || classPath.isEmpty()) {
       return;
     }
 
@@ -328,7 +322,7 @@ public class FatJarScanner implements JarScanner {
     String[] classPathEntries = classPathAttribute.split(" ");
     for (String classPathEntry : classPathEntries) {
       classPathEntry = classPathEntry.trim();
-      if (classPathEntry.length() == 0) {
+      if (classPathEntry.isEmpty()) {
         continue;
       }
       URL jarURL = jar.getJarFileURL();

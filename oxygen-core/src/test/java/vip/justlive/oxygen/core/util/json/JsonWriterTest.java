@@ -49,21 +49,21 @@ class JsonWriterTest {
     Date date = new Date();
     assertEquals(Long.toString(date.getTime()), Json.toJson(date));
     LocalDateTime time = LocalDateTime.now();
-    assertEquals("\"" + time.toString() + "\"", Json.toJson(time));
+    assertEquals("\"" + time + "\"", Json.toJson(time));
 
     Bean bean = new Bean();
     bean.a = 1;
     bean.b = true;
     bean.c = time;
 
-    assertEquals("{\"a\":1,\"b\":true,\"c\":\"" + time.toString() + "\",\"d\":null}",
+    assertEquals("{\"a\":1,\"b\":true,\"c\":\"" + time + "\",\"d\":null}",
         Json.toJson(bean));
 
     Map<String, Object> map = MoreObjects.mapOf("a", 1, "b", true, "c", time);
-    assertEquals("{\"a\":1,\"b\":true,\"c\":\"" + time.toString() + "\"}", Json.toJson(map));
+    assertEquals("{\"a\":1,\"b\":true,\"c\":\"" + time + "\"}", Json.toJson(map));
 
     List<Object> list = Arrays.asList(1, 2, 3, bean);
-    assertEquals("[1,2,3,{\"a\":1,\"b\":true,\"c\":\"" + time.toString() + "\",\"d\":null}]",
+    assertEquals("[1,2,3,{\"a\":1,\"b\":true,\"c\":\"" + time + "\",\"d\":null}]",
         Json.toJson(list));
 
     int[] array = new int[]{3, 4, 5};

@@ -43,7 +43,8 @@ public class LengthFrameHandler implements AioHandler {
       }
       return buffer;
     }
-    throw Exceptions.fail(String.format("参数类型不匹配, %s -> %s", data.getClass(), LengthFrame.class));
+    throw Exceptions.fail(
+        String.format("参数类型不匹配, %s -> %s", data.getClass(), LengthFrame.class));
   }
 
   @Override

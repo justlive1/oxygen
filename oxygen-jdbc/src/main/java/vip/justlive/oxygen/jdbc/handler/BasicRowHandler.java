@@ -67,11 +67,11 @@ public class BasicRowHandler implements RowHandler {
   @Override
   public Map<String, Object> toMap(ResultSet rs) {
     try {
-      ResultSetMetaData rsmd = rs.getMetaData();
-      int cols = rsmd.getColumnCount();
+      ResultSetMetaData resultSetMetaData = rs.getMetaData();
+      int cols = resultSetMetaData.getColumnCount();
       Map<String, Object> result = new HashMap<>(16);
       for (int i = 1; i <= cols; i++) {
-        String columnName = getColumnName(rsmd, i);
+        String columnName = getColumnName(resultSetMetaData, i);
         result.put(columnName, rs.getObject(i));
       }
       return result;
@@ -83,11 +83,11 @@ public class BasicRowHandler implements RowHandler {
   @Override
   public <T> T toBean(ResultSet rs, Class<T> type) {
     try {
-      ResultSetMetaData rsmd = rs.getMetaData();
-      int cols = rsmd.getColumnCount();
+      ResultSetMetaData resultSetMetaData = rs.getMetaData();
+      int cols = resultSetMetaData.getColumnCount();
       String[] columns = new String[cols + 1];
       for (int col = 1; col <= cols; col++) {
-        columns[col] = getColumnName(rsmd, col);
+        columns[col] = getColumnName(resultSetMetaData, col);
       }
 
       return fillBeanProperty(rs, type, columns);
@@ -157,10 +157,10 @@ public class BasicRowHandler implements RowHandler {
     field.set(target, value);
   }
 
-  private String getColumnName(ResultSetMetaData rsmd, int index) throws SQLException {
-    String columnName = rsmd.getColumnLabel(index);
-    if (null == columnName || 0 == columnName.length()) {
-      columnName = rsmd.getColumnName(index);
+  private String getColumnName(ResultSetMetaData resultSetMetaData, int index) throws SQLException {
+    String columnName = resultSetMetaData.getColumnLabel(index);
+    if (null == columnName || columnName.isEmpty()) {
+      columnName = resultSetMetaData.getColumnName(index);
     }
     return columnName;
   }
@@ -177,7 +177,7 @@ public class BasicRowHandler implements RowHandler {
         for (Field field : type.getDeclaredFields()) {
           String name = field.getName();
           Column column = field.getAnnotation(Column.class);
-          if (column != null && column.value().length() > 0) {
+          if (column != null && !column.value().isEmpty()) {
             name = column.value();
           }
           fields.put(name, field);

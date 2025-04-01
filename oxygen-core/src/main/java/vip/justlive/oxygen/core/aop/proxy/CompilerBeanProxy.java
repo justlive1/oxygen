@@ -13,8 +13,6 @@
  */
 package vip.justlive.oxygen.core.aop.proxy;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -30,14 +28,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import vip.justlive.oxygen.core.bean.SimpleBeanProxy;
-import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
-import vip.justlive.oxygen.core.util.base.MoreObjects;
 import vip.justlive.oxygen.core.util.base.Strings;
 import vip.justlive.oxygen.core.util.base.TypeImpl;
 import vip.justlive.oxygen.core.util.compiler.DynamicCompiler;
-import vip.justlive.oxygen.core.util.io.IoUtils;
-import vip.justlive.oxygen.core.util.template.Templates;
 
 /**
  * 使用jdk动态编译的代理
@@ -49,16 +43,8 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
 
   private static final AtomicLong ID = new AtomicLong();
   private static final Map<Long, Method> METHODS = new HashMap<>(16, 1f);
-  private static final String CODE_TEMPLATE;
   private final DynamicCompiler compiler = new DynamicCompiler();
-
-  static {
-    try (InputStream in = CompilerBeanProxy.class.getResourceAsStream("/enhancer.tpl")) {
-      CODE_TEMPLATE = IoUtils.toString(in);
-    } catch (IOException e) {
-      throw Exceptions.wrap(e);
-    }
-  }
+  private static final String PACKAGE_PREFIX = "generated.";
 
   public static Method lookup(long key) {
     return METHODS.get(key);
@@ -66,9 +52,12 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
 
   @Override
   public <T> T proxy(Class<T> clazz, Object... args) {
+    if (Modifier.isFinal(clazz.getModifiers())) {
+      return SimpleBeanProxy.INSTANCE.proxy(clazz, args);
+    }
     ClassMeta classMeta = new ClassMeta();
     Class<?> actualClass = ClassUtils.getActualClass(clazz);
-    classMeta.packageName = actualClass.getPackage().getName();
+    classMeta.packageName = PACKAGE_PREFIX + actualClass.getPackage().getName();
     classMeta.className = actualClass.getSimpleName() + "$$EnhancerByOxygen";
     classMeta.targetClass = ClassUtils.getClassName(actualClass);
     getTypeVars(actualClass, classMeta.typeVars);
@@ -80,16 +69,126 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
     if (classMeta.methods.isEmpty()) {
       return super.proxy(clazz, args);
     }
-    String code = Templates.render(CODE_TEMPLATE, MoreObjects.beanToMap(classMeta));
+    String code = buildCodeClass(classMeta);
     if (log.isTraceEnabled()) {
       log.trace("Generate proxy class {}.{}: \n{}", classMeta.packageName, classMeta.className,
           code);
     }
     Class<?> proxyClass = compiler.compile(classMeta.packageName, classMeta.className, code);
-    @SuppressWarnings("unchecked")
-    T bean = (T) super.proxy(proxyClass, args);
+    @SuppressWarnings("unchecked") T bean = (T) super.proxy(proxyClass, args);
     ProxyStore.PROXIES.add(bean);
     return bean;
+  }
+
+  private String buildCodeClass(ClassMeta classMeta) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("package ").append(classMeta.packageName).append(";\n\n");
+    sb.append("import java.lang.reflect.Method;\n");
+    sb.append("import vip.justlive.oxygen.core.aop.Callback;\n");
+    sb.append("import vip.justlive.oxygen.core.aop.Invocation;\n");
+    sb.append("import vip.justlive.oxygen.core.aop.proxy.CompilerBeanProxy;\n\n");
+    // 类名
+    sb.append("public class ").append(classMeta.className).append(classMeta.generic)
+        .append(" extends ").append(classMeta.targetClass).append(classMeta.targetGeneric)
+        .append(" {\n\n");
+    // 构造方法
+    buildCodeConstructor(classMeta, sb);
+    // 方法
+    buildCodeMethod(classMeta, sb);
+    sb.append("}");
+    return sb.toString();
+  }
+
+  private void buildCodeMethod(ClassMeta classMeta, StringBuilder sb) {
+    for (MethodMeta method : classMeta.methods) {
+      sb.append("  @Override\n");
+      sb.append("  public ").append(method.generic).append(method.returnType).append(" ")
+          .append(method.name).append("(");
+      for (int i = 0; i < method.getParams().length; i++) {
+        sb.append(method.getParams()[i]).append(" p").append(i);
+        if (i < method.getParams().length - 1) {
+          sb.append(",");
+        }
+      }
+      sb.append(")");
+      for (int i = 0; i < method.exceptions.length; i++) {
+        if (i == 0) {
+          sb.append("throws ");
+        }
+        sb.append(method.exceptions[i]);
+        if (i < method.exceptions.length - 1) {
+          sb.append(",");
+        }
+      }
+      sb.append("{\n");
+      sb.append("    Method method = CompilerBeanProxy.lookup(").append(method.key).append(");\n");
+      sb.append("    Invocation invocation = new Invocation(this, method, new Object[]{");
+      for (int i = 0; i < method.params.length; i++) {
+        sb.append("p").append(i);
+        if (i < method.params.length - 1) {
+          sb.append(",");
+        }
+      }
+      sb.append("});\n");
+      sb.append("    invocation.intercept(new Callback() {\n");
+      sb.append("      @Override\n");
+      sb.append("      public Object apply(Invocation ivt) throws Throwable {\n");
+      sb.append("        ");
+      boolean isVoid = "void".equals(method.returnType);
+      if (!isVoid) {
+        sb.append("return ");
+      }
+      sb.append(classMeta.className).append(".super.").append(method.name).append("(");
+      for (int i = 0; i < method.params.length; i++) {
+        sb.append("p").append(i);
+        if (i < method.params.length - 1) {
+          sb.append(",");
+        }
+      }
+      sb.append(");\n");
+      if (isVoid) {
+        sb.append("        return null;\n");
+      }
+      sb.append("      }\n");
+      sb.append("    });\n");
+      if (!isVoid) {
+        sb.append("    return (").append(method.returnType)
+            .append(") invocation.getReturnValue();\n");
+      }
+      sb.append("  }\n\n");
+    }
+  }
+
+  private void buildCodeConstructor(ClassMeta classMeta, StringBuilder sb) {
+    for (ConstructorMeta constructor : classMeta.constructors) {
+      sb.append("  public ").append(classMeta.className).append("(");
+      for (int i = 0; i < constructor.getParams().length; i++) {
+        sb.append(constructor.getParams()[i]).append(" p").append(i);
+        if (i < constructor.getParams().length - 1) {
+          sb.append(",");
+        }
+      }
+      sb.append(") ");
+      for (int i = 0; i < constructor.getExceptions().length; i++) {
+        if (i == 0) {
+          sb.append("throws ");
+        }
+        sb.append(constructor.getExceptions()[i]);
+        if (i < constructor.getExceptions().length - 1) {
+          sb.append(",");
+        }
+      }
+      sb.append("{\n");
+      sb.append("    super(");
+      for (int i = 0; i < constructor.getParams().length; i++) {
+        sb.append("p").append(i);
+        if (i < constructor.getParams().length - 1) {
+          sb.append(",");
+        }
+      }
+      sb.append(");\n");
+      sb.append("  }\n\n");
+    }
   }
 
   private void getTypeVars(Class<?> clazz, Map<Class<?>, Map<TypeVariable<?>, Type>> typeVars) {
@@ -97,11 +196,10 @@ public class CompilerBeanProxy extends SimpleBeanProxy {
     while (type != null && type != Object.class) {
       Type gsc = type.getGenericSuperclass();
       type = type.getSuperclass();
-      if (!(gsc instanceof ParameterizedType)) {
+      if (!(gsc instanceof ParameterizedType pt)) {
         continue;
       }
       Map<TypeVariable<?>, Type> map = typeVars.computeIfAbsent(type, k -> new HashMap<>(4));
-      ParameterizedType pt = (ParameterizedType) gsc;
       Type[] ats = pt.getActualTypeArguments();
       TypeVariable<?>[] tps = type.getTypeParameters();
       for (int i = 0; i < tps.length; i++) {

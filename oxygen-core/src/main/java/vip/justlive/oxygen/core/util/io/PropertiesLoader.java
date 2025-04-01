@@ -58,7 +58,7 @@ public class PropertiesLoader extends AbstractResourceLoader implements Property
   /**
    * 使用路径创建{@code PropertiesLoader}
    *
-   * @param loader 类加载器
+   * @param loader    类加载器
    * @param locations 路径
    */
   public PropertiesLoader(ClassLoader loader, String... locations) {

@@ -27,7 +27,7 @@ public interface HttpRequestInterceptor extends Order {
   /**
    * 拦截处理
    *
-   * @param request 请求
+   * @param request   请求
    * @param execution 请求执行器
    * @return 响应
    * @throws IOException io异常

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import vip.justlive.oxygen.core.util.base.MoreObjects;
@@ -31,6 +32,7 @@ import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
  */
 public class RetryBuilder<T> {
 
+  private static final AtomicInteger COUNT = new AtomicInteger(0);
   /**
    * 重试监听
    */
@@ -95,8 +97,8 @@ public class RetryBuilder<T> {
    * @return builder
    */
   public RetryBuilder<T> retryIfException(Class<? extends Exception> exceptionClass) {
-    return retryIf(attempt -> attempt.hasException() && exceptionClass
-        .isAssignableFrom(attempt.getException().getClass()));
+    return retryIf(attempt -> attempt.hasException() && exceptionClass.isAssignableFrom(
+        attempt.getException().getClass()));
   }
 
   /**
@@ -123,7 +125,7 @@ public class RetryBuilder<T> {
   /**
    * 设置超时限制
    *
-   * @param timeout 超时时间
+   * @param timeout  超时时间
    * @param timeUnit 时间单位
    * @return builder
    */
@@ -134,8 +136,8 @@ public class RetryBuilder<T> {
   /**
    * 设置超时限制
    *
-   * @param timeout 超时时间
-   * @param timeUnit 时间单位
+   * @param timeout         超时时间
+   * @param timeUnit        时间单位
    * @param executorService 线程池
    * @return builder
    */
@@ -163,8 +165,8 @@ public class RetryBuilder<T> {
    * @return builder
    */
   public RetryBuilder<T> withMaxDelay(long maxDelay) {
-    this.stopPredicate = this.stopPredicate
-        .or(attempt -> attempt.getMillsAfterFirstAttempt() >= maxDelay);
+    this.stopPredicate = this.stopPredicate.or(
+        attempt -> attempt.getMillsAfterFirstAttempt() >= maxDelay);
     return this;
   }
 
@@ -283,11 +285,13 @@ public class RetryBuilder<T> {
    * @return AsyncRetryer
    */
   public AsyncRetryer<T> buildAsync() {
+    int current = COUNT.getAndIncrement();
     if (timeLimiter == null) {
       timeLimiter = TimeLimiter.noTimeLimit();
     }
     if (scheduledExecutorService == null) {
-      scheduledExecutorService = ThreadUtils.newScheduledExecutor(5, "retry-async-%d");
+      scheduledExecutorService = ThreadUtils.newScheduledExecutor("retry-async-pool-" + current, 5,
+          "retry-async-" + current + "-%d");
     }
     AsyncRetryer<T> retryer = new AsyncRetryer<>();
     configure(retryer);

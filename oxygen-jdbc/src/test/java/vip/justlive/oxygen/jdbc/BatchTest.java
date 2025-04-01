@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import vip.justlive.oxygen.core.Bootstrap;
@@ -33,6 +34,11 @@ class BatchTest {
   void before() {
     Bootstrap.start();
     Jdbc.update("create table system (id int primary key auto_increment, skey int, svalue int);");
+  }
+
+  @AfterEach
+  void after(){
+    Bootstrap.close();
   }
   
   @Test

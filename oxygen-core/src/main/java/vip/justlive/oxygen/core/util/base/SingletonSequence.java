@@ -23,20 +23,18 @@ import lombok.Getter;
  * @author wubo
  */
 public class SingletonSequence implements Sequence<Long> {
-  
+
   private static final String KEY = "sequence";
   private static final Preferences PF = Preferences.userNodeForPackage(SingletonSequence.class);
-  
-  private long sequence;
-  private long maxId = 0;
-  
   @Getter
   private final long cacheSize;
-  
+  private long sequence;
+  private long maxId = 0;
+
   public SingletonSequence() {
     this(1);
   }
-  
+
   public SingletonSequence(int cacheSize) {
     this.cacheSize = cacheSize;
     long value = PF.getLong(KEY, maxId);
@@ -45,7 +43,7 @@ public class SingletonSequence implements Sequence<Long> {
     PF.putLong(KEY, value);
     maxId = value;
   }
-  
+
   @Override
   public synchronized Long nextId() {
     if (sequence == maxId) {
@@ -53,18 +51,18 @@ public class SingletonSequence implements Sequence<Long> {
       value += getCacheSize();
       PF.putLong(KEY, value);
       maxId = value;
-      
+
       sequence = maxId - getCacheSize() + 1;
     } else {
       sequence++;
     }
     return sequence;
   }
-  
+
   public void setInitialSequence(long initialValue) {
     sequence = initialValue;
     maxId = sequence + getCacheSize();
     PF.putLong(KEY, maxId);
   }
-  
+
 }

@@ -34,9 +34,9 @@ import vip.justlive.oxygen.core.util.json.codec.Serializer;
  * @author wubo
  */
 @Slf4j
-public class JsonWriter {
+@Getter
+public class JsonWriter implements Writer {
 
-  @Getter
   private final List<Serializer> serializers = new ArrayList<>();
 
   public JsonWriter() {
@@ -63,12 +63,7 @@ public class JsonWriter {
     Collections.sort(serializers);
   }
 
-  /**
-   * to json
-   *
-   * @param value 对象
-   * @return json
-   */
+  @Override
   public String toJson(Object value) {
     StringBuilder buf = new StringBuilder();
     Serializer serializer = Serializer.lookup(serializers, value);

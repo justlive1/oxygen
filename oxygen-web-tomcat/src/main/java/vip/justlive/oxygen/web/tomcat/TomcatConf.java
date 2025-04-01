@@ -128,4 +128,9 @@ public class TomcatConf {
    */
   private String accessLogPattern = AccessLog.COMMON_ALIAS;
 
+  /**
+   * 是否开启http2
+   */
+  private boolean http2Enabled = false;
+
 }

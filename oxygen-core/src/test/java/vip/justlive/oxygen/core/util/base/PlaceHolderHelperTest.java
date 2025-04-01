@@ -15,9 +15,8 @@
 package vip.justlive.oxygen.core.util.base;
 
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.Properties;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,9 +25,10 @@ import org.junit.jupiter.api.Test;
  */
 class PlaceHolderHelperTest {
 
-  Properties props = new Properties();
+  final Properties props = new Properties();
 
-  PlaceHolderHelper helper = new PlaceHolderHelper(PlaceHolderHelper.DEFAULT_PLACEHOLDER_PREFIX,
+  final PlaceHolderHelper helper = new PlaceHolderHelper(
+      PlaceHolderHelper.DEFAULT_PLACEHOLDER_PREFIX,
       PlaceHolderHelper.DEFAULT_PLACEHOLDER_SUFFIX, PlaceHolderHelper.DEFAULT_VALUE_SEPARATOR,
       true);
 

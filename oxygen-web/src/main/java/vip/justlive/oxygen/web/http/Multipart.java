@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.web.http;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import vip.justlive.oxygen.core.util.io.FileCleaner;
 @EqualsAndHashCode
 public class Multipart implements Serializable {
 
+  @Serial
   private static final long serialVersionUID = 1L;
 
   /**

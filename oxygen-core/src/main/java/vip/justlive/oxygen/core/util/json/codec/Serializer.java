@@ -28,7 +28,7 @@ public interface Serializer extends Order {
    * 寻找可用的序列化
    *
    * @param serializers 序列化集合
-   * @param value 要序列化的值
+   * @param value       要序列化的值
    * @return Serializer
    */
   static Serializer lookup(List<Serializer> serializers, Object value) {
@@ -47,7 +47,7 @@ public interface Serializer extends Order {
   /**
    * 是否支持
    *
-   * @param type 类型
+   * @param type  类型
    * @param value 值
    * @return true为支持
    */
@@ -57,7 +57,7 @@ public interface Serializer extends Order {
    * 序列化
    *
    * @param value 值
-   * @param buf buffer
+   * @param buf   buffer
    */
   void serialize(Object value, StringBuilder buf);
 }

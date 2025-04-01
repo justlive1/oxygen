@@ -56,7 +56,7 @@ public class TokenParser {
   /**
    * 解析，使用自定义token逻辑处理
    *
-   * @param text 需要处理的问题
+   * @param text         需要处理的问题
    * @param tokenHandler token处理逻辑
    * @return 处理后的文本
    */
@@ -67,8 +67,8 @@ public class TokenParser {
   /**
    * 解析，使用自定义逻辑处理
    *
-   * @param text 需要处理的问题
-   * @param textHandler 普通文本处理逻辑
+   * @param text         需要处理的问题
+   * @param textHandler  普通文本处理逻辑
    * @param tokenHandler token处理逻辑
    * @return 处理后的文本
    */

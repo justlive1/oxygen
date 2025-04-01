@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import lombok.RequiredArgsConstructor;
-import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
  * atomic array序列化
@@ -39,10 +38,42 @@ public class AtomicArraySerializer implements Serializer {
 
   @Override
   public void serialize(Object value, StringBuilder buf) {
-    Object array = ClassUtils.getValue(value, "array");
-    Serializer serializer = Serializer.lookup(serializers, array);
-    if (serializer != null) {
-      serializer.serialize(array, buf);
+    buf.append('[');
+    int length = getLength(value);
+    boolean del = false;
+    for (int i = 0; i < length; i++) {
+      Object item = get(value, i);
+      Serializer serializer = Serializer.lookup(serializers, item);
+      if (serializer == null) {
+        continue;
+      }
+      serializer.serialize(item, buf);
+      buf.append(',');
+      del = true;
     }
+    if (del) {
+      buf.deleteCharAt(buf.length() - 1);
+    }
+    buf.append(']');
+  }
+
+  private int getLength(Object value) {
+    if (value instanceof AtomicIntegerArray arr) {
+      return arr.length();
+    }
+    if (value instanceof AtomicLongArray arr) {
+      return arr.length();
+    }
+    return ((AtomicReferenceArray<?>) value).length();
+  }
+
+  private Object get(Object value, int i) {
+    if (value instanceof AtomicIntegerArray arr) {
+      return arr.get(i);
+    }
+    if (value instanceof AtomicLongArray arr) {
+      return arr.get(i);
+    }
+    return ((AtomicReferenceArray<?>) value).get(i);
   }
 }

@@ -15,8 +15,9 @@ package vip.justlive.oxygen.web.tomcat;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
-
 import org.junit.jupiter.api.Test;
+import vip.justlive.oxygen.core.CoreConfigKeys;
+import vip.justlive.oxygen.core.config.ConfigFactory;
 import vip.justlive.oxygen.core.util.base.SystemUtils;
 import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
@@ -32,6 +33,8 @@ class TomcatWebServerTest {
 
   @Test
   void test() {
+
+    ConfigFactory.setProperty(CoreConfigKeys.AOP_ENABLED.getName(), "false");
 
     String msg = "hello world";
     int port = SystemUtils.findAvailablePort();

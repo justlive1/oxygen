@@ -32,8 +32,7 @@ import vip.justlive.oxygen.core.exception.Exceptions;
 @UtilityClass
 public class Strings {
 
-  final char[] ALPHA_NUMERIC = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKKLZXCVBNM1234567890"
-      .toCharArray();
+  public final char[] ALPHA_NUMERIC = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKKLZXCVBNM1234567890".toCharArray();
   public final String AND = "&";
   public final String ANY = "*";
   public final String ANY_PATH = "/*";
@@ -66,6 +65,10 @@ public class Strings {
   public final String ALL_CLASSPATH_PREFIX = "classpath*:";
   public final String CLASSPATH_PREFIX = "classpath:";
   public final String[] EMPTY_ARRAY = new String[0];
+  public final String TRACE_ID = "trace-id";
+  public final String SPAN_ID = "span-id";
+  public final String DEFAULT_BOUNDARY = "----oxygen_" + SnowflakeId.defaultNextId();
+
 
   /**
    * 字符串是否有值
@@ -74,7 +77,7 @@ public class Strings {
    * @return true为有值
    */
   public boolean hasText(String text) {
-    return text != null && text.trim().length() > 0;
+    return text != null && !text.trim().isEmpty();
   }
 
   /**
@@ -128,7 +131,7 @@ public class Strings {
   public String randomAlphanumeric(int count) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < count; i++) {
-      sb.append(ALPHA_NUMERIC[MoreObjects.RANDOM.nextInt(ALPHA_NUMERIC.length)]);
+      sb.append(ALPHA_NUMERIC[MoreObjects.secureRandom().nextInt(ALPHA_NUMERIC.length)]);
     }
     return sb.toString();
   }

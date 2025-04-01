@@ -163,7 +163,7 @@ class AioTest {
       try {
         server.start(address);
       } catch (IOException e) {
-        e.printStackTrace();
+        log.error("", e);
       }
 
       ThreadUtils.sleep(4000);

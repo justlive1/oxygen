@@ -13,13 +13,16 @@
  */
 package vip.justlive.oxygen.web.servlet;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.io.Serial;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import vip.justlive.oxygen.core.util.base.Strings;
+import vip.justlive.oxygen.core.util.concurrent.ThreadUtils;
 import vip.justlive.oxygen.core.util.net.http.HttpMethod;
 import vip.justlive.oxygen.web.Context;
 import vip.justlive.oxygen.web.http.Cookie;
@@ -36,6 +39,7 @@ import vip.justlive.oxygen.web.router.RoutingContextImpl;
 @Slf4j
 public class DispatcherServlet extends HttpServlet {
 
+  @Serial
   private static final long serialVersionUID = 1L;
 
   public static void copyResponse(Response response, HttpServletResponse resp) {
@@ -47,7 +51,7 @@ public class DispatcherServlet extends HttpServlet {
     response.getHeaders().forEach(resp::addHeader);
 
     for (Cookie cookie : response.getCookies().values()) {
-      javax.servlet.http.Cookie jCookie = new javax.servlet.http.Cookie(cookie.getName(),
+      jakarta.servlet.http.Cookie jCookie = new jakarta.servlet.http.Cookie(cookie.getName(),
           cookie.getValue());
       jCookie.setPath(cookie.getPath());
       jCookie.setSecure(cookie.isSecure());
@@ -62,6 +66,14 @@ public class DispatcherServlet extends HttpServlet {
   }
 
   private void doService(HttpServletRequest req, HttpServletResponse resp, HttpMethod httpMethod) {
+
+    // trace-id
+    String traceId = req.getHeader(Strings.TRACE_ID);
+    if (!Strings.hasText(traceId)) {
+      traceId = ThreadUtils.nextTraceId();
+    }
+    MDC.put(Strings.TRACE_ID, traceId);
+
     if (log.isDebugEnabled()) {
       log.debug("DispatcherServlet accept request for [{}] on method [{}]", req.getServletPath(),
           httpMethod);
@@ -69,7 +81,7 @@ public class DispatcherServlet extends HttpServlet {
 
     String requestUri = req.getRequestURI();
     String queryString = req.getQueryString();
-    if (queryString != null && queryString.length() > 0) {
+    if (queryString != null && !queryString.isEmpty()) {
       requestUri += Strings.QUESTION_MARK + queryString;
     }
 
@@ -88,6 +100,7 @@ public class DispatcherServlet extends HttpServlet {
       Response.clear();
       copyResponse(response, resp);
       copyStream(response, resp);
+      MDC.remove(Strings.TRACE_ID);
     }
   }
 

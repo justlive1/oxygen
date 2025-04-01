@@ -39,7 +39,7 @@ public class PathParamBinder implements ParamBinder {
     dataBinder.setType(parameter.getType());
     PathParam param = parameter.getAnnotation(PathParam.class);
     dataBinder.setName(Strings.firstNonNull(param.value(), parameter.getName()));
-    if (param.defaultValue().length() > 0) {
+    if (!param.defaultValue().isEmpty()) {
       dataBinder.setDefaultValue(param.defaultValue());
     }
     dataBinder.setFunc(ctx -> {

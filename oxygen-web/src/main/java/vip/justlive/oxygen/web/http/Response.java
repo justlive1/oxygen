@@ -15,6 +15,7 @@ package vip.justlive.oxygen.web.http;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -37,6 +38,7 @@ public class Response implements Serializable {
 
   public static final String ORIGINAL_RESPONSE = "_ORIGINAL_RESPONSE";
 
+  @Serial
   private static final long serialVersionUID = 1L;
   private static final ThreadLocal<Response> LOCAL = new ThreadLocal<>();
 

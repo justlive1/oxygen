@@ -14,10 +14,9 @@
 package vip.justlive.oxygen.core.bean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-
 import org.junit.jupiter.api.Test;
 
 /**
@@ -30,7 +29,7 @@ class SingletonTest {
     Singleton.set("echo0", new EchoImpl0(), 0);
     Singleton.set("echo1", new EchoImpl1(), 1);
 
-    assertTrue(Singleton.get("echo0") instanceof EchoImpl0);
+    assertInstanceOf(EchoImpl0.class, Singleton.get("echo0"));
     assertNotNull(Singleton.get(Echo0.class));
     assertNotNull(Singleton.get(EchoImpl0.class));
     assertNotNull(Singleton.get("echo0", Echo0.class));

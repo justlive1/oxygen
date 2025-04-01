@@ -21,11 +21,11 @@ import lombok.Getter;
  *
  * @author wubo
  */
+@Getter
 public class WrappedException extends CodedException {
 
   private static final long serialVersionUID = 3109011947026387897L;
 
-  @Getter
   private final Throwable exception;
 
   public WrappedException(Throwable exception) {

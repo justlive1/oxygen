@@ -64,7 +64,7 @@ public class IocPlugin implements Plugin {
         continue;
       }
       String beanName = bean.value();
-      if (beanName.length() == 0) {
+      if (beanName.isEmpty()) {
         beanName = clazz.getName();
       }
       tryInstance(clazz, beanName, bean.order(), remains);

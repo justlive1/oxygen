@@ -79,7 +79,7 @@ public class ParameterizedTypeImpl implements ParameterizedType {
       sb.append(rawType.getTypeName());
     }
     Type[] actualTypeArguments = getActualTypeArguments();
-    if (actualTypeArguments != null && actualTypeArguments.length > 0) {
+    if (actualTypeArguments.length > 0) {
       sb.append("<");
       for (int i = 0; i < actualTypeArguments.length; ++i) {
         sb.append(new TypeImpl(actualTypeArguments[i]).getTypeName());

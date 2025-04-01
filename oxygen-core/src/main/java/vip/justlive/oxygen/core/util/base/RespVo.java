@@ -39,7 +39,7 @@ public class RespVo<T> extends RespData<T> {
    * 成功返回
    *
    * @param data 数据
-   * @param <T> 泛型
+   * @param <T>  泛型
    * @return 返回实体
    */
   public static <T> RespVo<T> success(T data) {
@@ -52,7 +52,7 @@ public class RespVo<T> extends RespData<T> {
    * 失败返回
    *
    * @param message 消息
-   * @param <T> 泛型
+   * @param <T>     泛型
    * @return 返回实体
    */
   public static <T> RespVo<T> error(String message) {
@@ -62,9 +62,9 @@ public class RespVo<T> extends RespData<T> {
   /**
    * 失败返回
    *
-   * @param code 编码
+   * @param code    编码
    * @param message 消息
-   * @param <T> 泛型
+   * @param <T>     泛型
    * @return 返回实体
    */
   public static <T> RespVo<T> error(String code, String message) {

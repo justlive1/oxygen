@@ -56,7 +56,7 @@ public class Resp extends RespData<Object> {
   /**
    * 失败返回
    *
-   * @param code 编码
+   * @param code    编码
    * @param message 消息
    * @return 返回实体
    */

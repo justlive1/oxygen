@@ -14,10 +14,12 @@
 package vip.justlive.oxygen.core.aop.proxy;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import vip.justlive.oxygen.core.aop.Invocation;
+import vip.justlive.oxygen.core.bean.SimpleBeanProxy;
 import vip.justlive.oxygen.core.util.base.ClassUtils;
 
 /**
@@ -33,11 +35,14 @@ public class CglibProxy implements MethodInterceptor {
    * 代理
    *
    * @param targetClass 目标
-   * @param args 参数
-   * @param <T> 泛型
+   * @param args        参数
+   * @param <T>         泛型
    * @return 代理对象
    */
   public static <T> T proxy(Class<T> targetClass, Object... args) {
+    if (Modifier.isFinal(targetClass.getModifiers())) {
+      return SimpleBeanProxy.INSTANCE.proxy(targetClass, args);
+    }
     Enhancer enhancer = new Enhancer();
     enhancer.setSuperclass(targetClass);
     enhancer.setCallback(CGLIB_PROXY);

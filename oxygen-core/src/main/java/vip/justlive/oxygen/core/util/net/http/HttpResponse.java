@@ -17,9 +17,11 @@ package vip.justlive.oxygen.core.util.net.http;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.Map;
 import lombok.Data;
+import vip.justlive.oxygen.core.exception.Exceptions;
 import vip.justlive.oxygen.core.util.io.IoUtils;
 
 /**
@@ -59,6 +61,23 @@ public class HttpResponse implements Closeable {
       bodyString = IoUtils.toString(body, charset);
     }
     return bodyString;
+  }
+
+  /**
+   * body转对象，该方法目前未自带转换器，需要自己实现内容转换
+   *
+   * @param type 类型
+   * @param <T>  泛型
+   * @return result
+   */
+  public <T> T bodyAsObject(Type type) {
+    HttpBodyConverter converter = HttpBodyConverters.findCanRead(this, type);
+    if (converter == null) {
+      throw Exceptions.fail(
+          "Could not extract response: no suitable HttpBodyConverter found for response type ["
+              + type + "]");
+    }
+    return converter.read(this, type);
   }
 
   @Override

@@ -14,7 +14,11 @@
 
 package vip.justlive.oxygen.core.util.json;
 
+import java.lang.reflect.Type;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.experimental.UtilityClass;
+import vip.justlive.oxygen.core.exception.Exceptions;
 
 /**
  * json
@@ -24,7 +28,45 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Json {
 
-  private final JsonWriter WRITER = new JsonWriter();
+  private final JsonWriter DEFAULT_WRITER = new JsonWriter();
+  private final AtomicReference<Writer> WRITER = new AtomicReference<>();
+  private final AtomicReference<Reader> READER = new AtomicReference<>();
+
+  /**
+   * 获取json writer
+   *
+   * @return writer
+   */
+  public Writer getWriter() {
+    return WRITER.get();
+  }
+
+  /**
+   * 设置json writer
+   *
+   * @param writer writer
+   */
+  public void setWriter(Writer writer) {
+    WRITER.set(writer);
+  }
+
+  /**
+   * 获取json reader
+   *
+   * @return reader
+   */
+  public Reader getReader() {
+    return READER.get();
+  }
+
+  /**
+   * 设置json reader
+   *
+   * @param reader reader
+   */
+  public void setReader(Reader reader) {
+    READER.set(reader);
+  }
 
   /**
    * object to string
@@ -33,7 +75,39 @@ public class Json {
    * @return string
    */
   public String toJson(Object value) {
-    return WRITER.toJson(value);
+    return Optional.ofNullable(getWriter()).orElse(DEFAULT_WRITER).toJson(value);
+  }
+
+  /**
+   * json string转对象
+   *
+   * @param json json string
+   * @param type 类型
+   * @param <T>  泛型
+   * @return 对象
+   */
+  public <T> T parse(String json, Type type) {
+    Reader reader = getReader();
+    if (reader == null) {
+      throw Exceptions.fail("json reader is unavailable");
+    }
+    return reader.parse(json, type);
+  }
+
+  /**
+   * json绑定
+   *
+   * @param data 对象
+   * @param type 类型
+   * @param <T>  泛型
+   * @return 转换后的对象
+   */
+  public <T> T bindTo(Object data, Type type) {
+    Reader reader = getReader();
+    if (reader == null) {
+      throw Exceptions.fail("json reader is unavailable");
+    }
+    return reader.bindTo(data, type);
   }
 
 }

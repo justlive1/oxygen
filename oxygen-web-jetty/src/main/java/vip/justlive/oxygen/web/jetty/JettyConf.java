@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.web.jetty;
 
+import java.util.List;
 import lombok.Data;
 import vip.justlive.oxygen.core.config.ValueConfig;
 
@@ -28,7 +29,7 @@ public class JettyConf {
   /**
    * 虚拟主机
    */
-  private String[] virtualHosts;
+  private List<String> virtualHosts;
   /**
    * 连接器在空闲状态持续该时间后（单位毫秒）关闭
    */
@@ -57,4 +58,17 @@ public class JettyConf {
    * 最大表单键值对数量
    */
   private int maxFormKeys = 200;
+  /**
+   * 是否开启http2
+   */
+  private boolean http2Enabled = false;
+  /**
+   * The number of acceptor threads to use.
+   */
+  private int threadsAcceptors = -1;
+
+  /**
+   * The number of selector threads to use.
+   */
+  private int threadsSelectors = -1;
 }

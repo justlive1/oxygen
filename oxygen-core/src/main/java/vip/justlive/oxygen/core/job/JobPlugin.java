@@ -64,34 +64,34 @@ public class JobPlugin implements Plugin {
 
   private void handleMethod(Method method, Object bean) {
     JobInfo jobInfo = new JobInfo().setKey(
-        ClassUtils.getActualClass(bean.getClass()).getName() + Strings.DOT + method.getName())
+            ClassUtils.getActualClass(bean.getClass()).getName() + Strings.DOT + method.getName())
         .setHandlerClass(AnnotationJob.class.getName());
 
     Scheduled scheduled = method.getAnnotation(Scheduled.class);
     check(scheduled);
 
     JobTrigger trigger = null;
-    if (scheduled.fixedDelay().length() > 0) {
+    if (!scheduled.fixedDelay().isEmpty()) {
       long fixedDelayVal = Long
           .parseLong(ConfigFactory.getPlaceholderProperty(scheduled.fixedDelay()));
       long initialDelayVal = 0;
-      if (scheduled.initialDelay().length() > 0) {
+      if (!scheduled.initialDelay().isEmpty()) {
         initialDelayVal = Long
             .parseLong(ConfigFactory.getPlaceholderProperty(scheduled.initialDelay()));
       }
       trigger = new DelayOrRateJobTrigger(jobInfo.getKey(), initialDelayVal, fixedDelayVal, true);
     }
-    if (scheduled.fixedRate().length() > 0) {
+    if (!scheduled.fixedRate().isEmpty()) {
       long fixedRateVal = Long
           .parseLong(ConfigFactory.getPlaceholderProperty(scheduled.fixedRate()));
       long initialDelayVal = 0;
-      if (scheduled.initialDelay().length() > 0) {
+      if (!scheduled.initialDelay().isEmpty()) {
         initialDelayVal = Long
             .parseLong(ConfigFactory.getPlaceholderProperty(scheduled.initialDelay()));
       }
       trigger = new DelayOrRateJobTrigger(jobInfo.getKey(), initialDelayVal, fixedRateVal, false);
     }
-    if (scheduled.cron().length() > 0) {
+    if (!scheduled.cron().isEmpty()) {
       String cron = ConfigFactory.getPlaceholderProperty(scheduled.cron());
       trigger = new CronJobTrigger(jobInfo.getKey(), cron);
     }
@@ -115,13 +115,13 @@ public class JobPlugin implements Plugin {
 
   private void check(Scheduled scheduled) {
     int count = 0;
-    if (scheduled.fixedDelay().length() > 0) {
+    if (!scheduled.fixedDelay().isEmpty()) {
       count++;
     }
-    if (scheduled.fixedRate().length() > 0) {
+    if (!scheduled.fixedRate().isEmpty()) {
       count++;
     }
-    if (scheduled.cron().length() > 0) {
+    if (!scheduled.cron().isEmpty()) {
       count++;
     }
     if (count > 1 || count == 0) {

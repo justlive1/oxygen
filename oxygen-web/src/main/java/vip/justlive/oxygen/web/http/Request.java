@@ -13,6 +13,7 @@
  */
 package vip.justlive.oxygen.web.http;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.Objects;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import vip.justlive.oxygen.core.util.base.HttpHeaders;
 import vip.justlive.oxygen.core.util.base.Strings;
@@ -42,6 +44,7 @@ public class Request implements Serializable {
   public static final String ORIGINAL_REQUEST = "_ORIGINAL_REQUEST";
   public static final String PATH_VARS = "_PATH_VARS:";
 
+  @Serial
   private static final long serialVersionUID = 1L;
 
   private static final ThreadLocal<Request> LOCAL = new ThreadLocal<>();
@@ -134,6 +137,7 @@ public class Request implements Serializable {
   /**
    * 异常
    */
+  @Setter
   transient Exception exception;
 
   public Request(HttpMethod method, String requestUri, String protocol, String contextPath,
@@ -275,7 +279,7 @@ public class Request implements Serializable {
   /**
    * 添加属性
    *
-   * @param key 键
+   * @param key   键
    * @param value 值
    * @return request
    */
@@ -315,14 +319,6 @@ public class Request implements Serializable {
     return this.attributes.remove(key);
   }
 
-  /**
-   * 设置当前请求异常
-   *
-   * @param exception 异常
-   */
-  public void setException(Exception exception) {
-    this.exception = exception;
-  }
 
   /**
    * 是否为ajax请求
